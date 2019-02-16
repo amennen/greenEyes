@@ -1,6 +1,6 @@
 % this is going to load the right context description
 
-function cellOutput = getContext(contextGroup)
+function [cellOutput strOutput] = getContext(contextGroup)
 
 cellOutput = {};
 cellOutput{1} = 'You are about to hear a phone conversation.';
@@ -23,6 +23,12 @@ elseif contextGroup == 2
     
 end
 
-cellOutput{end+1} = 'All you need to do is listen and pay close attention to the story.';
-cellOutput{end+1} = '-- Please press to begin once you understand these instructions. --';
+cellOutput{end+1} = 'All you need to do is remain still, listen, and pay close attention to the story.';
+cellOutput{end+1} = '-- Please press your INDEX to begin once you understand these instructions. --';
+
+strOutput = cellOutput{1};
+for j = 2:length(cellOutput)-2
+    strOutput = [strOutput ' ' cellOutput{j}];
+end
+    
 end

@@ -6,13 +6,14 @@
 clear all;
 debug=0;
 useButtonBox=0;
-CONTEXT=1; 
-SUBJECT=500;
-RUN=1;
+fmri=1; % whether or not you're in the scanning room!!!
+runData.CONTEXT=1; 
+runData.SUBJECT=500;
+runData.RUN=1;
 subjectName = '0110191_greenEyes';
 rtData = 0;
-subjectNum = SUBJECT;
-runNum = RUN;
+subjectNum = runData.SUBJECT;
+runNum = runData.RUN;
 
 
 addpath(genpath('stimuli'))
@@ -22,11 +23,15 @@ addpath(genpath('stimuli'))
 % 2 = CHEATING
 % load in audio data and specify where the project is located
 % laptop = /Volumes/norman/amennen/github/greenEyes/
-basic_path = '/Volumes/norman/amennen/github/greenEyes/';
+if fmri == 1
+    basic_path ='/Data1/code/greenEyes/';
+else
+    basic_path = '/Volumes/norman/amennen/github/greenEyes/';
+end
 cd(basic_path);
 wavfilename = [basic_path '/stimuli/greenMyeyes_Edited.wav'];
-data_path = fullfile(basic_path,'data', ['subject' num2str(SUBJECT)]);
-runHeader = fullfile(data_path, ['run' num2str(RUN)]);
+data_path = fullfile(basic_path,'data', ['subject' num2str(runData.SUBJECT)]);
+runHeader = fullfile(data_path, ['run' num2str(runData.RUN)]);
 if ~exist(runHeader)
     mkdir(runHeader)
 end
@@ -73,10 +78,9 @@ runDur = audioDur;
 nTRs_run = ceil(runDur/TR);
 
 % so we want 485 TRs total with the beginning 10 TRs
-KbName('UnifyKeyNames');
 if (~debug) %so that when debugging you can do other things
     %Screen('Preference', 'SkipSyncTests', 1);
-   ListenChar(2);  %prevent command window output
+%   ListenChar(2);  %prevent command window output
 %   HideCursor;     %hide mouse cursor  
    
 else
@@ -93,6 +97,7 @@ fixColor = 0;
 backColor = 127;
 fixationSize = 4;% pixels
 minimumDisplay = 0.25;
+KbName('UnifyKeyNames');
 LEFT = KbName('1!');
 subj_keycode = LEFT;
 DEVICENAME = 'Current Designs, Inc. 932';
@@ -104,10 +109,18 @@ if useButtonBox && (~debug)
         end
     end
 else
-    DEVICE = -1;
+    % let's set it to look for the Dell keyboard instead
+    DEVICENAME = 'Dell KB216 Wired Keyboard';
+    [index devName] = GetKeyboardIndices;
+    for device = 1:length(index)
+        if strcmp(devName(device),DEVICENAME)
+            DEVICE = index(device);
+        end
+    end
+    %DEVICE = -1;
 end
-TRIGGER = '5%';
-%TRIGGER ='=+'; %put in for Princeton scanner
+%TRIGGER = '5%'; % for Penn/rtAttention experiment at Princeton
+TRIGGER ='=+'; %put in for Princeton scanner -- default setup
 TRIGGER_keycode = KbName(TRIGGER);
 
 %% Initialize Screens
@@ -137,8 +150,9 @@ else
     %screenX = windowSize.pixels(1);
     %screenY = windowSize.pixels(2);
     % new: setting resolution manually
-     screenX = 1920;
-     screenY = 1080;
+    % for PRINCETON
+     screenX = 1280;
+     screenY = 720;
 %     %to ensure that the images are standardized (they take up the same degrees of the visual field) for all subjects
 %     if (screenX ~= ScreenResX) || (screenY ~= ScreenResY)
 %         fprintf('The screen dimensions may be incorrect. For screenNum = %d,screenX = %d (not 1152) and screenY = %d (not 864)',screenNum, screenX, screenY);
@@ -158,15 +172,28 @@ fixDotRect = [centerX-fixationSize,centerY-fixationSize,centerX+fixationSize,cen
 
 % preview task
 % check audio volume
-InitializePsychSound(1)
 nrchannels = 2;
 okayVolume=0;
 while ~okayVolume
+    InitializePsychSound(1)
     freq=44100;
     duration=1;
     snddata = MakeBeep(378, duration, freq);
     dualdata = [snddata;snddata];
-    pahandle = PsychPortAudio('Open', [], [], [], freq, nrchannels);
+    if ~fmri
+        pahandle = PsychPortAudio('Open', [], [], [], freq, nrchannels);
+    else
+        AUDIO_DEVICENAME = 'HDA Creative: ALC898 Analog (hw:3,0)';
+        AUDIO_devices=PsychPortAudio('GetDevices');
+        for dev = 1:length(AUDIO_devices)
+            devName = AUDIO_devices(dev).DeviceName;
+            if strcmp(devName,AUDIO_DEVICENAME)
+                AUDIODEVICE = AUDIO_devices(dev).DeviceIndex;
+            end
+        end
+        %%%%%%
+        pahandle = PsychPortAudio('Open', AUDIODEVICE, [], [], freq, nrchannels);
+    end
     PsychPortAudio('FillBuffer', pahandle, dualdata);
     % start it immediately
     PsychPortAudio('UseSchedule',pahandle,1);
@@ -177,18 +204,21 @@ while ~okayVolume
     if resp == 1
         okayVolume = 1;
     end
+    PsychPortAudio('Close', pahandle);
+
 end
 %Stop playback:
-PsychPortAudio('Stop', pahandle);
 % Close the audio device:
-PsychPortAudio('Close', pahandle);
 
 %% Load in audio data for story
 %
+
 [y, freq] = audioread(wavfilename);
 wavedata = y';
 nrchannels = size(wavedata,1); % Number of rows
-
+if ~debug
+    ListenChar(2);
+end
 %% show them instructions until they press to begin
 
 % show instructions
@@ -196,18 +226,16 @@ Screen(mainWindow,'FillRect',backColor);
 Screen('Flip',mainWindow);
 FlushEvents('keyDown');
 
-instructCell = getContext(CONTEXT);
-
-% first give context for the story
-for instruct=1:length(instructCell)
-    tempBounds = Screen('TextBounds',mainWindow,instructCell{instruct});
-    if instruct==length(instructCell)
-        textSpacing = textSpacing*1.5;
-    end
-    Screen('drawtext',mainWindow,instructCell{instruct},centerX-tempBounds(3)/2,centerY-tempBounds(4)/5+textSpacing*(instruct-1),textColor);
-    clear tempBounds;
-end
+[instructCell strOutput] = getContext(runData.CONTEXT);
+strOutput=[strOutput '\n\n-- Please press your INDEX to continue once you understand these instructions. --'];
+DrawFormattedText(mainWindow,strOutput,'center','center',textColor,70,[],[],1.2)
 Screen('Flip',mainWindow);
+waitForKeyboard(subj_keycode,DEVICE);
+
+strOutput2 = [instructCell{end-1} '\n\n\n' instructCell{end}];
+DrawFormattedText(mainWindow,strOutput2,'center','center',textColor,70,[],[],1.2)
+Screen('Flip',mainWindow);
+
 waitForKeyboard(subj_keycode,DEVICE);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % now here we're adding to say waiting for scanner, hold tight!
@@ -246,9 +274,15 @@ Screen('Flip',mainWindow);
 Priority(0);
 
 %%
-pahandle = PsychPortAudio('Open', [], [], [], freq, nrchannels);
+if ~fmri
+    pahandle = PsychPortAudio('Open', [], [], [], freq, nrchannels);
+else
+    pahandle = PsychPortAudio('Open', AUDIODEVICE, [], [], freq, nrchannels);
+end
 PsychPortAudio('FillBuffer', pahandle, wavedata);
-
+if ~debug
+    ListenChar(2);
+end
 % calculate onset of story
 audioOnset = disdaqs;
 volStart = 1 + disdaqs/TR ; % this should be on the 11th trigger
@@ -300,10 +334,11 @@ end
 %[startTime endPos xruns estStopTime] = PsychPortAudio('Stop', pahandle,0);
 % Close the audio device:
 PsychPortAudio('Close', pahandle);
-
+WaitSecs(10);
 %% save everything 
-file_name = ['behavior_run' num2str(RUN) '.mat'];
+file_name = ['behavior_run' num2str(runData.RUN) '_' datestr(now,30) '.mat'];
 save(fullfile(data_path,file_name),'timing', 'runData');
 
 sca;
 ShowCursor;
+ListenChar;
