@@ -3,18 +3,13 @@
 % load necessary scanner settings
 
 % wait 5 TR's before starting story?
-clear all;
-debug=0;
-useButtonBox=0;
-fmri=1; % whether or not you're in the scanning room!!!
-runData.CONTEXT=1; 
-runData.SUBJECT=500;
-runData.RUN=1;
-subjectName = '0110191_greenEyes';
-rtData = 0;
-subjectNum = runData.SUBJECT;
-runNum = runData.RUN;
 
+function RealTimeGreenEyesDisplay(debug, useButtonBox, fmri, rtData, subjectNum, subjectName, context, runNum)
+
+runData.context = context;
+runData.subjectNum = subjectNum;
+runData.subjectName = subjectName;
+runData.run = runNum;
 
 addpath(genpath('stimuli'))
 % CONTEXT:
@@ -30,8 +25,8 @@ else
 end
 cd(basic_path);
 wavfilename = [basic_path '/stimuli/greenMyeyes_Edited.wav'];
-data_path = fullfile(basic_path,'data', ['subject' num2str(runData.SUBJECT)]);
-runHeader = fullfile(data_path, ['run' num2str(runData.RUN)]);
+data_path = fullfile(basic_path,'data', ['subject' num2str(runData.subjectNum)]);
+runHeader = fullfile(data_path, ['run' num2str(runData.run)]);
 if ~exist(runHeader)
     mkdir(runHeader)
 end
@@ -80,9 +75,9 @@ nTRs_run = ceil(runDur/TR);
 % so we want 485 TRs total with the beginning 10 TRs
 if (~debug) %so that when debugging you can do other things
     %Screen('Preference', 'SkipSyncTests', 1);
-%   ListenChar(2);  %prevent command window output
-%   HideCursor;     %hide mouse cursor  
-   
+    %   ListenChar(2);  %prevent command window output
+    %   HideCursor;     %hide mouse cursor
+    
 else
     Screen('Preference', 'SkipSyncTests', 2);
 end
@@ -101,6 +96,8 @@ KbName('UnifyKeyNames');
 LEFT = KbName('1!');
 subj_keycode = LEFT;
 DEVICENAME = 'Current Designs, Inc. 932';
+% set default device to be -1 
+DEVICE = -1;
 if useButtonBox && (~debug)
     [index devName] = GetKeyboardIndices;
     for device = 1:length(index)
@@ -119,12 +116,13 @@ else
     end
     %DEVICE = -1;
 end
+
 %TRIGGER = '5%'; % for Penn/rtAttention experiment at Princeton
 TRIGGER ='=+'; %put in for Princeton scanner -- default setup
 TRIGGER_keycode = KbName(TRIGGER);
 
 %% Initialize Screens
-    
+
 screenNumbers = Screen('Screens');
 
 % show full screen if real, otherwise part of screen
@@ -151,12 +149,12 @@ else
     %screenY = windowSize.pixels(2);
     % new: setting resolution manually
     % for PRINCETON
-     screenX = 1280;
-     screenY = 720;
-%     %to ensure that the images are standardized (they take up the same degrees of the visual field) for all subjects
-%     if (screenX ~= ScreenResX) || (screenY ~= ScreenResY)
-%         fprintf('The screen dimensions may be incorrect. For screenNum = %d,screenX = %d (not 1152) and screenY = %d (not 864)',screenNum, screenX, screenY);
-%     end
+    screenX = 1280;
+    screenY = 720;
+    %     %to ensure that the images are standardized (they take up the same degrees of the visual field) for all subjects
+    %     if (screenX ~= ScreenResX) || (screenY ~= ScreenResY)
+    %         fprintf('The screen dimensions may be incorrect. For screenNum = %d,screenX = %d (not 1152) and screenY = %d (not 864)',screenNum, screenX, screenY);
+    %     end
 end
 
 %create main window
@@ -205,7 +203,7 @@ while ~okayVolume
         okayVolume = 1;
     end
     PsychPortAudio('Close', pahandle);
-
+    
 end
 %Stop playback:
 % Close the audio device:
@@ -220,14 +218,34 @@ if ~debug
     ListenChar(2);
 end
 %% show them instructions until they press to begin
-
+continueInstruct = '\n\n-- Please press your INDEX to continue once you understand these instructions. --';
 % show instructions
 Screen(mainWindow,'FillRect',backColor);
 Screen('Flip',mainWindow);
 FlushEvents('keyDown');
 
-[instructCell strOutput] = getContext(runData.CONTEXT);
-strOutput=[strOutput '\n\n-- Please press your INDEX to continue once you understand these instructions. --'];
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% before anything else just brief them on listening to the story, either
+% for the first time or again
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+firstRun = ['Today you will be listening to a pre-recorded audio story. You will get a briefing before each time you listen to the story.'];
+if runData.run == 1
+    % show the first instructions
+    firstInstruct = [firstRun continueInstruct];
+    DrawFormattedText(mainWindow,firstInstruct,'center','center',textColor,70,[],[],1.2)
+    Screen('Flip',mainWindow);
+    waitForKeyboard(subj_keycode,DEVICE);
+end
+
+% now tell them they will listen again and ge
+beforeContext = ['Continue when you''re ready to receive your briefing for the story. Please read it carefully, as it may change each time you listen to the story.' continueInstruct];
+DrawFormattedText(mainWindow,beforeContext,'center','center',textColor,70,[],[],1.2)
+Screen('Flip',mainWindow);
+waitForKeyboard(subj_keycode,DEVICE);
+
+[instructCell strOutput] = getContext(runData.context);
+strOutput=[strOutput continueInstruct];
 DrawFormattedText(mainWindow,strOutput,'center','center',textColor,70,[],[],1.2)
 Screen('Flip',mainWindow);
 waitForKeyboard(subj_keycode,DEVICE);
@@ -256,15 +274,15 @@ STILLDURATION = 6;
 Priority(MaxPriority(screenNum));
 %% Wait for first trigger in the scanner
 if (~debug )
-        timing.trig.wait = WaitTRPulse(TRIGGER_keycode,DEVICE);
-        runStart = timing.trig.wait;
-        DrawFormattedText(mainWindow,STILLREMINDER,'center','center',textColor,70)
-        startTime = Screen('Flip',mainWindow);
-        elapsedTime = 0;
-        while (elapsedTime < STILLDURATION)
-            pause(0.005)
-            elapsedTime = GetSecs()-startTime;
-        end
+    timing.trig.wait = WaitTRPulse(TRIGGER_keycode,DEVICE);
+    runStart = timing.trig.wait;
+    DrawFormattedText(mainWindow,STILLREMINDER,'center','center',textColor,70)
+    startTime = Screen('Flip',mainWindow);
+    elapsedTime = 0;
+    while (elapsedTime < STILLDURATION)
+        pause(0.005)
+        elapsedTime = GetSecs()-startTime;
+    end
 else
     runStart = GetSecs;
 end
@@ -313,7 +331,7 @@ timing.plannedOnsets.story = timing.plannedOnsets.audioStart + musicDur + silenc
 timing.actualOnsets.story = NaN(nTRs_story,1);
 runData.pulses = NaN(nTRs_run,1);
 % prepare for trial sequence
-% want displayed: run, volume TR, story TR, tonsset dif, pulse, 
+% want displayed: run, volume TR, story TR, tonsset dif, pulse,
 fprintf(dataFile,'run\t\tvolume\t\tstoryTR\t\tonsdif\t\tpulse\t\tstation\t\tload\t\tcatsep\t\tFeedback\n');
 fprintf('run\t\tvolume\t\tstoryTR\t\tonsdif\t\tpulse\t\tstation\t\tload\t\tcatsep\t\tFeedback\n');
 
@@ -326,7 +344,7 @@ for iTR = 1:nTRs_story
     % print out TR information
     fprintf(dataFile,'%d\t\t%d\t\t%d\t\t%.3f\t\t%d\t\t%d\t\t%d\t\t%.3f\t\t%.3f\n',runNum,volCounter,iTR,timing.actualOnsets.story(iTR)-timing.plannedOnsets.story(iTR),runData.pulses(volCounter),isStation,runData.loadCategSep(iTR),runData.categSep(iTR),runData.feedbackProp(iTR));
     fprintf('%d\t\t%d\t\t%d\t\t%.3f\t\t%d\t\t%d\t\t%d\t\t%.3f\t\t%.3f\n',runNum,volCounter,iTR,timing.actualOnsets.story(iTR)-timing.plannedOnsets.story(iTR),runData.pulses(volCounter),isStation,runData.loadCategSep(iTR),runData.categSep(iTR),runData.feedbackProp(iTR));
-
+    
 end
 %%
 % Stop playback:
@@ -335,10 +353,11 @@ end
 % Close the audio device:
 PsychPortAudio('Close', pahandle);
 WaitSecs(10);
-%% save everything 
-file_name = ['behavior_run' num2str(runData.RUN) '_' datestr(now,30) '.mat'];
-save(fullfile(data_path,file_name),'timing', 'runData');
+%% save everything
+file_name = ['behavior_run' num2str(runData.run) '_' datestr(now,30) '.mat'];
+save(fullfile(runHeader,file_name),'timing', 'runData');
 
 sca;
 ShowCursor;
 ListenChar;
+end
