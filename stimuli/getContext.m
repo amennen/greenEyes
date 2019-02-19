@@ -23,7 +23,7 @@ elseif contextGroup == 2
     
 end
 
-cellOutput{end+1} = 'As the story plays, it is very important that you remain still, listen carefully, and pay close attention to the story. Please do not start until you are ready to do so.';
+cellOutput{end+1} = 'As the story plays, it is very important that you remain still, listen carefully, and pay close attention to the story. Please do not start until you are ready to do your best. Additionally, please keep your eyes open and looking at the center of the screen. The story will be roughly 12 minutes long.';
 cellOutput{end+1} = '-- Please press your INDEX to begin once you understand these instructions. --';
 
 strOutput = cellOutput{1};

@@ -86,7 +86,7 @@ end
 % display parameters
 textColor = 0;
 textFont = 'Arial';
-textSize = 35;
+textSize = 30;
 textSpacing = 25;
 fixColor = 0;
 backColor = 127;
@@ -96,7 +96,7 @@ KbName('UnifyKeyNames');
 LEFT = KbName('1!');
 subj_keycode = LEFT;
 DEVICENAME = 'Current Designs, Inc. 932';
-% set default device to be -1 
+% set default device to be -1
 DEVICE = -1;
 if useButtonBox && (~debug)
     [index devName] = GetKeyboardIndices;
@@ -167,197 +167,208 @@ Screen(mainWindow,'TextFont',textFont);
 Screen(mainWindow,'TextSize',textSize);
 fixDotRect = [centerX-fixationSize,centerY-fixationSize,centerX+fixationSize,centerY+fixationSize];
 %% check audio volume in the scanner
-
-% preview task
-% check audio volume
-nrchannels = 2;
-okayVolume=0;
-while ~okayVolume
-    InitializePsychSound(1)
-    freq=44100;
-    duration=1;
-    snddata = MakeBeep(378, duration, freq);
-    dualdata = [snddata;snddata];
+if fmri
+    AUDIO_DEVICENAME = 'HDA Creative: ALC898 Analog (hw:3,0)';
+    AUDIO_devices=PsychPortAudio('GetDevices');
+    for dev = 1:length(AUDIO_devices)
+        devName = AUDIO_devices(dev).DeviceName;
+        if strcmp(devName,AUDIO_DEVICENAME)
+            AUDIODEVICE = AUDIO_devices(dev).DeviceIndex;
+        end
+    end
+end
+    % preview task
+    % check audio volume
+    % if runData.run == 1
+    %     nrchannels = 2;
+    %     okayVolume=0;
+    %     while ~okayVolume
+    %         InitializePsychSound(1)
+    %         freq=44100;
+    %         duration=1;
+    %         snddata = MakeBeep(378, duration, freq);
+    %         dualdata = [snddata;snddata];
+    %         if ~fmri
+    %             pahandle = PsychPortAudio('Open', [], [], [], freq, nrchannels);
+    %         else
+    %             AUDIO_DEVICENAME = 'HDA Creative: ALC898 Analog (hw:3,0)';
+    %             AUDIO_devices=PsychPortAudio('GetDevices');
+    %             for dev = 1:length(AUDIO_devices)
+    %                 devName = AUDIO_devices(dev).DeviceName;
+    %                 if strcmp(devName,AUDIO_DEVICENAME)
+    %                     AUDIODEVICE = AUDIO_devices(dev).DeviceIndex;
+    %                 end
+    %             end
+    %             %%%%%%
+    %             pahandle = PsychPortAudio('Open', AUDIODEVICE, [], [], freq, nrchannels);
+    %         end
+    %         PsychPortAudio('FillBuffer', pahandle, dualdata);
+    %         % start it immediately
+    %         PsychPortAudio('UseSchedule',pahandle,1);
+    %         PsychPortAudio('AddToSchedule',pahandle,0);
+    %         trigger=GetSecs + 2;
+    %         begin_time = PsychPortAudio('Start', pahandle, [], trigger);
+    %         resp = input('Volume level okay? \n');
+    %         if resp == 1
+    %             okayVolume = 1;
+    %         end
+    %         PsychPortAudio('Close', pahandle);
+    %
+    %     end
+    % end
+    %Stop playback:
+    % Close the audio device:
+    
+    %% Load in audio data for story
+    %
+    
+    [y, freq] = audioread(wavfilename);
+    wavedata = y';
+    nrchannels = size(wavedata,1); % Number of rows
+    if ~debug
+        ListenChar(2);
+    end
+    %% show them instructions until they press to begin
+    continueInstruct = '\n\n-- Please press your INDEX to continue once you understand these instructions. --';
+    % show instructions
+    Screen(mainWindow,'FillRect',backColor);
+    Screen('Flip',mainWindow);
+    FlushEvents('keyDown');
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % before anything else just brief them on listening to the story, either
+    % for the first time or again
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    
+    firstRun = ['Today you will be listening to a pre-recorded audio story. You will get instructions each time you listen to the story.'];
+    if runData.run == 1
+        % show the first instructions
+        firstInstruct = [firstRun continueInstruct];
+        DrawFormattedText(mainWindow,firstInstruct,'center','center',textColor,70,[],[],1.2)
+        Screen('Flip',mainWindow);
+        waitForKeyboard(subj_keycode,DEVICE);
+    end
+    
+    % now tell them they will listen again and ge
+    beforeContext = ['Welcome to the task!\n\nPlease read the following instructions carefully, as they may change each time you listen to the story.' continueInstruct];
+    DrawFormattedText(mainWindow,beforeContext,'center','center',textColor,70,[],[],1.2)
+    Screen('Flip',mainWindow);
+    waitForKeyboard(subj_keycode,DEVICE);
+    
+    [instructCell strOutput] = getContext(runData.context);
+    strOutput=[strOutput continueInstruct];
+    DrawFormattedText(mainWindow,strOutput,'center','center',textColor,70,[],[],1.2)
+    Screen('Flip',mainWindow);
+    waitForKeyboard(subj_keycode,DEVICE);
+    
+    strOutput2 = [instructCell{end-1} '\n\n\n' instructCell{end}];
+    DrawFormattedText(mainWindow,strOutput2,'center','center',textColor,70,[],[],1.2)
+    Screen('Flip',mainWindow);
+    
+    waitForKeyboard(subj_keycode,DEVICE);
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % now here we're adding to say waiting for scanner, hold tight!
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    waitMessage = 'Waiting for scanner start, hold tight!';
+    tempBounds = Screen('TextBounds', mainWindow, waitMessage);
+    Screen('drawtext',mainWindow,waitMessage,centerX-tempBounds(3)/2,centerY-tempBounds(4)/2,textColor);
+    Screen('Flip', mainWindow);
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % now here we're going to say to stay still once the triggers start coming
+    % in
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    STILLREMINDER = ['The scan is now starting.\n\nMoving your head even a little blurs the image, so '...
+        'please try to keep your head totally still until the scanning noise stops.\n\n Do it for science!'];
+    STILLDURATION = 6;
+    
+    % wait for initial trigger
+    Priority(MaxPriority(screenNum));
+    %% Wait for first trigger in the scanner
+    if (~debug )
+        timing.trig.wait = WaitTRPulse(TRIGGER_keycode,DEVICE);
+        runStart = timing.trig.wait;
+        DrawFormattedText(mainWindow,STILLREMINDER,'center','center',textColor,70)
+        startTime = Screen('Flip',mainWindow);
+        elapsedTime = 0;
+        while (elapsedTime < STILLDURATION)
+            pause(0.005)
+            elapsedTime = GetSecs()-startTime;
+        end
+    else
+        runStart = GetSecs;
+    end
+    Screen(mainWindow,'FillRect',backColor);
+    Screen(mainWindow,'FillOval',fixColor,fixDotRect);
+    Screen('Flip',mainWindow);
+    Priority(0);
+    
+    %%
     if ~fmri
         pahandle = PsychPortAudio('Open', [], [], [], freq, nrchannels);
     else
-        AUDIO_DEVICENAME = 'HDA Creative: ALC898 Analog (hw:3,0)';
-        AUDIO_devices=PsychPortAudio('GetDevices');
-        for dev = 1:length(AUDIO_devices)
-            devName = AUDIO_devices(dev).DeviceName;
-            if strcmp(devName,AUDIO_DEVICENAME)
-                AUDIODEVICE = AUDIO_devices(dev).DeviceIndex;
-            end
-        end
-        %%%%%%
         pahandle = PsychPortAudio('Open', AUDIODEVICE, [], [], freq, nrchannels);
     end
-    PsychPortAudio('FillBuffer', pahandle, dualdata);
-    % start it immediately
-    PsychPortAudio('UseSchedule',pahandle,1);
-    PsychPortAudio('AddToSchedule',pahandle,0);
-    trigger=GetSecs + 2;
-    begin_time = PsychPortAudio('Start', pahandle, [], trigger);
-    resp = input('Volume level okay? \n');
-    if resp == 1
-        okayVolume = 1;
+    PsychPortAudio('FillBuffer', pahandle, wavedata);
+    if ~debug
+        ListenChar(2);
     end
+    % calculate onset of story
+    audioOnset = disdaqs;
+    volStart = 1 + disdaqs/TR ; % this should be on the 11th trigger
+    timing.plannedOnsets.audioStart = audioOnset + runStart;
+    
+    % actual playing
+    % wait for first trigger
+    [timing.trig.pulses(volStart) runData.pulses(volStart)] = WaitTRPulse(TRIGGER_keycode,DEVICE,timing.plannedOnsets.audioStart);
+    timing.actualOnsets.audioStart = PsychPortAudio('Start', pahandle, [], timing.plannedOnsets.audioStart,1);
+    fprintf('delay is %8.8f\n', timing.plannedOnsets.audioStart-timing.actualOnsets.audioStart)
+    
+    %% Now record all the triggers from the scanner
+    % calculate onsets for all subsequent TRs in the scanner
+    % goal: record every trigger during the story
+    % music starts at 15
+    musicDur = 18; % how long the music lasts
+    silenceDur1 = 3;
+    storyTRs = 25:475;
+    nTRs_story = length(storyTRs);
+    nTRs_music = musicDur/TR;
+    stationTRs = zeros(nTRs_story,1);
+    
+    runData.loadCategSep = NaN(nTRs_story,1);
+    runData.categSep = NaN(nTRs_story,1);
+    runData.feedbackProp = NaN(nTRs_story,1);
+    
+    timing.plannedOnsets.story = timing.plannedOnsets.audioStart + musicDur + silenceDur1 + [0 cumsum(repmat(TR, 1,nTRs_story-1))];
+    timing.actualOnsets.story = NaN(nTRs_story,1);
+    runData.pulses = NaN(nTRs_run,1);
+    % prepare for trial sequence
+    % want displayed: run, volume TR, story TR, tonsset dif, pulse,
+    fprintf(dataFile,'run\t\tvolume\t\tstoryTR\t\tonsdif\t\tpulse\t\tstation\t\tload\t\tcatsep\t\tFeedback\n');
+    fprintf('run\t\tvolume\t\tstoryTR\t\tonsdif\t\tpulse\t\tstation\t\tload\t\tcatsep\t\tFeedback\n');
+    
+    
+    for iTR = 1:nTRs_story
+        volCounter = storyTRs(iTR); % what file number this story TR actually is
+        [timing.trig.pulses(volCounter) runData.pulses(volCounter)] = WaitTRPulse(TRIGGER_keycode,DEVICE,timing.plannedOnsets.story(iTR));
+        timing.actualOnsets.story(iTR) = timing.trig.pulses(volCounter);
+        isStation = stationTRs(iTR);
+        % print out TR information
+        fprintf(dataFile,'%d\t\t%d\t\t%d\t\t%.3f\t\t%d\t\t%d\t\t%d\t\t%.3f\t\t%.3f\n',runNum,volCounter,iTR,timing.actualOnsets.story(iTR)-timing.plannedOnsets.story(iTR),runData.pulses(volCounter),isStation,runData.loadCategSep(iTR),runData.categSep(iTR),runData.feedbackProp(iTR));
+        fprintf('%d\t\t%d\t\t%d\t\t%.3f\t\t%d\t\t%d\t\t%d\t\t%.3f\t\t%.3f\n',runNum,volCounter,iTR,timing.actualOnsets.story(iTR)-timing.plannedOnsets.story(iTR),runData.pulses(volCounter),isStation,runData.loadCategSep(iTR),runData.categSep(iTR),runData.feedbackProp(iTR));
+        
+    end
+    %%
+    % Stop playback:
+    [timing.PPAstop.startTime timing.PPAstop.endPos timing.PPAstop.xruns timing.PPAstop.estStopTime] = PsychPortAudio('Stop', pahandle,1);
+    %[startTime endPos xruns estStopTime] = PsychPortAudio('Stop', pahandle,0);
+    % Close the audio device:
     PsychPortAudio('Close', pahandle);
+    % WaitSecs(10);
+    %% save everything
+    file_name = ['behavior_run' num2str(runData.run) '_' datestr(now,30) '.mat'];
+    save(fullfile(runHeader,file_name),'timing', 'runData');
     
-end
-%Stop playback:
-% Close the audio device:
-
-%% Load in audio data for story
-%
-
-[y, freq] = audioread(wavfilename);
-wavedata = y';
-nrchannels = size(wavedata,1); % Number of rows
-if ~debug
-    ListenChar(2);
-end
-%% show them instructions until they press to begin
-continueInstruct = '\n\n-- Please press your INDEX to continue once you understand these instructions. --';
-% show instructions
-Screen(mainWindow,'FillRect',backColor);
-Screen('Flip',mainWindow);
-FlushEvents('keyDown');
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% before anything else just brief them on listening to the story, either
-% for the first time or again
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-firstRun = ['Today you will be listening to a pre-recorded audio story. You will get a briefing before each time you listen to the story.'];
-if runData.run == 1
-    % show the first instructions
-    firstInstruct = [firstRun continueInstruct];
-    DrawFormattedText(mainWindow,firstInstruct,'center','center',textColor,70,[],[],1.2)
-    Screen('Flip',mainWindow);
-    waitForKeyboard(subj_keycode,DEVICE);
-end
-
-% now tell them they will listen again and ge
-beforeContext = ['Continue when you''re ready to receive your briefing for the story. Please read it carefully, as it may change each time you listen to the story.' continueInstruct];
-DrawFormattedText(mainWindow,beforeContext,'center','center',textColor,70,[],[],1.2)
-Screen('Flip',mainWindow);
-waitForKeyboard(subj_keycode,DEVICE);
-
-[instructCell strOutput] = getContext(runData.context);
-strOutput=[strOutput continueInstruct];
-DrawFormattedText(mainWindow,strOutput,'center','center',textColor,70,[],[],1.2)
-Screen('Flip',mainWindow);
-waitForKeyboard(subj_keycode,DEVICE);
-
-strOutput2 = [instructCell{end-1} '\n\n\n' instructCell{end}];
-DrawFormattedText(mainWindow,strOutput2,'center','center',textColor,70,[],[],1.2)
-Screen('Flip',mainWindow);
-
-waitForKeyboard(subj_keycode,DEVICE);
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% now here we're adding to say waiting for scanner, hold tight!
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-waitMessage = 'Waiting for scanner start, hold tight!';
-tempBounds = Screen('TextBounds', mainWindow, waitMessage);
-Screen('drawtext',mainWindow,waitMessage,centerX-tempBounds(3)/2,centerY-tempBounds(4)/2,textColor);
-Screen('Flip', mainWindow);
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% now here we're going to say to stay still once the triggers start coming
-% in
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-STILLREMINDER = ['The scan is now starting.\n\nMoving your head even a little blurs the image, so '...
-    'please try to keep your head totally still until the scanning noise stops.\n\n Do it for science!'];
-STILLDURATION = 6;
-
-% wait for initial trigger
-Priority(MaxPriority(screenNum));
-%% Wait for first trigger in the scanner
-if (~debug )
-    timing.trig.wait = WaitTRPulse(TRIGGER_keycode,DEVICE);
-    runStart = timing.trig.wait;
-    DrawFormattedText(mainWindow,STILLREMINDER,'center','center',textColor,70)
-    startTime = Screen('Flip',mainWindow);
-    elapsedTime = 0;
-    while (elapsedTime < STILLDURATION)
-        pause(0.005)
-        elapsedTime = GetSecs()-startTime;
-    end
-else
-    runStart = GetSecs;
-end
-Screen(mainWindow,'FillRect',backColor);
-Screen(mainWindow,'FillOval',fixColor,fixDotRect);
-Screen('Flip',mainWindow);
-Priority(0);
-
-%%
-if ~fmri
-    pahandle = PsychPortAudio('Open', [], [], [], freq, nrchannels);
-else
-    pahandle = PsychPortAudio('Open', AUDIODEVICE, [], [], freq, nrchannels);
-end
-PsychPortAudio('FillBuffer', pahandle, wavedata);
-if ~debug
-    ListenChar(2);
-end
-% calculate onset of story
-audioOnset = disdaqs;
-volStart = 1 + disdaqs/TR ; % this should be on the 11th trigger
-timing.plannedOnsets.audioStart = audioOnset + runStart;
-
-% actual playing
-% wait for first trigger
-[timing.trig.pulses(volStart) runData.pulses(volStart)] = WaitTRPulse(TRIGGER_keycode,DEVICE,timing.plannedOnsets.audioStart);
-timing.actualOnsets.audioStart = PsychPortAudio('Start', pahandle, [], timing.plannedOnsets.audioStart,1);
-fprintf('delay is %8.8f\n', timing.plannedOnsets.audioStart-timing.actualOnsets.audioStart)
-
-%% Now record all the triggers from the scanner
-% calculate onsets for all subsequent TRs in the scanner
-% goal: record every trigger during the story
-% music starts at 15
-musicDur = 18; % how long the music lasts
-silenceDur1 = 3;
-storyTRs = 25:475;
-nTRs_story = length(storyTRs);
-nTRs_music = musicDur/TR;
-stationTRs = zeros(nTRs_story,1);
-
-runData.loadCategSep = NaN(nTRs_story,1);
-runData.categSep = NaN(nTRs_story,1);
-runData.feedbackProp = NaN(nTRs_story,1);
-
-timing.plannedOnsets.story = timing.plannedOnsets.audioStart + musicDur + silenceDur1 + [0 cumsum(repmat(TR, 1,nTRs_story-1))];
-timing.actualOnsets.story = NaN(nTRs_story,1);
-runData.pulses = NaN(nTRs_run,1);
-% prepare for trial sequence
-% want displayed: run, volume TR, story TR, tonsset dif, pulse,
-fprintf(dataFile,'run\t\tvolume\t\tstoryTR\t\tonsdif\t\tpulse\t\tstation\t\tload\t\tcatsep\t\tFeedback\n');
-fprintf('run\t\tvolume\t\tstoryTR\t\tonsdif\t\tpulse\t\tstation\t\tload\t\tcatsep\t\tFeedback\n');
-
-
-for iTR = 1:nTRs_story
-    volCounter = storyTRs(iTR); % what file number this story TR actually is
-    [timing.trig.pulses(volCounter) runData.pulses(volCounter)] = WaitTRPulse(TRIGGER_keycode,DEVICE,timing.plannedOnsets.story(iTR));
-    timing.actualOnsets.story(iTR) = timing.trig.pulses(volCounter);
-    isStation = stationTRs(iTR);
-    % print out TR information
-    fprintf(dataFile,'%d\t\t%d\t\t%d\t\t%.3f\t\t%d\t\t%d\t\t%d\t\t%.3f\t\t%.3f\n',runNum,volCounter,iTR,timing.actualOnsets.story(iTR)-timing.plannedOnsets.story(iTR),runData.pulses(volCounter),isStation,runData.loadCategSep(iTR),runData.categSep(iTR),runData.feedbackProp(iTR));
-    fprintf('%d\t\t%d\t\t%d\t\t%.3f\t\t%d\t\t%d\t\t%d\t\t%.3f\t\t%.3f\n',runNum,volCounter,iTR,timing.actualOnsets.story(iTR)-timing.plannedOnsets.story(iTR),runData.pulses(volCounter),isStation,runData.loadCategSep(iTR),runData.categSep(iTR),runData.feedbackProp(iTR));
-    
-end
-%%
-% Stop playback:
-[timing.PPAstop.startTime timing.PPAstop.endPos timing.PPAstop.xruns timing.PPAstop.estStopTime] = PsychPortAudio('Stop', pahandle,1);
-%[startTime endPos xruns estStopTime] = PsychPortAudio('Stop', pahandle,0);
-% Close the audio device:
-PsychPortAudio('Close', pahandle);
-WaitSecs(10);
-%% save everything
-file_name = ['behavior_run' num2str(runData.run) '_' datestr(now,30) '.mat'];
-save(fullfile(runHeader,file_name),'timing', 'runData');
-
-sca;
-ShowCursor;
-ListenChar;
+    sca;
+    ShowCursor;
+    ListenChar;
 end
