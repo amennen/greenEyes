@@ -1,0 +1,70 @@
+[experiment]
+experimentName = "greenEyes"
+experimentId = 1
+model = "greenEyes"
+
+[computer]
+#dataDir = "/Data1/code/greenEyes/data/"
+dataDir = '/jukebox/norman/amennen/github/brainiak/rtAttenPenn/greenEyes/data'
+codeDir = "/jukebox/norman/amennen/github/brainiak/rtAttenPenn/greenEyes/"
+#imgDir = "/Data1/subjects/"
+imgDir = "/jukebox/norman/amennen/RT_prettymouth/data/conquest/{}*/dcm/"
+registrationDir = "/jukebox/norman/amennen/github/brainiak/rtAttenPenn/greenEyes/data" # if you want to do processing elsewhere, will make it so you can save somewhere else -- where the files will be saved
+bidsDir = "/jukebox/norman/amennen/RT_prettymouth/data/bids/Norman/Mennen/5516_greenEyes"
+MNI_ref_BOLD = "/jukebox/norman/amennen/MNI_things/mni_icbm152_nlin_asym_09c_nifti/mni_icbm152_nlin_asym_09c/mni_icbm152_t1_tal_nlin_asym_09c_BOLD_brain.nii.gz"
+MASK = "/jukebox/norman/amennen/prettymouth_fmriprep2/ROI/TOM_large_resampled_maskedbybrain.nii.gz"
+[session]
+rtData = true
+date = "today" # "2018-08-16"  # or "today", "now", "2018-03-01" or "03/01/2018" etc.
+#sessionId = "20180816T123000"
+subjectName = "0219191_greenEyes"
+subjectNum = 102
+subjectDay = 2
+## DISPLAY PARAMETERS ##
+useButtonBox = 0
+debugMode = 0
+usePyOutput = 1
+## DISPLAY PARAMETERS ##
+
+# STORY PARAMETERS
+story_TR_1 = 14
+story_TR_2 = 464
+run_TRs = 450
+nVox=2414
+removeAvg = 1
+k1=0
+k2=25
+## EXP DESIGN ##
+# CHEATING = 1
+# PARANOID = 2
+contextNum = 2 # or randomize at the start which context to set them to?
+## EXP DESIGN ##
+
+#codeDir = "/Data1/code/greenEyes/"
+buildImgPath = true
+serverDataDir = "data/server"
+findNewestPatterns = true
+watchFilePattern = "*.dcm"
+##CHANGED FOR CLUSTER###############
+#dicomNamePattern = "001_0000{}_000{}.dcm"
+dicomNamePattern = "{}-{}-1.dcm"
+##CHANGED FOR CLUSTER###############
+
+minExpectedDicomSize = 300000
+retrieveServerFiles = false
+enforceDeadlines = true
+calcClockSkewIters = 30
+# Specify default run numbers
+Runs = [1, 2, 3, 4]
+ScanNums = [5, 6 ,7 ,8]
+## REALTIME FEEDBACK DESIGN ##
+# Give model information AND station information # 
+# give model design information for each station
+# assume we start at code dir
+classifierDir = "cloud_code/classifiers/"
+classifierNamePattern = "UPPERRIGHT_stationInd_{}_ROI_1_AVERAGEREMOVE_1_filter_0_k1_0_k2_25.sav"
+averageSignal = "averageSignal_ROI_1_AVGREMOVE_1_filter_0_k1_0_k2_25.npy"
+stationDict = "upper_right_winners_nofilter.npy"
+
+
+
