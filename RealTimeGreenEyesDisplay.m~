@@ -369,10 +369,10 @@ for t=1:length(testing_ev)
 
     if this_ev < 0.5
         Screen(mainWindow,'FillRect', badColor, feedbackRect);
-        bonus_points = sprintf('$%2.2f', 0);
+        bonus_points = sprintf('+$%2.2f', 0);
     else
         Screen(mainWindow,'FillRect', maxGreenCircleColor, feedbackRect);
-        bonus_points = sprintf('$%2.2f', this_ev);
+        bonus_points = sprintf('+$%2.2f', this_ev);
     end
     tempBounds = Screen('TextBounds', mainWindow, bonus_points);
     Screen('drawtext',mainWindow,bonus_points,centerX-tempBounds(3)/2,feedbackRect(4)+(centerY/10)-tempBounds(4)/2,[0 0 0]);

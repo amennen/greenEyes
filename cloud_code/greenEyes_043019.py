@@ -1,8 +1,10 @@
+# any file from intel RT will have to be called from file interface
+
 import os
 import glob
 from shutil import copyfile
 import pandas as pd
-import json
+import json	
 import numpy as np
 from subprocess import call
 from rtfMRI.RtfMRIClient import loadConfigFile
@@ -14,23 +16,45 @@ from scipy import stats
 import scipy.io as sio
 import pickle
 from rtfMRI.utils import dateStr30
+import nibabel as nib
+import argparse
+import rtfMRI.FileInterface import FileInterface
+from rtfMRI.utils import writeFile
+# in tests directory can see test script
+
 # conda activate /usr/people/amennen/miniconda3/envs/rtAtten/
 
+# make functions:
+# 1 - automatically transfer subject data before from cluster to intel computer
+# merge this with the data saved dicom handler functions
 
 
 
-def initializeGreenEyes(configFile):
+
+def initializeGreenEyes(configFile, params):
 	# load subject information
 	# create directories for new niftis
 	# randomize which category they'll be attending to and save that
 	# purpose: load information and add to configuration things that you won't want to do each time a new file comes in
 	# TO RUN AT THE START OF EACH RUN
+
 	cfg = loadConfigFile(configFile)
 	if cfg.sessionId in (None, '') or cfg.useSessionTimestamp is True:
 		cfg.useSessionTimestamp = True
 		cfg.sessionId = dateStr30(time.localtime())
 	else:
 		cfg.useSessionTimestamp = False
+	# MERGE WITH PARAMS
+    if params.runs is not None:
+	    if params.scans is None:
+	        raise InvocationError(
+	            "Scan numbers must be specified when run numbers are specified.\n"
+	            "Use -s to input scan numbers that correspond to the runs entered.")
+	    cfg.runs = [int(x) for x in params.runs.split(',')]
+	    cfg.scanNums = [int(x) for x in params.scans.split(',')]
+	cfg.webpipe = params.webpipe
+	cfg.webfilesremote = params.webfilesremote # FLAG FOR REMOTE OR LOCAL
+	########
 	cfg.bids_id = 'sub-{0:03d}'.format(cfg.subjectNum)
 	cfg.ses_id = 'ses-{0:02d}'.format(cfg.subjectDay)
 	cfg.dataDir = cfg.codeDir + 'data'
@@ -47,9 +71,10 @@ def initializeGreenEyes(configFile):
 	cfg.T1_to_MNI= cfg.wf_dir + '/anat_preproc_wf/t1_2_mni/ants_t1_to_mniComposite.h5'
 	cfg.ref_BOLD=glob.glob(cfg.wf_dir + '/func_preproc_ses_01_task_story_run_01_wf/bold_reference_wf/gen_ref/ref_image.nii.gz')[0]
 
+	# GET CONVERSION FOR HOW TO FLIP MATRICES
+	cfg.axesTransform = getTransform()
 	###### BUILD SUBJECT FOLDERS #######
 	buildSubjectFolders(cfg)
-	###### REGISTRATION PARAMETERS #######
 	return cfg
 
 def getSubjectInterpretation(cfg):
@@ -59,6 +84,12 @@ def getSubjectInterpretation(cfg):
 	# 3 - randomized so it's double blind
 	interpretation = 'C'
 	return interpretation	
+
+def getTransform():
+	target_orientation = nib.orientations.axcodes2ornt(('L', 'A', 'S'))
+	dicom_orientation = nib.orientations.axcodes2ornt(('P', 'L', 'S'))
+	transform = nib.orientations.ornt_transform(dicom_orientation,target_orientation)
+	return transform
 
 def buildSubjectFolders(cfg):
 	# make subject directories for each subject number/day/directory
@@ -208,8 +239,35 @@ def preprocessAndPredict(cfg,runData,TRindex_story):
 
 # FOR TESTING: in cloud_code dir
 def main():
-	configFile = 'greenEyes.toml'
-	cfg = initializeGreenEyes(configFile)
+	
+	# MAKES STRUCT WITH ALL PARAMETERS IN IT
+    argParser = argparse.ArgumentParser()
+    argParser.add_argument('--config', '-c', default='greenEyes_organized.toml', type=str,
+                           help='experiment config file (.json or .toml)')
+    argParser.add_argument('--runs', '-r', default=None, type=str,
+                           help='Comma separated list of run numbers')
+    argParser.add_argument('--scans', '-s', default=None, type=str,
+                           help='Comma separated list of scan number')
+    # creates web pipe communication link to send/request responses through web pipe
+    argParser.add_argument('--webpipe', '-w', default=None, type=str,
+                           help='Named pipe to communicate with webServer')
+    argParser.add_argument('--webfilesremote', '-x', default=False, action='store_true',
+                           help='dicom files retrieved from remote server')
+    args = argParser.parse_args()
+    params = StructDict({'config': args.config,'runs': args.runs, 'scans': args.scans,
+                         'webpipe': args.webpipe, 'webfilesremote': args.webfilesremote})
+	
+	cfg = initializeGreenEyes(args.config,params)
+	# initialize file interface class -- for now only local
+	fileInterface = FileInterface()
+	# intialize watching in particular directory
+	fileWatcher.initWatch(DICOMDIRECTORYTOWATCHONLINUX, filePattern, cfg.MINIMUMDICOMSIZE) # last value is minimum size, usually 200K
+
+	# next - get the files that you need for classification - add check if the files exist and then don't redo --make this into a function
+	data = fileInterface.getFile(FULLPATHTOFILESTHATARESAVEDONTHECOMPUTER) #OR fileInterface.getNewestFile if there's multiple
+	# open binary file --> then write binary
+	# look for writeFile (with open 'filename', 'wb') for write binary --> in utils
+	writeFile(FILENAMETOSAVEONCLOUD,DATAYOUJUSTGOTFROMGETFILE)
 	runData = StructDict()
 	runData.cheating_probability = np.zeros((cfg.nStations,))
 	runData.correct_prob = np.zeros((cfg.nStations,))
@@ -218,38 +276,48 @@ def main():
 	runData.dataForClassification = {}
 	story_TRs = cfg.story_TR_2 - cfg.story_TR_1
 	SKIP = 10
-	all_data = np.zeros((cfg.nVox,cfg.nTR_run - SKIP)) # don't need to save
+	all_data = np.zeros((cfg.nVox,cfg.nTR_run)) # don't need to save
 	runData.story_data = np.zeros((cfg.nVox,story_TRs))
 	#### MAIN PROCESSING ###
 	## FUNCTION TO OPERATE OVER ALL SCANNING RUNS
-	scanNum = 9
-	for TRindex in np.arange(cfg.nTR_run-SKIP):
-		print('TRindex')
-		#for TRindex in np.arange(44):
-		TRnum = TRindex + 1 + SKIP # actual file number to look for
-		TRindex_story = TRindex - cfg.story_TR_1
-		full_nifti_name = convertToNifti(TRnum,scanNum,cfg)
-		registeredFileName = registerNewNiftiToMNI(cfg,full_nifti_name)
-		maskedData = apply_mask(registeredFileName,cfg.MASK)
-		all_data[:,TRindex] = maskedData
-		if TRindex_story >= 0: # we're at a story TR now
-			runData.story_data[:,TRindex_story] = maskedData
-			if np.any(TRindex_story == cfg.last_tr_in_station.astype(int)):
-				# NOW PREPROCESS AND CLASSIFY
-				runData = preprocessAndPredict(cfg,runData,TRindex_story)
-		else:
-			pass
+	# LOOP OVER ALL CFG.SCANNUMS
+	nRuns = len(cfg.runs)
+	for runIndex in np.arange(nRuns):
+		run = cfg.runs[runIndex]
+		scanNum = cfg.scanNums[runIndex]
+		storyTRCount = 0
+		for TRFilenum in np.arange(SKIP+1,cfg.nTR_run+1):
+			print('TRFilenum')
+			##### GET DATA BUFFER FROM LOCAL MACHINE ###
+			dicomData = fileInterface.watchfile(FULLDICOMDIRECTORYONLINUX?, timeout=5) # if starts with slash it's full path, if not, it assumes it's the watch directory and builds
+			# FROM HERE PUT IN OTHER FUNCTIONS
+
+			full_nifti_name = convertToNifti(TRFilenum,scanNum,cfg)
+			registeredFileName = registerNewNiftiToMNI(cfg,full_nifti_name)
+			maskedData = apply_mask(registeredFileName,cfg.MASK)
+			all_data[:,TRFilenum] = maskedData
+			if TRFilenum >= cfg.fileNum_story_TR_1 and TRFilenum <= cfg.fileNum_story_TR_2: # we're at a story TR now
+				runData.story_data[:,storyTRCount] = maskedData
+				if np.any(storyTRCount == cfg.last_tr_in_station.astype(int)):
+					# NOW PREPROCESS AND CLASSIFY
+					runData = preprocessAndPredict(cfg,runData,storyTRCount)
+					# save output of classification and send back to local machine
+					# build the string with the output of the data for runData.correct_prob[stationInd]
+					fileInterface.putTextFile(FULLPATHTOSAVEONINTELCOMPUTER,ACTUALTEXTYOU WANT TO SAVE)
+				storyTRCount += 1
+			else:
+				pass
 	# now save run data
 
-	#filename = getRunFilename(cfg.sessionId,runId)
-	#runFilename = os.path.join(cfg.dataDir,filename)
- 	#sio.savemat(runFilename, runId,appendmat=False)
- #    try:
- #    	sio.savemat(runFilename, self.blkGrp, appendmat=False)
-	# except Exception as err:
- #    	errorReply = self.createReplyMessage(msg, MsgResult.Error)
- #    	errorReply.data = "Error: Unable to save blkGrpFile %s: %r" % (blkGrpFilename, err)
- #    return errorReply
+#	filename = getRunFilename(cfg.sessionId,runId)
+#	runFilename = os.path.join(cfg.dataDir,filename)
+# 	sio.savemat(runFilename, runId,appendmat=False)
+#    try:
+#    	sio.savemat(runFilename, self.blkGrp, appendmat=False)
+# except Exception as err:
+#    	errorReply = self.createReplyMessage(msg, MsgResult.Error)
+#    	errorReply.data = "Error: Unable to save blkGrpFile %s: %r" % (blkGrpFilename, err)
+#    return errorReply
 
 	
 # TO DO:

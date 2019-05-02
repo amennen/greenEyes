@@ -1,20 +1,23 @@
-# this version: one level of info
+# this version: organized into what is saved on cloud vs. saved on local
 
 experimentName = "greenEyes"
 experimentId = 1
 model = "greenEyes"
-# FILE PATHS FOR THINGS THAT WON'T CHANGE
+
+
+# ON LOCAL (INTEL LINUX)
 bidsDir = "/jukebox/norman/amennen/RT_prettymouth/data/bids/Norman/Mennen/5516_greenEyes"
+imgDir = "/jukebox/norman/amennen/RT_prettymouth/data/conquest/{}*/dcm/"
+experimentDataDir="/jukebox/norman/amennen/github/brainiak/rtAttenPenn/greenEyes/"
+
+# SAVED ON CLOUD (WHEN USING CLOUD)
+codeDir = "/jukebox/norman/amennen/github/brainiak/rtAttenPenn/greenEyes/"
 MNI_ref_BOLD = "/jukebox/norman/amennen/MNI_things/mni_icbm152_nlin_asym_09c_nifti/mni_icbm152_nlin_asym_09c/mni_icbm152_t1_tal_nlin_asym_09c_BOLD_brain.nii.gz"
 MASK = "/jukebox/norman/amennen/prettymouth_fmriprep2/ROI/TOM_large_resampled_maskedbybrain.nii.gz"
-
-
-
-# FILEPATHS THAT WILL CHANGE BASED ON COMPUTER
-codeDir = "/jukebox/norman/amennen/github/brainiak/rtAttenPenn/greenEyes/"
-#imgDir = "/Data1/subjects/"
-imgDir = "/jukebox/norman/amennen/RT_prettymouth/data/conquest/{}*/dcm/"
-#registrationDir = "/jukebox/norman/amennen/github/brainiak/rtAttenPenn/greenEyes/data" # if you want to do processing elsewhere, will make it so you can save somewhere else -- where the files will be saved - automatically should be the same as dataDir
+classifierDir = "cloud_code/classifiers/"
+classifierNamePattern = "UPPERRIGHT_stationInd_{}_ROI_1_AVGREMOVE_1_filter_0_k1_0_k2_25.sav"
+averageSignal = "averageSignal_ROI_1_AVGREMOVE_1_filter_0_k1_0_k2_25.npy"
+stationDict = "upper_right_winners_nofilter.npy"
 
 rtData = true
 date = "today" # "2018-08-16"  # or "today", "now", "2018-03-01" or "03/01/2018" etc.
@@ -66,10 +69,7 @@ ScanNums = [5, 6 ,7 ,8]
 # Give model information AND station information # 
 # give model design information for each station
 # assume we start at code dir
-classifierDir = "cloud_code/classifiers/"
-classifierNamePattern = "UPPERRIGHT_stationInd_{}_ROI_1_AVGREMOVE_1_filter_0_k1_0_k2_25.sav"
-averageSignal = "averageSignal_ROI_1_AVGREMOVE_1_filter_0_k1_0_k2_25.npy"
-stationDict = "upper_right_winners_nofilter.npy"
+
 
 # FILE PATH DIRECTORIES - WHAT IS THE MINIMUM NUMBER
 # dataDir = where data from registration will be stored (should be same as code dir with + data)
