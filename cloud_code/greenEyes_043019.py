@@ -18,8 +18,9 @@ import pickle
 from rtfMRI.utils import dateStr30
 import nibabel as nib
 import argparse
-import rtfMRI.FileInterface import FileInterface
+from rtfMRI.FileInterface import FileInterface
 from rtfMRI.utils import writeFile
+import dicomNiftiHandler
 # in tests directory can see test script
 
 # conda activate /usr/people/amennen/miniconda3/envs/rtAtten/
@@ -45,13 +46,13 @@ def initializeGreenEyes(configFile, params):
 	else:
 		cfg.useSessionTimestamp = False
 	# MERGE WITH PARAMS
-    if params.runs is not None:
-	    if params.scans is None:
-	        raise InvocationError(
-	            "Scan numbers must be specified when run numbers are specified.\n"
-	            "Use -s to input scan numbers that correspond to the runs entered.")
-	    cfg.runs = [int(x) for x in params.runs.split(',')]
-	    cfg.scanNums = [int(x) for x in params.scans.split(',')]
+	if params.runs is not None:
+		if params.scans is None:
+			raise InvocationError(
+			"Scan numbers must be specified when run numbers are specified.\n"
+			"Use -s to input scan numbers that correspond to the runs entered.")
+		cfg.runs = [int(x) for x in params.runs.split(',')]
+		cfg.scanNums = [int(x) for x in params.scans.split(',')]
 	cfg.webpipe = params.webpipe
 	cfg.webfilesremote = params.webfilesremote # FLAG FOR REMOTE OR LOCAL
 	########
@@ -110,26 +111,13 @@ def buildSubjectFolders(cfg):
 		call(command,shell=True)
 
 
-def convertToNifti(TRnum,scanNum,cfg):
+def convertToNifti(TRnum,scanNum,cfg,dicomData):
 	# uses dcm2niix to convert incoming dicom to nifti
 	# needs to know where to save nifti file output
 	# take the dicom file name without the .dcm at the end, and just save that as a .nii
+	anonymizedDicom = anonymizeDicom(dicomData)
 	expected_dicom_name = cfg.dicomNamePattern.format(scanNum,TRnum)
-	nameToSaveNifti = expected_dicom_name.split('.')[0]
-	#base_dicom_name = full_dicom_name.split('/')[-1].split('.')[0]
-	full_dicom_name = '{0}{1}'.format(cfg.subjectDcmDir,expected_dicom_name)
-	if cfg.compress:
-		command = 'dcm2niix -s y -b n -f {0} -o {1} -z y {2}'.format(nameToSaveNifti,cfg.temp_nifti_dir,full_dicom_name)
-	else:
-		command = 'dcm2niix -s y -b n -f {0} -o {1} -z n {2}'.format(nameToSaveNifti,cfg.temp_nifti_dir,full_dicom_name)
-	A = time.time()
-	call(command,shell=True)
-	B = time.time()
-	print(B-A)
-	if cfg.compress:
-		new_nifti_name = '{0}{1}.nii.gz'.format(cfg.temp_nifti_dir,nameToSaveNifti)
-	else:
-		new_nifti_name = '{0}{1}.nii'.format(cfg.temp_nifti_dir,nameToSaveNifti)
+	new_nifti_name = saveAsNiftiImage(anonymizedDicom,expected_dicom_name,cfg)
 	return new_nifti_name
 	# ask about nifti conversion or not
 
@@ -241,22 +229,21 @@ def preprocessAndPredict(cfg,runData,TRindex_story):
 def main():
 	
 	# MAKES STRUCT WITH ALL PARAMETERS IN IT
-    argParser = argparse.ArgumentParser()
-    argParser.add_argument('--config', '-c', default='greenEyes_organized.toml', type=str,
-                           help='experiment config file (.json or .toml)')
-    argParser.add_argument('--runs', '-r', default=None, type=str,
-                           help='Comma separated list of run numbers')
-    argParser.add_argument('--scans', '-s', default=None, type=str,
-                           help='Comma separated list of scan number')
-    # creates web pipe communication link to send/request responses through web pipe
-    argParser.add_argument('--webpipe', '-w', default=None, type=str,
-                           help='Named pipe to communicate with webServer')
-    argParser.add_argument('--webfilesremote', '-x', default=False, action='store_true',
-                           help='dicom files retrieved from remote server')
-    args = argParser.parse_args()
-    params = StructDict({'config': args.config,'runs': args.runs, 'scans': args.scans,
-                         'webpipe': args.webpipe, 'webfilesremote': args.webfilesremote})
-	
+	argParser = argparse.ArgumentParser()
+	argParser.add_argument('--config', '-c', default='greenEyes_organized.toml', type=str,
+	                   help='experiment config file (.json or .toml)')
+	argParser.add_argument('--runs', '-r', default=None, type=str,
+	                   help='Comma separated list of run numbers')
+	argParser.add_argument('--scans', '-s', default=None, type=str,
+	                   help='Comma separated list of scan number')
+	# creates web pipe communication link to send/request responses through web pipe
+	argParser.add_argument('--webpipe', '-w', default=None, type=str,
+	                   help='Named pipe to communicate with webServer')
+	argParser.add_argument('--webfilesremote', '-x', default=False, action='store_true',
+	                   help='dicom files retrieved from remote server')
+	args = argParser.parse_args()
+	params = StructDict({'config': args.config,'runs': args.runs, 'scans': args.scans,
+	                 'webpipe': args.webpipe, 'webfilesremote': args.webfilesremote})
 	cfg = initializeGreenEyes(args.config,params)
 	# initialize file interface class -- for now only local
 	fileInterface = FileInterface()
@@ -289,7 +276,7 @@ def main():
 		for TRFilenum in np.arange(SKIP+1,cfg.nTR_run+1):
 			print('TRFilenum')
 			##### GET DATA BUFFER FROM LOCAL MACHINE ###
-			dicomData = fileInterface.watchfile(FULLDICOMDIRECTORYONLINUX?, timeout=5) # if starts with slash it's full path, if not, it assumes it's the watch directory and builds
+			dicomData = fileInterface.watchfile(FULLDICOMDIRECTORYONLINUX, timeout=5) # if starts with slash it's full path, if not, it assumes it's the watch directory and builds
 			# FROM HERE PUT IN OTHER FUNCTIONS
 
 			full_nifti_name = convertToNifti(TRFilenum,scanNum,cfg)
@@ -303,7 +290,7 @@ def main():
 					runData = preprocessAndPredict(cfg,runData,storyTRCount)
 					# save output of classification and send back to local machine
 					# build the string with the output of the data for runData.correct_prob[stationInd]
-					fileInterface.putTextFile(FULLPATHTOSAVEONINTELCOMPUTER,ACTUALTEXTYOU WANT TO SAVE)
+					fileInterface.putTextFile(FULLPATHTOSAVEONINTELCOMPUTER,ACTUALTEXTYOUWANTTOSAVE)
 				storyTRCount += 1
 			else:
 				pass

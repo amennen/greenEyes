@@ -71,6 +71,7 @@ def saveAsNiftiImage(dicomDataObject,expected_dicom_name,cfg):
     correct_object.to_filename(fullNiftiFilename)
     B = time.time()
     print(B-A)
+    return fullNiftiFilename
 
 configFile = 'greenEyes.toml'
 cfg = initializeGreenEyes(configFile)

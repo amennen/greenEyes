@@ -4,33 +4,17 @@ experimentName = "greenEyes"
 experimentId = 1
 model = "greenEyes"
 
-
-# ON LOCAL (INTEL LINUX)
-bidsDir = "/jukebox/norman/amennen/RT_prettymouth/data/bids/Norman/Mennen/5516_greenEyes"
-imgDir = "/jukebox/norman/amennen/RT_prettymouth/data/conquest/{}*/dcm/"
-experimentDataDir="/jukebox/norman/amennen/github/brainiak/rtAttenPenn/greenEyes/"
-
-# SAVED ON CLOUD (WHEN USING CLOUD)
-codeDir = "/jukebox/norman/amennen/github/brainiak/rtAttenPenn/greenEyes/"
-MNI_ref_BOLD = "/jukebox/norman/amennen/MNI_things/mni_icbm152_nlin_asym_09c_nifti/mni_icbm152_nlin_asym_09c/mni_icbm152_t1_tal_nlin_asym_09c_BOLD_brain.nii.gz"
-MASK = "/jukebox/norman/amennen/prettymouth_fmriprep2/ROI/TOM_large_resampled_maskedbybrain.nii.gz"
-classifierDir = "cloud_code/classifiers/"
-classifierNamePattern = "UPPERRIGHT_stationInd_{}_ROI_1_AVGREMOVE_1_filter_0_k1_0_k2_25.sav"
-averageSignal = "averageSignal_ROI_1_AVGREMOVE_1_filter_0_k1_0_k2_25.npy"
-stationDict = "upper_right_winners_nofilter.npy"
-
 rtData = true
 date = "today" # "2018-08-16"  # or "today", "now", "2018-03-01" or "03/01/2018" etc.
 #sessionId = "20180816T123000"
 subjectName = "0219191_greenEyes"
 subjectNum = 102
 subjectDay = 2
-compress = 1 # where or not to compress .nii when converting from dcm
+
 ## DISPLAY PARAMETERS ##
 useButtonBox = 0
 debugMode = 0
 usePyOutput = 1
-## DISPLAY PARAMETERS ##
 
 # STORY PARAMETERS
 story_TR_1 = 14
@@ -46,17 +30,19 @@ k2=25
 # CHEATING = 1
 # PARANOID = 2
 contextNum = 2 # or randomize at the start which context to set them to?
-## EXP DESIGN ##
+MNI_ref_BOLD="mni_icbm152_t1_tal_nlin_asym_09c_BOLD_brain.nii.gz"
+MASK="TOM_large_resampled_maskedbybrain.nii.gz"
 
+## CLASSIFIER NAMES ##
+classifierNamePattern = "UPPERRIGHT_stationInd_{}_ROI_1_AVGREMOVE_1_filter_0_k1_0_k2_25.sav"
+averageSignal = "averageSignal_ROI_1_AVGREMOVE_1_filter_0_k1_0_k2_25.npy"
+stationDict = "upper_right_winners_nofilter.npy"
+
+## EXP DESIGN ##
 buildImgPath = true
 serverDataDir = "data/server"
 findNewestPatterns = true
 watchFilePattern = "*.dcm"
-##CHANGED FOR CLUSTER###############
-#dicomNamePattern = "001_0000{}_000{}.dcm"
-dicomNamePattern = "{}-{}-1.dcm"
-##CHANGED FOR CLUSTER###############
-
 minExpectedDicomSize = 300000
 retrieveServerFiles = false
 enforceDeadlines = true
@@ -65,17 +51,28 @@ calcClockSkewIters = 30
 Runs = [1, 2, 3, 4]
 ScanNums = [5, 6 ,7 ,8]
 
-## REALTIME FEEDBACK DESIGN ##
-# Give model information AND station information # 
-# give model design information for each station
-# assume we start at code dir
+# ON LOCAL (INTEL LINUX)
+[linux]
+day1Dir = "/Data1/code/greenEyes/data/{}/{}/registration/"
+imgDir = "/Data1/subjects/"
+classifierDir="/Data1/code/utils_greenEyes/greenEyes_clf/"
+maskDir="/Data1/code/utils_greenEyes/greenEyes_masks/"
+experimentDataDir="/jukebox/norman/amennen/github/brainiak/rtAttenPenn/greenEyes/"
+dicomNamePattern = "001_0000{}_000{}.dcm"
 
+# ON CLOUD VM (WHEN USING CLOUD)
+[cloud]
+codeDir = "/jukebox/norman/amennen/github/brainiak/rtAttenPenn/greenEyes/"
+classifierDir = "/home/amennen/utils/greenEyes_clf"
+maskDir = "/home/amennen/utils/greenEyes_masks"
 
-# FILE PATH DIRECTORIES - WHAT IS THE MINIMUM NUMBER
-# dataDir = where data from registration will be stored (should be same as code dir with + data)
-# codeDir = top level where code/data lives for experiment
-# imgDir = where the dicom files will be coming from
-# registrationDir = where registration files will be saved -- can build from code dir
-# bidsDir = bids directory where offline information is --> maybe this should be moved to be in the registration directory at some point?
+# ON CLUSTER 
+[cluster]
+clusterBidsDir="/jukebox/norman/amennen/RT_prettymouth/data/bids/Norman/Mennen/5516_greenEyes"
+imgDir = "/jukebox/norman/amennen/RT_prettymouth/data/conquest/{}*/dcm/"
+dicomNamePattern = "{}-{}-1.dcm"
+classifierDir = "/jukebox/norman/amennen/github/brainiak/rtAttenPenn/greenEyes/cloud_code/classifiers"
+masksDir = "/jukebox/norman/amennen/github/brainiak/rtAttenPenn/greenEyes/cloud_code/masks/"
+
 
 
