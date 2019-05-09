@@ -58,6 +58,8 @@ def buildSubjectFoldersCloud(cfg):
 		cfg.intelrt.T1_to_MNI= cfg.intelrt.wf_dir + 'ants_t1_to_mniComposite.h5'
 		cfg.intelrt.ref_BOLD=cfg.intelrt.wf_dir + 'ref_image.nii.gz'
 
+def makeSubjectInterpretation(cfg)
+
 def main():
 	
 	# MAKES STRUCT WITH ALL PARAMETERS IN IT

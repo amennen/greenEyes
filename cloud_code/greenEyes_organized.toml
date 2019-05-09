@@ -6,10 +6,16 @@ model = "greenEyes"
 
 rtData = true
 date = "today" # "2018-08-16"  # or "today", "now", "2018-03-01" or "03/01/2018" etc.
-#sessionId = "20180816T123000"
 subjectName = "0219191_greenEyes"
 subjectNum = 102
 subjectDay = 2
+mode = "debug"
+interpretation = "random" # will either be 'C', 'P', or 'random'
+
+# MODE OPTIONS
+# 1 - LOCAL -- PROCESSING ON LINUX
+# 2 - CLOUD -- PROCESSING FROM LINUX TO CLOUD
+# 3 - DEBUG -- PROCESSING ON CLUSTER TO CLUSTER
 
 ## DISPLAY PARAMETERS ##
 useButtonBox = 0
@@ -52,27 +58,27 @@ Runs = [1, 2, 3, 4]
 ScanNums = [5, 6 ,7 ,8]
 
 # ON LOCAL (INTEL LINUX)
-[linux]
-day1Dir = "/Data1/code/greenEyes/data/{}/{}/registration/"
+[intelrt]
 imgDir = "/Data1/subjects/"
+codeDir = "/Data1/code/greenEyes/"
 classifierDir="/Data1/code/utils_greenEyes/greenEyes_clf/"
 maskDir="/Data1/code/utils_greenEyes/greenEyes_masks/"
-experimentDataDir="/jukebox/norman/amennen/github/brainiak/rtAttenPenn/greenEyes/"
 dicomNamePattern = "001_0000{}_000{}.dcm"
 
 # ON CLOUD VM (WHEN USING CLOUD)
 [cloud]
-codeDir = "/jukebox/norman/amennen/github/brainiak/rtAttenPenn/greenEyes/"
-classifierDir = "/home/amennen/utils/greenEyes_clf"
+codeDir = "/home/amennen/greenEyes/"
+classifierDir = "/home/amennen/utils/greenEyes_clf/"
 maskDir = "/home/amennen/utils/greenEyes_masks"
 
 # ON CLUSTER 
 [cluster]
+codeDir = "/jukebox/norman/amennen/github/brainiak/rtAttenPenn/greenEyes/"
 clusterBidsDir="/jukebox/norman/amennen/RT_prettymouth/data/bids/Norman/Mennen/5516_greenEyes"
 imgDir = "/jukebox/norman/amennen/RT_prettymouth/data/conquest/{}*/dcm/"
 dicomNamePattern = "{}-{}-1.dcm"
-classifierDir = "/jukebox/norman/amennen/github/brainiak/rtAttenPenn/greenEyes/cloud_code/classifiers"
-masksDir = "/jukebox/norman/amennen/github/brainiak/rtAttenPenn/greenEyes/cloud_code/masks/"
+classifierDir = "/jukebox/norman/amennen/github/brainiak/rtAttenPenn/greenEyes/cloud_code/classifiers/"
+maskDir = "/jukebox/norman/amennen/github/brainiak/rtAttenPenn/greenEyes/cloud_code/masks/"
 
 
 

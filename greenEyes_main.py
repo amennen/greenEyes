@@ -233,29 +233,29 @@ def retrieveIntelFileAndSaveToCloud(intelFilePath,pathToSaveOnCloud,fileInterfac
 
 
 def preprocessAndPredict(cfg,runData,TRindex_story):
-	"""Predict cheating vs. paranoid probability at given station"""
-	stationInd = np.argwhere(TRindex_story == cfg.last_tr_in_station.astype(int))[0][0]
-	print('this station is %i' % stationInd)
-	print('this story TR is %i' % TRindex_story)
-	# indexing for data goes to +1 because we want the index to include the last station TR
-	if stationInd == 0 or len(runData.badVoxels) == 0:
-		runData.dataForClassification[stationInd],runData.badVoxels[stationInd] = preprocessData(cfg,runData.story_data[:,0:TRindex_story+1])
-	else:
-		runData.dataForClassification[stationInd],runData.badVoxels[stationInd] = preprocessData(cfg,runData.story_data[:,0:TRindex_story+1],runData.badVoxels[stationInd-1])
-	loaded_model = loadClassifier(cfg,stationInd)
-	this_station_TRs = np.array(cfg.stationsDict[stationInd])
-	n_station_TRs = len(this_station_TRs)
-	if len(runData.badVoxels[stationInd]) > 0:
-		voxelsToExclude = runData.badVoxels[stationInd]
-		runData.dataForClassification[stationInd][voxelsToExclude,:] = 0
-	thisStationData = runData.dataForClassification[stationInd][:,this_station_TRs]
-	dataForClassification_reshaped = np.reshape(thisStationData,(1,cfg.nVox*n_station_TRs))
-	runData.cheating_probability[stationInd] = loaded_model.predict_proba(dataForClassification_reshaped)[0][1]
-	if runData.interpretation == 'C':
-		runData.correct_prob[stationInd] = runData.cheating_probability[stationInd]
-	elif runData.interpretation == 'P':
-		runData.correct_prob[stationInd] = 1 - runData.cheating_probability[stationInd]
-	return runData
+    """Predict cheating vs. paranoid probability at given station"""
+    stationInd = np.argwhere(TRindex_story == cfg.last_tr_in_station.astype(int))[0][0]
+    print('this station is %i' % stationInd)
+    print('this story TR is %i' % TRindex_story)
+    # indexing for data goes to +1 because we want the index to include the last station TR
+    if stationInd == 0 or len(runData.badVoxels) == 0:
+    	runData.dataForClassification[stationInd],runData.badVoxels[stationInd] = preprocessData(cfg,runData.story_data[:,0:TRindex_story+1])
+    else:
+        runData.dataForClassification[stationInd],runData.badVoxels[stationInd] = preprocessData(cfg,runData.story_data[:,0:TRindex_story+1],runData.badVoxels[stationInd-1])
+    loaded_model = loadClassifier(cfg,stationInd)
+    this_station_TRs = np.array(cfg.stationsDict[stationInd])
+    n_station_TRs = len(this_station_TRs)
+    if len(runData.badVoxels[stationInd]) > 0:
+        voxelsToExclude = runData.badVoxels[stationInd]
+        runData.dataForClassification[stationInd][voxelsToExclude,:] = 0
+    thisStationData = runData.dataForClassification[stationInd][:,this_station_TRs]
+    dataForClassification_reshaped = np.reshape(thisStationData,(1,cfg.nVox*n_station_TRs))
+    runData.cheating_probability[stationInd] = loaded_model.predict_proba(dataForClassification_reshaped)[0][1]
+    if runData.interpretation == 'C':
+        runData.correct_prob[stationInd] = runData.cheating_probability[stationInd]
+    elif runData.interpretation == 'P':
+        runData.correct_prob[stationInd] = 1 - runData.cheating_probability[stationInd]
+    return runData
 
 def makeRunHeader(cfg,runIndex):
     # Output header
@@ -294,14 +294,14 @@ def main():
 	argParser = argparse.ArgumentParser()
 	argParser.add_argument('--config', '-c', default='greenEyes_organized.toml', type=str,
 	                   help='experiment config file (.json or .toml)')
-	argParser.add_argument('--runs', '-r', default=None, type=str,
+	argParser.add_argument('--runs', '-r', default='', type=str,
 	                   help='Comma separated list of run numbers')
-	argParser.add_argument('--scans', '-s', default=None, type=str,
+	argParser.add_argument('--scans', '-s', default='', type=str,
 	                   help='Comma separated list of scan number')
 	# creates web pipe communication link to send/request responses through web pipe
 	argParser.add_argument('--webpipe', '-w', default=None, type=str,
 	                   help='Named pipe to communicate with webServer')
-	argParser.add_argument('--webfilesremote', '-x', default=False, action='store_true',
+	argParser.add_argument('--filesremote', '-x', default=False, action='store_true',
 	                   help='dicom files retrieved from remote server')
 	args = argParser.parse_args()
 	params = StructDict({'config': args.config,'runs': args.runs, 'scans': args.scans,
