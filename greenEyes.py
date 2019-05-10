@@ -98,7 +98,7 @@ def initializeGreenEyes(configFile,params):
     cfg.subject_full_day_path = '{0}/{1}/{2}'.format(cfg.dataDir,cfg.bids_id,cfg.ses_id)
     cfg.temp_nifti_dir = '{0}/converted_niftis/'.format(cfg.subject_full_day_path)
     cfg.subject_reg_dir = '{0}/registration_outputs/'.format(cfg.subject_full_day_path)
-    cfg.nStations, cfg.stationsDict, cfg.last_tr_in_station = getStationInformation(cfg)
+    cfg.nStations, cfg.stationsDict, cfg.last_tr_in_station, cfg.all_station_TRs = getStationInformation(cfg)
 
 	# REGISTRATION THINGS
     cfg.wf_dir = '{0}/{1}/ses-{2:02d}/registration/'.format(cfg.dataDir,cfg.bids_id,1)
@@ -210,14 +210,16 @@ def getAvgSignal(cfg):
 	return averageSignal
 
 def getStationInformation(cfg):
-	allinfo = {}
-	station_FN = cfg.classifierDir + '/' + cfg.stationDict
-	stationDict = np.load(station_FN,allow_pickle=True).item()
-	nStations = len(stationDict)
-	last_tr_in_station = np.zeros((nStations,))
-	for st in np.arange(nStations):
-		last_tr_in_station[st] = stationDict[st][-1]
-	return nStations, stationDict, last_tr_in_station
+    allinfo = {}
+    station_FN = cfg.classifierDir + '/' + cfg.stationDict
+    stationDict = np.load(station_FN,allow_pickle=True).item()
+    nStations = len(stationDict)
+    last_tr_in_station = np.zeros((nStations,))
+    allTR = list(cfg.stationsDict.values())
+    all_station_TRs = [item for sublist in allTR for item in sublist]
+    for st in np.arange(nStations):
+        last_tr_in_station[st] = stationDict[st][-1]
+    return nStations, stationDict, last_tr_in_station, all_station_TRs
 
 def getStationClassoutputFilename(sessionId, runId, stationId):
 	""""Return station classification filename"""
@@ -275,16 +277,18 @@ def makeRunHeader(cfg,runIndex):
     print('* Dicom directory: ' + str(cfg.dicomDir)) 
     print('**************************************************************************************************')
     # prepare for TR sequence 
-    print('run\tTR\tfilenum\tstation\tloaded\toutput') 
+    print('{:10s}{:10s}{:10s}{:10s}{:10s}{:10s}'.format('run','filenum','storyInd', 'taskInfo', 'station', 'p(correct)')) 
     return  
-    
-def makeTRHeader(cfg,runIndex,TRnum):
-    outputlns = []
-    output_str = '{:d}\t{:d}\t{:d}\t{:d}\t{:d}\t{:d}\t{}\t{:d}\t{:.3f}\t{:.3f}'.format(
-                        self.id_fields.runId, self.id_fields.blockId, TR.trId, TR.type, TR.attCateg, TR.stim,
-                        patterns.fileNum[0, TR.trId], patterns.fileload[0, TR.trId], np.nan, np.nan)
-    outputlns.append(output_str)
-    return outputlns
+
+def makeTRHeader(cfg,runIndex,TRFilenum,storyTRCount,stationInd,correct_prob):
+    isStation = storyIndex in cfg.all_station_TRs
+    if isStation:
+        stStr = 'station'
+    else:
+        stStr = 'listen'
+    print('{:<10.0f}{:<10d}{:<10d}{:<10s}{:<10d}{:<10.3f}'.format(
+        cfg.runs[runIndex],TRFilenum,storyTRCount,stStr,stationInd,correct_prob))
+    return
 
 
 
@@ -340,6 +344,7 @@ def main():
         run = cfg.runs[runIndex]
         scanNum = cfg.scanNums[runIndex]
         storyTRCount = 0
+        stationInd=0
 		for TRFilenum in np.arange(cfg.nTR_skip+1,cfg.nTR_run+1):
 			##### GET DATA BUFFER FROM LOCAL MACHINE ###
 			dicomData = fileInterface.watchFile(getDicomFileName(cfg, scanNum, TRFilenum), timeout=5) # if starts with slash it's full path, if not, it assumes it's the watch directory and builds
@@ -351,17 +356,20 @@ def main():
 				runData.story_data[:,storyTRCount] = maskedData
 				if np.any(storyTRCount == cfg.last_tr_in_station.astype(int)):
 					# NOW PREPROCESS AND CLASSIFY
+                    stationInd = np.argwhere(TRindex_story == cfg.last_tr_in_station.astype(int))[0][0]
 					runData = preprocessAndPredict(cfg,runData,storyTRCount)
-                    text_to_save = '{0:05d}'.format(runData.correct_prob[stationInd])
-                    file_name_to_save = getStationClassoutputFilename(cfg.sessionId, cfg.run, stationInd)
-                    full_filename_to_save = cfg.intelrt.subject_full_day_path + file_name_to_save
+                    text_to_save = '{0:05f}'.format(runData.correct_prob[stationInd])
+                    file_name_to_save = getStationClassoutputFilename(cfg.sessionId, run, stationInd)
+                    if cfg.mode == 'cloud':
+                        full_filename_to_save = cfg.intelrt.subject_full_day_path + file_name_to_save
+                    else:
+                        full_filename_to_save = cfg.subject_full_day_path + file_name_to_save
 					fileInterface.putTextFile(full_filename_to_save,text_to_save)
                     wcutils.sendClassicationResult(webComm, run, tr, val)
 				storyTRCount += 1
 			else:
 				pass
-            TRheader = makeTRHeader(cfg,runIndex,TRnum)
-            print(TRheader)
+            TRheader = makeTRHeader(cfg,runIndex,TRFilenum,storyTRCount,stationInd,runData.correct_prob[stationInd])
         # SAVE OVER RUN NP FILE
     sys.exit(0)
 
