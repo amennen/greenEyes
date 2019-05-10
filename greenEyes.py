@@ -3,7 +3,6 @@
 import os
 import glob
 import numpy as np
-from shutil import copyfile
 import pandas as pd
 import json	
 import datetime
@@ -18,18 +17,18 @@ import pickle
 import nibabel as nib
 import argparse
 import sys
-#currPath = os.path.dirname(os.path.realpath(__file__))
-#rootPath = os.path.dirname(os.path.dirname(currPath))
-#sys.path.append(rootPath)
-# TO DO WHEN TESTING ##
-# CONDA ACTIVATE: /usr/people/amennen/miniconda3 BC NO RTATTEN
-sys.path.append('/jukebox/norman/amennen/github/brainiak/rtAttenPenn/')
-from rtfMRI.RtfMRIClient import loadConfigFile
-from rtfMRI.StructDict import StructDict
-from rtfMRI.utils import dateStr30
-#from rtfMRI.FileInterface import FileInterface
-from rtfMRI.utils import writeFile
-import greenEyes.dicomNiftiHandler
+import logging
+currPath = os.path.dirname(os.path.realpath(__file__))
+rootPath = os.path.dirname(os.path.dirname(currPath))
+sys.path.append(rootPath)
+
+#WHEN TESTING
+sys.path.append('/jukebox/norman/amennen/github/brainiak/rt-cloud')
+from rtCommon.utils import loadConfigFile, dateStr30, DebugLevels, writeFile
+from rtCommon.fileClient import FileInterface
+import rtCommon.webClientUtils as wcutils
+from rtCommon.structDict import StructDict
+import rtCommon.dicomNiftiHandler as dnh
 # in tests directory can see test script
 
 # conda activate /usr/people/amennen/miniconda3/envs/rtAtten/
@@ -49,17 +48,15 @@ def initializeGreenEyes(configFile,params):
     else:
         cfg.useSessionTimestamp = False
     # MERGE WITH PARAMS
-    if params.runs is not None:
-        if params.scans is None:
-            raise InvocationError(
-            "Scan numbers must be specified when run numbers are specified.\n"
-            "Use -s to input scan numbers that correspond to the runs entered.")
+    if params.runs != '' and params.scans != '':
+        # use the run and scan numbers passed in as parameters
         cfg.runs = [int(x) for x in params.runs.split(',')]
         cfg.scanNums = [int(x) for x in params.scans.split(',')]
+
     # GET DICOM DIRECTORY
-    if cfg.mode is not debug:
+    if cfg.mode != 'debug':
         if cfg.buildImgPath:
-            imgDirDate = datetime.now()
+            imgDirDate = datetime.datetime.now()
             dateStr = cfg.date.lower()
             if dateStr != 'now' and dateStr != 'today':
                 try:
@@ -71,8 +68,10 @@ def initializeGreenEyes(configFile,params):
             cfg.dicomDir = os.path.join(cfg.intelrt.imgDir, imgDirName)
         else:
             cfg.dicomDir = cfg.intelrt.imgDir # then the whole path was supplied
+        cfg.dicomNamePattern = cfg.intelrt.dicomNamePattern
     else:
         cfg.dicomDir = glob.glob(cfg.cluster.imgDir.format(cfg.subjectName))[0]
+        cfg.dicomNamePattern = cfg.cluster.dicomNamePattern
     cfg.webpipe = params.webpipe
     cfg.webfilesremote = params.webfilesremote # FLAG FOR REMOTE OR LOCAL
 	########
@@ -117,7 +116,7 @@ def getSubjectInterpretation(cfg):
     # will be saved in subject full day path
     filename = cfg.bids_id + '_' + cfg.ses_id + '_' + 'intepretation.txt'
     full_path_filename = cfg.subject_full_day_path + '/' + filename
-    z = open(filename, "r")
+    z = open(full_path_filename, "r")
     interpretation = z.read()
     return interpretation
 
@@ -131,7 +130,7 @@ def getTransform():
 def convertToNifti(TRnum,scanNum,cfg,dicomData):
 	#anonymizedDicom = anonymizeDicom(dicomData) # should be anonymized already
 	expected_dicom_name = cfg.dicomNamePattern.format(scanNum,TRnum)
-	new_nifti_name = saveAsNiftiImage(dicomData,expected_dicom_name,cfg)
+	new_nifti_name = dnh.saveAsNiftiImage(dicomData,expected_dicom_name,cfg)
 	return new_nifti_name
 	# ask about nifti conversion or not
 
@@ -164,13 +163,16 @@ def registerNewNiftiToMNI(cfg,full_nifti_name):
 	return output_nifti_name 
 
 def getDicomFileName(cfg, scanNum, fileNum):
-    if scanNum < 0:
-        raise ValidationError("ScanNumber not supplied of invalid {}".format(scanNum))
-    scanNumStr = str(scanNum).zfill(2)
-    fileNumStr = str(fileNum).zfill(3)
-    if cfg.intelrt.dicomNamePattern is None:
-        raise InvocationError("Missing config settings dicomNamePattern")
-    fileName = cfg.intelrt.dicomNamePattern.format(scanNumStr, fileNumStr)
+    if cfg.mode != 'debug':
+        if scanNum < 0:
+            raise ValidationError("ScanNumber not supplied of invalid {}".format(scanNum))
+        scanNumStr = str(scanNum).zfill(2)
+        fileNumStr = str(fileNum).zfill(3)
+        if cfg.dicomNamePattern is None:
+            raise InvocationError("Missing config settings dicomNamePattern")
+        fileName = cfg.dicomNamePattern.format(scanNumStr, fileNumStr)
+    else:
+        fileName = cfg.dicomNamePattern.format(scanNum,fileNum)
     fullFileName = os.path.join(cfg.dicomDir, fileName)
     return fullFileName
 
@@ -210,7 +212,7 @@ def getAvgSignal(cfg):
 def getStationInformation(cfg):
 	allinfo = {}
 	station_FN = cfg.classifierDir + '/' + cfg.stationDict
-	stationDict = np.load(station_FN).item()
+	stationDict = np.load(station_FN,allow_pickle=True).item()
 	nStations = len(stationDict)
 	last_tr_in_station = np.zeros((nStations,))
 	for st in np.arange(nStations):
@@ -257,23 +259,25 @@ def preprocessAndPredict(cfg,runData,TRindex_story):
         runData.correct_prob[stationInd] = 1 - runData.cheating_probability[stationInd]
     return runData
 
-def makeRunHeader(cfg,runIndex):
-    # Output header
-    now = datetime.datetime.now()
-    outputlns.append('*********************************************')
-    outputlns.append('* greenEyes v.1.0')
-    outputlns.append('* Date/Time: ' + now.isoformat())
-    outputlns.append('* Subject Number: ' + str(cfg.subjectNum))
-    outputlns.append('* Subject Name: ' + str(cfg.session.subjectName))
-    outputlns.append('* Run Number: ' + str(cfg.runs[runIndex]))
-    outputlns.append('* Scan Number: ' + str(cfg.scanNums[runIndex]))
-    outputlns.append('* Real-Time Data: ' + str(cfg.rtData))
-    outputlns.append('*********************************************\n')
-    # ** Start Run ** #
-    # prepare for TR sequence
-    outputlns.append('run\tTR\tfilenum\tstation\tloaded\toutput')
-    return outputlns
-
+def makeRunHeader(cfg,runIndex): 
+    # Output header 
+    now = datetime.datetime.now() 
+    print('**************************************************************************************************')
+    print('* greenEyes v.1.0') 
+    print('* Date/Time: ' + now.isoformat()) 
+    print('* Subject Number: ' + str(cfg.subjectNum)) 
+    print('* Subject Name: ' + str(cfg.subjectName)) 
+    print('* Run Number: ' + str(cfg.runs[runIndex])) 
+    print('* Scan Number: ' + str(cfg.scanNums[runIndex])) 
+    print('* Real-Time Data: ' + str(cfg.rtData))     
+    print('* Mode: ' + str(cfg.mode)) 
+    print('* Machine: ' + str(cfg.machine)) 
+    print('* Dicom directory: ' + str(cfg.dicomDir)) 
+    print('**************************************************************************************************')
+    # prepare for TR sequence 
+    print('run\tTR\tfilenum\tstation\tloaded\toutput') 
+    return  
+    
 def makeTRHeader(cfg,runIndex,TRnum):
     outputlns = []
     output_str = '{:d}\t{:d}\t{:d}\t{:d}\t{:d}\t{:d}\t{}\t{:d}\t{:.3f}\t{:.3f}'.format(
@@ -285,8 +289,12 @@ def makeTRHeader(cfg,runIndex,TRnum):
 
 
 # testing code--debug mode
-params = StructDict({'config':'greenEyes/cloud_code/greenEyes_organized.toml', 'runs': '1', 'scans': '9', 'webpipe': 'None', 'webfilesremote': False})
+defaultConfig = os.path.join(os.getcwd() , 'conf/greenEyes_organized.toml')
+params = StructDict({'config':defaultConfig, 'runs': '1', 'scans': '9', 'webpipe': 'None', 'webfilesremote': False})
 cfg = initializeGreenEyes(params.config,params)
+args = StructDict()
+args.filesremote = False
+webComm = None
 
 def main():
 	
@@ -304,40 +312,38 @@ def main():
 	argParser.add_argument('--filesremote', '-x', default=False, action='store_true',
 	                   help='dicom files retrieved from remote server')
 	args = argParser.parse_args()
-	params = StructDict({'config': args.config,'runs': args.runs, 'scans': args.scans,
-	                 'webpipe': args.webpipe, 'webfilesremote': args.webfilesremote})
-	cfg = initializeGreenEyes(params.config,params)
+	cfg = initializeGreenEyes(args.config,args)
 
-	# initialize file interface class -- for now only local
-	fileInterface = FileInterface()
-	# intialize watching in particular directory
-	fileWatcher.initWatch(cfg.intelrt.imgDir, cfg.intelrt.dicomNamePattern, cfg.minExpectedDicomSize) 
-	runData = StructDict()
-	runData.cheating_probability = np.zeros((cfg.nStations,))
-	runData.correct_prob = np.zeros((cfg.nStations,))
-	runData.interpretation = getSubjectInterpretation(cfg)
-	runData.badVoxels = {}
-	runData.dataForClassification = {}
-	story_TRs = cfg.story_TR_2 - cfg.story_TR_1
-	SKIP = 10
-	all_data = np.zeros((cfg.nVox,cfg.nTR_run)) # don't need to save
-	runData.story_data = np.zeros((cfg.nVox,story_TRs))
-	#### MAIN PROCESSING ###
-	## FUNCTION TO OPERATE OVER ALL SCANNING RUNS
-	# LOOP OVER ALL CFG.SCANNUMS
-	nRuns = len(cfg.runs)
+    # webpipe
+    webComm = None
+    if args.webpipe:
+        webComm = wcutils.openWebServerConnection(args.webpipe)
+        wcutils.watchForExit()
+    # initialize file interface class -- for now only local
+    fileInterface = FileInterface(filesremote=args.filesremote, webpipes=webComm)
+    # intialize watching in particular directory
+    fileInterface.initWatch(cfg.dicomDir, cfg.dicomNamePattern, cfg.minExpectedDicomSize) 
+    story_TRs = cfg.story_TR_2 - cfg.story_TR_1
+    #### MAIN PROCESSING ###
+    nRuns = len(cfg.runs)
 	for runIndex in np.arange(nRuns):
-		
-        header = makeRunHeader(cfg,runIndex)
-        print(header)
-        run = cfg.runs[runIndex]
-		scanNum = cfg.scanNums[runIndex]
+        runData = StructDict()
+        runData.cheating_probability = np.zeros((cfg.nStations,))
+        runData.correct_prob = np.zeros((cfg.nStations,))
+        runData.interpretation = getSubjectInterpretation(cfg)
+        runData.badVoxels = {}
+        runData.dataForClassification = {}
+        all_data = np.zeros((cfg.nVox,cfg.nTR_run)) # don't need to save
+        runData.story_data = np.zeros((cfg.nVox,story_TRs))
 
-		storyTRCount = 0
-		for TRFilenum in np.arange(SKIP+1,cfg.nTR_run+1):
+        makeRunHeader(cfg,runIndex)
+        run = cfg.runs[runIndex]
+        scanNum = cfg.scanNums[runIndex]
+        storyTRCount = 0
+		for TRFilenum in np.arange(cfg.nTR_skip+1,cfg.nTR_run+1):
 			##### GET DATA BUFFER FROM LOCAL MACHINE ###
-			dicomData = fileInterface.watchfile(getDicomFileName(cfg, scanNum, TRFilenum), timeout=5) # if starts with slash it's full path, if not, it assumes it's the watch directory and builds
-			full_nifti_name = convertToNifti(TRFilenum,scanNum,cfg)
+			dicomData = fileInterface.watchFile(getDicomFileName(cfg, scanNum, TRFilenum), timeout=5) # if starts with slash it's full path, if not, it assumes it's the watch directory and builds
+			full_nifti_name = convertToNifti(TRFilenum,scanNum,cfg,dicomData)
 			registeredFileName = registerNewNiftiToMNI(cfg,full_nifti_name)
 			maskedData = apply_mask(registeredFileName,cfg.mask_filename)
 			all_data[:,TRFilenum] = maskedData
@@ -350,12 +356,14 @@ def main():
                     file_name_to_save = getStationClassoutputFilename(cfg.sessionId, cfg.run, stationInd)
                     full_filename_to_save = cfg.intelrt.subject_full_day_path + file_name_to_save
 					fileInterface.putTextFile(full_filename_to_save,text_to_save)
+                    wcutils.sendClassicationResult(webComm, run, tr, val)
 				storyTRCount += 1
 			else:
 				pass
             TRheader = makeTRHeader(cfg,runIndex,TRnum)
             print(TRheader)
-
+        # SAVE OVER RUN NP FILE
+    sys.exit(0)
 
 if __name__ == "__main__":
     # execute only if run as a script

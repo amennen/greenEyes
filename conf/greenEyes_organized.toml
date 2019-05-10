@@ -28,6 +28,7 @@ story_TR_2 = 464
 fileNum_story_TR_1 = 25
 fileNum_story_TR_2 = 475
 nTR_run = 485
+nTR_skip = 10 # number of TRs to skip at the beginning of the run
 nVox=2414
 removeAvg = 1
 k1=0
@@ -73,12 +74,12 @@ maskDir = "/home/amennen/utils/greenEyes_masks"
 
 # ON CLUSTER 
 [cluster]
-codeDir = "/jukebox/norman/amennen/github/brainiak/rtAttenPenn/greenEyes/"
+codeDir = "/jukebox/norman/amennen/github/brainiak/rt-cloud/projects/greenEyes/"
 clusterBidsDir="/jukebox/norman/amennen/RT_prettymouth/data/bids/Norman/Mennen/5516_greenEyes"
 imgDir = "/jukebox/norman/amennen/RT_prettymouth/data/conquest/{}*/dcm/"
 dicomNamePattern = "{}-{}-1.dcm"
-classifierDir = "/jukebox/norman/amennen/github/brainiak/rtAttenPenn/greenEyes/cloud_code/classifiers/"
-maskDir = "/jukebox/norman/amennen/github/brainiak/rtAttenPenn/greenEyes/cloud_code/masks/"
+classifierDir = "/jukebox/norman/amennen/github/brainiak/rt-cloud/projects/greenEyes/cloud_code/classifiers/"
+maskDir = "/jukebox/norman/amennen/github/brainiak/rt-cloud/projects/greenEyes/cloud_code/masks/"
 
 
 
