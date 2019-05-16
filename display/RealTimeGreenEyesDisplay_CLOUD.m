@@ -4,20 +4,32 @@
 
 % wait 5 TR's before starting story?
 
-function RealTimeGreenEyesDisplay(debug, useButtonBox, fmri, rtData, subjectNum, subjectName, context, runNum)
+function RealTimeGreenEyesDisplay_CLOUD(toml_file, runNum)
 
 % LOAD CONFIG FILE %
+toml_file = '/Data1/code/rt-cloud/projects/greenEyes/conf/greenEyes_organized.toml';
+runNum = 1;
+
 addpath(genpath('matlab-toml'));
 raw_text = fileread(toml_file);
-
-runData.context = context;
-runData.subjectNum = subjectNum;
-runData.subjectName = subjectName;
+cfg = toml.decode(raw_text);
+runData.subjectNum = cfg.subjectNum;
+runData.subjectName = cfg.subjectName;
+runData.subjectDay = cfg.subjectDay;
 runData.run = runNum;
 
-bidsId = sprintf('sub-%03d',subjectNum);
+debug = cfg.display.debug;
+useButtonBox = cfg.display.useButtonBox;
+if strcmp(cfg.machine, 'intel')
+    fmri = 1;
+else
+    fmri = 0;
+end
+rtData = cfg.display.rtData;
+usepython = cfg.display.usePython;
+
+bidsId = sprintf('sub-%03d',runData.subjectNum);
 runId = sprintf('run-%03d',runData.run);
-usepython = 1;
 addpath(genpath('stimuli'))
 % CONTEXT:
 % 0 = NEITHER
@@ -26,15 +38,15 @@ addpath(genpath('stimuli'))
 % load in audio data and specify where the project is located
 % laptop = /Volumes/norman/amennen/github/greenEyes/
 if fmri == 1
-    repo_path ='/Data1/code/greenEyes/';
+    repo_path ='/Data1/code/rt-cloud/projects/greenEyes/';
 else
     repo_path = '/Volumes/norman/amennen/github/brainiak/rt-cloud/projects/greenEyes/';
 end
-display_path = [repo_path 'display']';
+display_path = [repo_path 'display'];
 
 cd(display_path);
-wavfilename = [basic_path '/stimuli/greenMyeyes_Edited.wav'];
-data_path = fullfile(basic_path,'data', bidsId);
+wavfilename = [display_path '/stimuli/greenMyeyes_Edited.wav'];
+data_path = fullfile(display_path,['data/' bidsId]);
 runHeader = fullfile(data_path, runId);
 if ~exist(runHeader)
     mkdir(runHeader)
@@ -56,9 +68,9 @@ fprintf(dataFile,'\n*********************************************\n');
 fprintf(dataFile,'* GreenEyes v.1.0\n');
 fprintf(dataFile,['* Date/Time: ' datestr(now,0) '\n']);
 fprintf(dataFile,['* Seed: ' num2str(seed) '\n']);
-fprintf(dataFile,['* Subject Number: ' num2str(subjectNum) '\n']);
-fprintf(dataFile,['* Subject Name: ' subjectName '\n']);
-fprintf(dataFile,['* Run Number: ' num2str(runNum) '\n']);
+fprintf(dataFile,['* Subject Number: ' num2str(runData.subjectNum) '\n']);
+fprintf(dataFile,['* Subject Name: ' runData.subjectName '\n']);
+fprintf(dataFile,['* Run Number: ' num2str(runData.run) '\n']);
 fprintf(dataFile,['* Use Button Box: ' num2str(useButtonBox) '\n']);
 fprintf(dataFile,['* rtData: ' num2str(rtData) '\n']);
 fprintf(dataFile,['* debug: ' num2str(debug) '\n']);
@@ -69,9 +81,9 @@ fprintf('\n*********************************************\n');
 fprintf('* GreenEyes v.1.0\n');
 fprintf(['* Date/Time: ' datestr(now,0) '\n']);
 fprintf(['* Seed: ' num2str(seed) '\n']);
-fprintf(['* Subject Number: ' num2str(subjectNum) '\n']);
-fprintf(['* Subject Name: ' subjectName '\n']);
-fprintf(['* Run Number: ' num2str(runNum) '\n']);
+fprintf(['* Subject Number: ' num2str(runData.subjectNum) '\n']);
+fprintf(['* Subject Name: ' runData.subjectName '\n']);
+fprintf(['* Run Number: ' num2str(runData.run) '\n']);
 fprintf(['* Use Button Box: ' num2str(useButtonBox) '\n']);
 fprintf(['* rtData: ' num2str(rtData) '\n']);
 fprintf(['* debug: ' num2str(debug) '\n']);

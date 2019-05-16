@@ -119,7 +119,11 @@ def getSubjectInterpretation(cfg):
     filename = cfg.bids_id + '_' + cfg.ses_id + '_' + 'intepretation.txt'
     full_path_filename = cfg.subject_full_day_path + '/' + filename
     z = open(full_path_filename, "r")
-    interpretation = z.read()
+    temp_interpretation = z.read()
+    if 'C' in temp_interpretation:
+        interpretation = 'C'
+    elif 'P' in temp_interpretation:
+        interpretation = 'P'
     return interpretation
 
 def getTransform():

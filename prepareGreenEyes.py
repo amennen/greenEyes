@@ -46,10 +46,10 @@ def buildSubjectFoldersCluster(cfg):
     if not os.path.exists(cfg.subject_offline_registration_path):
         os.makedirs(cfg.subject_offline_registration_path)
     if cfg.subjectDay == 2:
-        cfg.temp_nifti_dir = '{0}/converted_niftis/'.format(cfg.subject_full_day_path)
+        #cfg.temp_nifti_dir = '{0}/converted_niftis/'.format(cfg.subject_full_day_path)
         cfg.subject_reg_dir = '{0}/registration_outputs/'.format(cfg.subject_full_day_path)
-        if not os.path.exists(cfg.temp_nifti_dir):
-            os.makedirs(cfg.temp_nifti_dir)
+        #if not os.path.exists(cfg.temp_nifti_dir):
+        #    os.makedirs(cfg.temp_nifti_dir)
         if not os.path.exists(cfg.subject_reg_dir):
             os.makedirs(cfg.subject_reg_dir)
     return cfg
@@ -63,10 +63,10 @@ def buildSubjectFoldersIntelrt(cfg):
     if not os.path.exists(cfg.subject_offline_registration_path):
         os.makedirs(cfg.subject_offline_registration_path)
     if cfg.subjectDay == 2:
-        cfg.temp_nifti_dir = '{0}/converted_niftis/'.format(cfg.subject_full_day_path)
+        #cfg.temp_nifti_dir = '{0}/converted_niftis/'.format(cfg.subject_full_day_path)
         cfg.subject_reg_dir = '{0}/registration_outputs/'.format(cfg.subject_full_day_path)
-        if not os.path.exists(cfg.temp_nifti_dir):
-            os.makedirs(cfg.temp_nifti_dir)
+        #if not os.path.exists(cfg.temp_nifti_dir):
+        #    os.makedirs(cfg.temp_nifti_dir)
         if not os.path.exists(cfg.subject_reg_dir):
             os.makedirs(cfg.subject_reg_dir)
     return cfg
@@ -79,10 +79,11 @@ def buildSubjectFoldersCloud(cfg):
     if not os.path.exists(cfg.subject_offline_registration_path):
         os.makedirs(cfg.subject_offline_registration_path)
     if cfg.subjectDay == 2:
-        cfg.temp_nifti_dir = '{0}/converted_niftis/'.format(cfg.subject_full_day_path)
+        # converted nifti dir is now just in data/tmp/converted_niftis
+        #cfg.temp_nifti_dir = '{0}/converted_niftis/'.format(cfg.subject_full_day_path)
         cfg.subject_reg_dir = '{0}/registration_outputs/'.format(cfg.subject_full_day_path)
-        if not os.path.exists(cfg.temp_nifti_dir):
-            os.makedirs(cfg.temp_nifti_dir)
+        #if not os.path.exists(cfg.temp_nifti_dir):
+        #    os.makedirs(cfg.temp_nifti_dir)
         if not os.path.exists(cfg.subject_reg_dir):
             os.makedirs(cfg.subject_reg_dir)
         cfg.intelrt.wf_dir = '{0}/{1}/ses-{2:02d}/registration/'.format(cfg.intelrt.codeDir,cfg.bids_id,1)
@@ -130,10 +131,10 @@ def main():
         # get intel computer ready
         cfg = buildSubjectFoldersIntelrt(cfg)
         if cfg.subjectDay == 2:
-            cluster_wf_dir='{0}/derivatives/work/fmriprep_wf/single_subject_{1:03d}_wf'.format(cfg.cluster.clusterBidsDir,cfg.subjectNum)
-            cluster_BOLD_to_T1= cluster_wf_dir + '/func_preproc_ses_01_task_story_run_01_wf/bold_reg_wf/bbreg_wf/fsl2itk_fwd/affine.txt'
-            cluster_T1_to_MNI= cluster_wf_dir + '/anat_preproc_wf/t1_2_mni/ants_t1_to_mniComposite.h5'
-            cluster_ref_BOLD=glob.glob(cluster_wf_dir + '/func_preproc_ses_01_task_story_run_01_wf/bold_reference_wf/gen_ref/ref_image.nii.gz')[0]
+            cluster_wf_dir = '{0}/derivatives/work/fmriprep_wf/single_subject_{1:03d}_wf'.format(cfg.cluster.clusterBidsDir,cfg.subjectNum)
+            cluster_BOLD_to_T1 = cluster_wf_dir + '/func_preproc_ses_01_task_story_run_01_wf/bold_reg_wf/bbreg_wf/fsl2itk_fwd/affine.txt'
+            cluster_T1_to_MNI = cluster_wf_dir + '/anat_preproc_wf/t1_2_mni/ants_t1_to_mniComposite.h5'
+            cluster_ref_BOLD = cluster_wf_dir + '/func_preproc_ses_01_task_story_run_01_wf/bold_reference_wf/gen_ref/ref_image.nii.gz'
             copyClusterFileToIntel(cluster_BOLD_to_T1,cfg.subject_offline_registration_path)
             copyClusterFileToIntel(cluster_T1_to_MNI,cfg.subject_offline_registration_path)
             copyClusterFileToIntel(cluster_ref_BOLD,cfg.subject_offline_registration_path)
