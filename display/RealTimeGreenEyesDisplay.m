@@ -10,6 +10,9 @@ runData.context = context;
 runData.subjectNum = subjectNum;
 runData.subjectName = subjectName;
 runData.run = runNum;
+
+bidsId = sprintf('sub-%03d',subjectNum);
+runId = sprintf('run-%03d',runData.run);
 usepython = 1;
 addpath(genpath('stimuli'))
 % CONTEXT:
@@ -19,18 +22,22 @@ addpath(genpath('stimuli'))
 % load in audio data and specify where the project is located
 % laptop = /Volumes/norman/amennen/github/greenEyes/
 if fmri == 1
-    basic_path ='/Data1/code/greenEyes/';
+    repo_path ='/Data1/code/greenEyes/';
 else
-    basic_path = '/Volumes/norman/amennen/RT_prettymouth/greenEyes_repo/';
+    repo_path = '/Volumes/norman/amennen/github/brainiak/rt-cloud/projects/greenEyes/';
 end
-cd(basic_path);
+display_path = [repo_path 'display']';
+
+cd(display_path);
 wavfilename = [basic_path '/stimuli/greenMyeyes_Edited.wav'];
-data_path = fullfile(basic_path,'data', ['subject' num2str(runData.subjectNum)]);
-runHeader = fullfile(data_path, ['run' num2str(runData.run)]);
+data_path = fullfile(basic_path,'data', bidsId);
+runHeader = fullfile(data_path, runId);
 if ~exist(runHeader)
     mkdir(runHeader)
 end
-classOutputDir = [runHeader '/classoutput'];
+
+classOutputDir = [repo_path 'data' '/' bidsId '/'  'ses-02' '/'];
+%classOutputDir = [runHeader '/classoutput'];
 if ~exist(classOutputDir)
     mkdir(classOutputDir)
 end
@@ -352,6 +359,9 @@ if (~debug )
 else
     runStart = GetSecs;
 end
+%%
+mainWindow = Screen(screenNum,'OpenWindow',backColor,[0 0 screenX screenY]);
+
 Screen(mainWindow,'FillRect',backColor);
 %Screen('FillOval', mainWindow,restCircleColor, circleDotRect);
 Screen(mainWindow, 'FillRect', restCircleColor, rect)
@@ -359,14 +369,16 @@ Screen(mainWindow, 'FillRect', restCircleColor, rect)
 Screen('Flip',mainWindow);
 
 Screen(mainWindow,'TextSize',circleFontSize); % starts at 30
-
+lineW=100;
+penW=10;
 testing_ev = 0:.1:1;
 for t=1:length(testing_ev)
     this_ev = testing_ev(t);
     feedbackRect = rect;
     feedbackRect(2) = rect(4) - (rect(4) - rect(2))*this_ev;
+    Screen('DrawLine',mainWindow, 0,rect(1)-lineW,centerY,rect(3)+lineW,centerY,[7])
     Screen(mainWindow,'FillRect', restCircleColor, rect);
-
+    % [-300 -200 -200 -100 -100 0 0 100 100 200 200 300; -100 100 -100 100 -100 100 -100 100 ]
     if this_ev < 0.5
         Screen(mainWindow,'FillRect', badColor, feedbackRect);
         bonus_points = sprintf('$%2.2f', 0);
@@ -431,15 +443,15 @@ for iTR = 1:nTRs_story
     isLookingStation = lookTRs(iTR);
     Screen(mainWindow,'FillRect',backColor);
     if SHOWINGFEEDBACK && (GetSecs - timing.startFeedbackDisplay(lastStation) >=(2-slack))
-        Screen('FillOval', mainWindow,restCircleColor, circleDotRect);
+        Screen(mainWindow, 'FillRect', restCircleColor, rect)
         timing.stopFeedbackDisplay(lastStation) = Screen('Flip', mainWindow);
         SHOWINGFEEDBACK = 0;
     end
     % update  circle display at the start of the run
     if isRecording > 0
-        Screen('FillOval', mainWindow,recordingCircleColor, circleDotRect)
+        Screen('FillRect', mainWindow,recordingCircleColor, rect)
     else
-        Screen('FillOval', mainWindow,restCircleColor, circleDotRect);
+        Screen('FillRect', mainWindow,restCircleColor, rect);
     end
     [timing.trig.pulses(volCounter) runData.pulses(volCounter)] = WaitTRPulse(TRIGGER_keycode,DEVICE,timing.plannedOnsets.story(iTR));
     timespec = timing.plannedOnsets.story(iTR) - slack;
@@ -466,11 +478,21 @@ for iTR = 1:nTRs_story
                     else
                         runData.stationScore(lastStation) = tempStruct;
                     end
-                    runData.stationFeedbackGiven{lastStation} = sprintf('+$%2.2f', runData.stationScore(lastStation)); % what people will see
-                    feedbackCircleColor = restCircleColor + runData.stationScore(lastStation)*transferRGB;
-                    Screen('FillOval', mainWindow,feedbackCircleColor, circleDotRect);
-                    tempBounds = Screen('TextBounds', mainWindow, runData.stationFeedbackGiven{lastStation});
-                    Screen('drawtext',mainWindow,runData.stationFeedbackGiven{lastStation},centerX-tempBounds(3)/2,centerY-tempBounds(4)/2,[0 0 0]);
+                    this_ev = runData.stationScore(lastStation);
+                    Screen('DrawLine',mainWindow, 0,rect(1)-lineW,centerY,rect(3)+lineW,centerY,[7])
+                    Screen(mainWindow, 'FillRect', restCircleColor, rect)
+                    feedbackRect = rect;
+                    feedbackRect(2) = rect(4) - (rect(4) - rect(2))*this_ev;
+                    if this_ev < 0.5
+                        Screen(mainWindow,'FillRect', badColor, feedbackRect);
+                        bonus_points = sprintf('$%2.2f', 0);
+                    else
+                        Screen(mainWindow,'FillRect', maxGreenCircleColor, feedbackRect);
+                        bonus_points = sprintf('$%2.2f', this_ev);
+                    end
+                    runData.stationFeedbackGiven{lastStation} = bonus_points; % what people will see
+                    tempBounds = Screen('TextBounds', mainWindow, bonus_points);
+                    Screen('drawtext',mainWindow,bonus_points,centerX-tempBounds(3)/2,centerY-tempBounds(4)/2,[0 0 0]);
                     timing.startFeebackDisplay(lastStation) = Screen('Flip',mainWindow); % flip as soon as it's ready
                     SHOWINGFEEDBACK = 1; % ARE WE CURRENTLY DISPLAYING FEEDBACK
                 else

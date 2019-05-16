@@ -23,15 +23,16 @@ rootPath = os.path.dirname(os.path.dirname(currPath))
 sys.path.append(rootPath)
 
 #WHEN TESTING
-sys.path.append('/jukebox/norman/amennen/github/brainiak/rt-cloud')
+#sys.path.append('/jukebox/norman/amennen/github/brainiak/rt-cloud')
 from rtCommon.utils import loadConfigFile, dateStr30, DebugLevels, writeFile
+from rtCommon.readDicom import readDicomFromBuffer
 from rtCommon.fileClient import FileInterface
 import rtCommon.webClientUtils as wcutils
 from rtCommon.structDict import StructDict
 import rtCommon.dicomNiftiHandler as dnh
 # in tests directory can see test script
 
-# conda activate /usr/people/amennen/miniconda3/envs/rtAtten/
+defaultConfig = os.path.join(currPath, 'conf/greenEyes_organized.toml')
 
 
 def initializeGreenEyes(configFile,params):
@@ -73,7 +74,7 @@ def initializeGreenEyes(configFile,params):
         cfg.dicomDir = glob.glob(cfg.cluster.imgDir.format(cfg.subjectName))[0]
         cfg.dicomNamePattern = cfg.cluster.dicomNamePattern
     cfg.webpipe = params.webpipe
-    cfg.webfilesremote = params.webfilesremote # FLAG FOR REMOTE OR LOCAL
+    cfg.webfilesremote = params.filesremote # FLAG FOR REMOTE OR LOCAL
 	########
     cfg.bids_id = 'sub-{0:03d}'.format(cfg.subjectNum)
     cfg.ses_id = 'ses-{0:02d}'.format(cfg.subjectDay)
@@ -92,7 +93,8 @@ def initializeGreenEyes(configFile,params):
     elif cfg.mode == 'debug':
         cfg.dataDir = cfg.cluster.codeDir + 'data'
         cfg.classifierDir = cfg.cluster.classifierDir
-        cfg.mask_filename = cfg.cluster.maskDir + cfg.MNI_ref_BOLD
+        cfg.mask_filename = cfg.cluster.maskDir + cfg.MASK
+        cfg.MNI_ref_filename = cfg.cluster.maskDir + cfg.MNI_ref_BOLD
 
 	
     cfg.subject_full_day_path = '{0}/{1}/{2}'.format(cfg.dataDir,cfg.bids_id,cfg.ses_id)
@@ -176,30 +178,6 @@ def getDicomFileName(cfg, scanNum, fileNum):
     fullFileName = os.path.join(cfg.dicomDir, fileName)
     return fullFileName
 
-def preprocessData(cfg,dataMatrix,previous_badVoxels=None):
-	# steps: zscore///check bad voxels//remove signal average
-	# remove bad voxels
-	# bad voxel criteria: (1) if raw signal < 100 OR std is < 1E-3 ( I think we're going to set it equal to 0 anyway)
-
-	t_end = np.shape(dataMatrix)[1]
-	zscoredData = stats.zscore(dataMatrix,axis=1,ddof = 1)
-	zscoredData = np.nan_to_num(dataMatrix)
-	# remove story TRs
-	# remove story average
-	std = np.std(dataMatrix,axis=1,ddof=1)
-	non_changing_voxels = np.argwhere(std < 1E-3)
-	low_value_voxels = np.argwhere(np.min(dataMatrix,axis=1) < 100)
-	badVoxels = np.unique(np.concatenate((non_changing_voxels,low_value_voxels)))
-	# now combine with previously made badvoxels
-	if previous_badVoxels is not None:
-		updated_badVoxels = np.unique(np.concatenate((previous_badVoxels,badVoxels)))
-	else:
-		updated_badVoxels = badVoxels
-	signalAvg = getAvgSignal(cfg) 
-	preprocessedData = zscoredData - signalAvg[:,0:t_end]
-	return preprocessedData,updated_badVoxels
-
-
 def loadClassifier(cfg,station):
 	thisClassifierFileName = cfg.classifierDir + cfg.classifierNamePattern.format(station)
 	loaded_model = pickle.load(open(thisClassifierFileName, 'rb'))
@@ -215,15 +193,15 @@ def getStationInformation(cfg):
     stationDict = np.load(station_FN,allow_pickle=True).item()
     nStations = len(stationDict)
     last_tr_in_station = np.zeros((nStations,))
-    allTR = list(cfg.stationsDict.values())
+    allTR = list(stationDict.values())
     all_station_TRs = [item for sublist in allTR for item in sublist]
     for st in np.arange(nStations):
         last_tr_in_station[st] = stationDict[st][-1]
     return nStations, stationDict, last_tr_in_station, all_station_TRs
 
-def getStationClassoutputFilename(sessionId, runId, stationId):
+def getStationClassoutputFilename(runId, stationId):
 	""""Return station classification filename"""
-	filename = "classOutput_r{}_st{}_{}_py.mat".format(runId,stationId,sessionId)
+	filename = "classOutput_r{}_st{}_py.txt".format(runId,stationId)
 	return filename
 
 def getRunFilename(sessionId, runId):
@@ -235,6 +213,28 @@ def retrieveIntelFileAndSaveToCloud(intelFilePath,pathToSaveOnCloud,fileInterfac
 	data = fileInterface.getFile(intelFilePath)
 	writeFile(pathToSaveOnCloud,data)
 
+def preprocessData(cfg,dataMatrix,previous_badVoxels=None):
+    # steps: zscore///check bad voxels//remove signal average
+    # remove bad voxels
+    # bad voxel criteria: (1) if raw signal < 100 OR std is < 1E-3 ( I think we're going to set it equal to 0 anyway)
+
+    t_end = np.shape(dataMatrix)[1]
+    zscoredData = stats.zscore(dataMatrix,axis=1,ddof = 1)
+    zscoredData = np.nan_to_num(zscoredData)
+    # remove story TRs
+    # remove story average
+    std = np.std(dataMatrix,axis=1,ddof=1)
+    non_changing_voxels = np.argwhere(std < 1E-3)
+    low_value_voxels = np.argwhere(np.min(dataMatrix,axis=1) < 100)
+    badVoxels = np.unique(np.concatenate((non_changing_voxels,low_value_voxels)))
+    # now combine with previously made badvoxels
+    if previous_badVoxels is not None:
+        updated_badVoxels = np.unique(np.concatenate((previous_badVoxels,badVoxels)))
+    else:
+        updated_badVoxels = badVoxels
+    signalAvg = getAvgSignal(cfg) 
+    preprocessedData = zscoredData - signalAvg[:,0:t_end]
+    return preprocessedData,updated_badVoxels
 
 def preprocessAndPredict(cfg,runData,TRindex_story):
     """Predict cheating vs. paranoid probability at given station"""
@@ -281,7 +281,7 @@ def makeRunHeader(cfg,runIndex):
     return  
 
 def makeTRHeader(cfg,runIndex,TRFilenum,storyTRCount,stationInd,correct_prob):
-    isStation = storyIndex in cfg.all_station_TRs
+    isStation = storyTRCount in cfg.all_station_TRs
     if isStation:
         stStr = 'station'
     else:
@@ -292,8 +292,8 @@ def makeTRHeader(cfg,runIndex,TRFilenum,storyTRCount,stationInd,correct_prob):
 
 
 
-# testing code--debug mode
-defaultConfig = os.path.join(os.getcwd() , 'conf/greenEyes_organized.toml')
+# testing code--debug mode -- run in greenEyes directory
+from greenEyes import *
 params = StructDict({'config':defaultConfig, 'runs': '1', 'scans': '9', 'webpipe': 'None', 'webfilesremote': False})
 cfg = initializeGreenEyes(params.config,params)
 args = StructDict()
@@ -301,23 +301,21 @@ args.filesremote = False
 webComm = None
 
 def main():
-	
-	# MAKES STRUCT WITH ALL PARAMETERS IN IT
-	argParser = argparse.ArgumentParser()
-	argParser.add_argument('--config', '-c', default='greenEyes_organized.toml', type=str,
-	                   help='experiment config file (.json or .toml)')
-	argParser.add_argument('--runs', '-r', default='', type=str,
-	                   help='Comma separated list of run numbers')
-	argParser.add_argument('--scans', '-s', default='', type=str,
-	                   help='Comma separated list of scan number')
-	# creates web pipe communication link to send/request responses through web pipe
-	argParser.add_argument('--webpipe', '-w', default=None, type=str,
-	                   help='Named pipe to communicate with webServer')
-	argParser.add_argument('--filesremote', '-x', default=False, action='store_true',
-	                   help='dicom files retrieved from remote server')
-	args = argParser.parse_args()
-	cfg = initializeGreenEyes(args.config,args)
-
+    argParser = argparse.ArgumentParser()
+    argParser.add_argument('--config', '-c', default=defaultConfig, type=str,
+                       help='experiment config file (.json or .toml)')
+    argParser.add_argument('--runs', '-r', default='', type=str,
+                       help='Comma separated list of run numbers')
+    argParser.add_argument('--scans', '-s', default='', type=str,
+                       help='Comma separated list of scan number')
+    # creates web pipe communication link to send/request responses through web pipe
+    argParser.add_argument('--webpipe', '-w', default=None, type=str,
+                       help='Named pipe to communicate with webServer')
+    argParser.add_argument('--filesremote', '-x', default=False, action='store_true',
+                       help='dicom files retrieved from remote server')
+    args = argParser.parse_args()
+    print(args)
+    cfg = initializeGreenEyes(args.config,args)
     # webpipe
     webComm = None
     if args.webpipe:
@@ -327,17 +325,17 @@ def main():
     fileInterface = FileInterface(filesremote=args.filesremote, webpipes=webComm)
     # intialize watching in particular directory
     fileInterface.initWatch(cfg.dicomDir, cfg.dicomNamePattern, cfg.minExpectedDicomSize) 
-    story_TRs = cfg.story_TR_2 - cfg.story_TR_1
+    story_TRs = cfg.story_TR_2 - cfg.story_TR_1 + 1
     #### MAIN PROCESSING ###
     nRuns = len(cfg.runs)
-	for runIndex in np.arange(nRuns):
+    for runIndex in np.arange(nRuns):
         runData = StructDict()
         runData.cheating_probability = np.zeros((cfg.nStations,))
         runData.correct_prob = np.zeros((cfg.nStations,))
         runData.interpretation = getSubjectInterpretation(cfg)
         runData.badVoxels = {}
         runData.dataForClassification = {}
-        all_data = np.zeros((cfg.nVox,cfg.nTR_run)) # don't need to save
+        all_data = np.zeros((cfg.nVox,cfg.nTR_run + 1)) # adding 1 because we're not starting at 0 with the indexing
         runData.story_data = np.zeros((cfg.nVox,story_TRs))
 
         makeRunHeader(cfg,runIndex)
@@ -345,32 +343,41 @@ def main():
         scanNum = cfg.scanNums[runIndex]
         storyTRCount = 0
         stationInd=0
-		for TRFilenum in np.arange(cfg.nTR_skip+1,cfg.nTR_run+1):
-			##### GET DATA BUFFER FROM LOCAL MACHINE ###
-			dicomData = fileInterface.watchFile(getDicomFileName(cfg, scanNum, TRFilenum), timeout=5) # if starts with slash it's full path, if not, it assumes it's the watch directory and builds
-			full_nifti_name = convertToNifti(TRFilenum,scanNum,cfg,dicomData)
-			registeredFileName = registerNewNiftiToMNI(cfg,full_nifti_name)
-			maskedData = apply_mask(registeredFileName,cfg.mask_filename)
-			all_data[:,TRFilenum] = maskedData
-			if TRFilenum >= cfg.fileNum_story_TR_1 and TRFilenum <= cfg.fileNum_story_TR_2: # we're at a story TR now
-				runData.story_data[:,storyTRCount] = maskedData
-				if np.any(storyTRCount == cfg.last_tr_in_station.astype(int)):
-					# NOW PREPROCESS AND CLASSIFY
-                    stationInd = np.argwhere(TRindex_story == cfg.last_tr_in_station.astype(int))[0][0]
-					runData = preprocessAndPredict(cfg,runData,storyTRCount)
+        for TRFilenum in np.arange(cfg.nTR_skip+1,cfg.nTR_run+1):
+        # for TRFilenum in np.arange(11,54):
+            dicomBufferData = fileInterface.watchFile(getDicomFileName(cfg, scanNum, TRFilenum), timeout=5) # if starts with slash it's full path, if not, it assumes it's the watch directory and builds
+            dicomData = readDicomFromBuffer(dicomBufferData)
+            full_nifti_name = convertToNifti(TRFilenum,scanNum,cfg,dicomData)
+            registeredFileName = registerNewNiftiToMNI(cfg,full_nifti_name)
+            maskedData = apply_mask(registeredFileName,cfg.mask_filename)
+            all_data[:,TRFilenum] = maskedData
+            if TRFilenum >= cfg.fileNum_story_TR_1 and TRFilenum <= cfg.fileNum_story_TR_2: # we're at a story TR now
+                runData.story_data[:,storyTRCount] = maskedData
+                if np.any(storyTRCount == cfg.last_tr_in_station.astype(int)):
+                    # NOW PREPROCESS AND CLASSIFY
+                    stationInd = np.argwhere(storyTRCount == cfg.last_tr_in_station.astype(int))[0][0]
+                    runData = preprocessAndPredict(cfg,runData,storyTRCount)
                     text_to_save = '{0:05f}'.format(runData.correct_prob[stationInd])
-                    file_name_to_save = getStationClassoutputFilename(cfg.sessionId, run, stationInd)
+                    file_name_to_save = getStationClassoutputFilename(run, stationInd)
                     if cfg.mode == 'cloud':
-                        full_filename_to_save = cfg.intelrt.subject_full_day_path + file_name_to_save
+                        full_filename_to_save = os.path.join(cfg.intelrt.subject_full_day_path,file_name_to_save) 
                     else:
-                        full_filename_to_save = cfg.subject_full_day_path + file_name_to_save
-					fileInterface.putTextFile(full_filename_to_save,text_to_save)
-                    wcutils.sendClassicationResult(webComm, run, tr, val)
-				storyTRCount += 1
-			else:
-				pass
-            TRheader = makeTRHeader(cfg,runIndex,TRFilenum,storyTRCount,stationInd,runData.correct_prob[stationInd])
+                        full_filename_to_save = os.path.join(cfg.subject_full_day_path,file_name_to_save) 
+                    fileInterface.putTextFile(full_filename_to_save,text_to_save)
+                    if args.webpipe:    
+                        wcutils.sendClassicationResult(webComm, run, TRFilenum, val)
+                storyTRCount += 1
+            TRheader = makeTRHeader(cfg,runIndex,TRFilenum,storyTRCount-1,stationInd,runData.correct_prob[stationInd])
+
         # SAVE OVER RUN NP FILE
+        run_filename = getRunFilename(cfg.sessionId, run)
+        full_run_filename_to_save = os.path.join(cfg.subject_full_day_path,run_filename)
+        #try:
+        sio.savemat(full_run_filename_to_save, runData, appendmat=False)
+        #except Exception as err:
+        #    errorReply = self.createReplyMessage(msg, MsgResult.Errsor)
+        #    errorReply.data = "Error: Unable to save blkGrpFile %s: %r" % (blkGrpFilename, err)
+        #    return errorReply
     sys.exit(0)
 
 if __name__ == "__main__":

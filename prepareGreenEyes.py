@@ -101,6 +101,8 @@ def makeSubjectInterpretation(cfg):
             interpretation = 'C'
         else:
             interpretation = 'P'
+    else:
+        interpretation = cfg.interpretation
     # save interpretation
     filename = cfg.bids_id + '_' + cfg.ses_id + '_' + 'intepretation.txt'
     full_path_filename = cfg.subject_full_day_path + '/' + filename
