@@ -382,7 +382,7 @@ for iTR = 1:nTRs_story
     isRecording = recordedTRs(iTR);
     isLookingStation = lookTRs(iTR);
     if SHOWINGFEEDBACK 
-        if (GetSecs - timing.startFeedbackDisplay(lastStation)) >= 0.5 %(feedbackDur-slack)
+        if (GetSecs - timing.startFeedbackDisplay(lastStation)) >= TR %(feedbackDur-slack)
             Screen(mainWindow, 'FillRect', restCircleColor, rect)
             timespec = timing.startFeedbackDisplay(lastStation) + feedbackDur;
             timing.stopFeedbackDisplay(lastStation) = Screen('Flip', mainWindow,timespec);
@@ -484,10 +484,10 @@ PsychPortAudio('Close', pahandle);
 %% DISPLAY THEIR TOTAL SCORE HERE
 all_rewards = runData.stationScore;
 all_rewards(all_rewards<=0.5) = 0;
-runData.reward = nanmean(all_rewards)*5;
-rewardMessage = sprintf('Run %i earnings: $%2.2f',runNum, runData.reward);
+runData.reward = nanmean(runData.stationScore)*5;
+rewardMessage = sprintf('Run %i earings: $%2.2f',runNum, runData.reward);
 tempBounds = Screen('TextBounds', mainWindow, rewardMessage);
-Screen('drawtext',mainWindow,rewardMessage,centerX-tempBounds(3)/2,centerY-tempBounds(4)/2,textColor);
+Screen('drawtext',mainWindow,waitMessage,centerX-tempBounds(3)/2,centerY-tempBounds(4)/2,textColor);
 Screen('Flip', mainWindow);
 WaitSecs(5);
 %% save everything

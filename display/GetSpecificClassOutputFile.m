@@ -2,9 +2,9 @@ function [fileAvail specificFile] = GetSpecificClassOutputFile(classOutputDir,ru
 runStr = num2str(runNum);
 stationStr = num2str(stationNum);
 if ~usepython
-    specificFile = ['classOutput_r' runStr '_st_' stationStr '.mat'];
+    specificFile = ['classOutput_r' runStr '_st' stationStr '.mat'];
 else
-    specificFile = ['classOutput_r' runStr '_st_' stationStr '_py.txt'];
+    specificFile = ['classOutput_r' runStr '_st' stationStr '_py.txt'];
 end
 if exist(fullfile(classOutputDir,specificFile),'file');
     fileAvail = 1;

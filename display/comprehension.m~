@@ -3,7 +3,7 @@ debug = 1;
 subjectNum = 1;
 bidsId = sprintf('sub-%03d',subjectNum);
 
-saveDir = ['data/' bidsId];
+saveDir = ['/data/' bidsId];
 if ~exist(saveDir)
     mkdir(saveDir)
 end
@@ -345,20 +345,6 @@ for iTrial = 1:nQ
                 fprintf('key pressed\n')
                 % record response and reaction time
                 stim.question_resps(iTrial) = find(keyCode,1);
-                % record which choice it was to make it easier to go back
-                if stim.all_q_positions(iTrial) == 1
-                    if stim.question_resps(iTrial) == keyCode(UP_key)
-                        stim.actual_resp(iTrial) = 1;
-                    else
-                        stim.actual_resp(iTrial) = 2;
-                    end
-                else
-                    if stim.question_resps(iTrial) == keyCode(UP_key)
-                        stim.actual_resp(iTrial) = 2;
-                    else
-                        stim.actual_resp(iTrial) = 1;
-                    end
-                end
                 stim.question_rts(iTrial) = secs - timing.questionOn(iTrial);
             end
         end

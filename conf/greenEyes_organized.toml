@@ -9,8 +9,8 @@ date = "2/18/19" # "2018-08-16"  # or "today", "now", "2018-03-01" or "03/01/201
 subjectName = "0218191_greenEyes"
 subjectNum = 101
 subjectDay = 2
-mode = "local"
-machine = "intel"
+mode = "debug"
+machine = "cluster"
 interpretation = "P"  #"random" # will either be 'C', 'P', or 'random'
 # subject 101 - 2/18/19, runs 1-3 were scans 7,8,9, -- P,P,C
 # subject 102 - 2/19/19, runs 1-4 were scans 9-12 -- C,C,P,P
@@ -23,7 +23,7 @@ interpretation = "P"  #"random" # will either be 'C', 'P', or 'random'
 # MACHINE OPTIONS FOR PREPARING FOLDERS
 # 1 - INTEL -- RUNNING CODE ON INTEL LINUX CURRENTLY
 # 2 - CLOUD -- RUNNING CODE ON CLOUD CURRENTLY
-# 3 - "" -- RUNNING ON CLUSTER
+# 3 - CLUSTER -- RUNNING ON CLUSTER
 
 # STORY PARAMETERS
 story_TR_1 = 14
@@ -66,7 +66,7 @@ ScanNums = [5, 6 ,7 ,8]
 debug = 1
 useButtonBox = 0
 fmri = 0
-rtData = 0
+rtData = 1
 usePython = 1
 
 # ON LOCAL (INTEL LINUX)
