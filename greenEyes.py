@@ -349,7 +349,11 @@ def main():
         stationInd=0
         for TRFilenum in np.arange(cfg.nTR_skip+1,cfg.nTR_run+1):
         # for TRFilenum in np.arange(11,54):
-            dicomBufferData = fileInterface.watchFile(getDicomFileName(cfg, scanNum, TRFilenum), timeout=5) # if starts with slash it's full path, if not, it assumes it's the watch directory and builds
+            if TRFilenum == cfg.nTR_skip+1: # wait until run starts
+                timeout_file = 180
+            else:
+                timeout_file = 5
+            dicomBufferData = fileInterface.watchFile(getDicomFileName(cfg, scanNum, TRFilenum), timeout=timeout_file) # if starts with slash it's full path, if not, it assumes it's the watch directory and builds
             dicomData = readDicomFromBuffer(dicomBufferData)
             full_nifti_name = convertToNifti(TRFilenum,scanNum,cfg,dicomData)
             registeredFileName = registerNewNiftiToMNI(cfg,full_nifti_name)
