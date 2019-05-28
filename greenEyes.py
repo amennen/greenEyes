@@ -26,7 +26,7 @@ sys.path.append(rootPath)
 #WHEN TESTING
 #sys.path.append('/jukebox/norman/amennen/github/brainiak/rt-cloud')
 from rtCommon.utils import loadConfigFile, dateStr30, DebugLevels, writeFile
-from rtCommon.readDicom import readDicomFromBuffer
+from rtCommon.readDicom import readDicomFromBuffer, readRetryDicomFromFileInterface
 from rtCommon.fileClient import FileInterface
 import rtCommon.webClientUtils as wcutils
 from rtCommon.structDict import StructDict
