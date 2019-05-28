@@ -327,13 +327,14 @@ def main():
                        help='Comma separated list of run numbers')
     argParser.add_argument('--scans', '-s', default='', type=str,
                        help='Comma separated list of scan number')
+    argParser.add_argument('--deleteTmpNifti', '-d', default='1', type=str,
+                       help='DO NOT RUN IF RERUNNING WITHIN RUN')
     # creates web pipe communication link to send/request responses through web pipe
     argParser.add_argument('--webpipe', '-w', default=None, type=str,
                        help='Named pipe to communicate with webServer')
     argParser.add_argument('--filesremote', '-x', default=False, action='store_true',
                        help='dicom files retrieved from remote server')
-    argParser.add_argument('--deleteTmpNifti, -d', default='1', type=str,
-                       help='DO NOT RUN IF RERUNNING WITHIN RUN')
+
     args = argParser.parse_args()
     print(args)
     cfg = initializeGreenEyes(args.config,args)
