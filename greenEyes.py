@@ -257,7 +257,7 @@ def preprocessAndPredict(cfg,runData,TRindex_story):
     if stationInd == 0 or len(runData.badVoxels) == 0:
     	runData.dataForClassification[stationKey],runData.badVoxels[stationKey] = preprocessData(cfg,runData.story_data[:,0:TRindex_story+1])
     else:
-        runData.dataForClassification[stationKey],runData.badVoxels[stationKey] = preprocessData(cfg,runData.story_data[:,0:TRindex_story+1],runData.badVoxels[prevStationkey])
+        runData.dataForClassification[stationKey],runData.badVoxels[stationKey] = preprocessData(cfg,runData.story_data[:,0:TRindex_story+1],runData.badVoxels[prevStationKey])
     loaded_model = loadClassifier(cfg,stationInd)
     this_station_TRs = np.array(cfg.stationsDict[stationInd])
     n_station_TRs = len(this_station_TRs)
@@ -342,6 +342,9 @@ def main():
     # DELETE ALL FILES IF FLAGGED TO # 
     if args.deleteTmpNifti == '1':
         deleteTmpFiles(cfg)
+    else:
+        print(args.deleteTmpNifti)
+        print('NOT DELETING')
     # DELETE ALL FILES IF FLAGGED TO # 
 
     # webpipe
