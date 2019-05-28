@@ -135,15 +135,15 @@ def getTransform():
 
 
 def convertToNifti(TRnum,scanNum,cfg,dicomData):
-	#anonymizedDicom = anonymizeDicom(dicomData) # should be anonymized already
-	expected_dicom_name = cfg.dicomNamePattern.format(scanNum,TRnum)
+    #anonymizedDicom = anonymizeDicom(dicomData) # should be anonymized already
+    expected_dicom_name = cfg.dicomNamePattern.format(scanNum,TRnum)
     tempNiftiDir = os.path.join(cfg.dataDir, 'tmp/convertedNiftis/')
     nameToSaveNifti = expected_dicom_name.split('.')[0] + '.nii.gz'
     fullNiftiFilename = os.path.join(tempNiftiDir, nameToSaveNifti)
     if not os.path.isfile(fullNiftiFilename): # only convert if haven't done so yet (check if doesn't exist)
-	   new_nifti_name = dnh.saveAsNiftiImage(dicomData,expected_dicom_name,cfg)
-	return new_nifti_name
-	# ask about nifti conversion or not
+       new_nifti_name = dnh.saveAsNiftiImage(dicomData,expected_dicom_name,cfg)
+    return new_nifti_name
+    # ask about nifti conversion or not
 
 def registerNewNiftiToMNI(cfg,full_nifti_name):
     # should operate over each TR
