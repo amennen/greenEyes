@@ -297,7 +297,14 @@ if runData.run == 1
     Screen('Flip',mainWindow);
     waitForKeyboard(subj_keycode,DEVICE);
 end
-
+firstRun = ['Remember, your mission is to decide who the woman is:\n(1)if Arthur''s wife, Joanie, is cheating on him with Lee, then Joanie is in Lee''s bed.\n\n(2) if Arthur is paranoid, then Lee''s girlfriend, Rose in in Lee''s bed.'];
+if runData.run == 1
+    % show the first instructions
+    firstInstruct = [firstRun continueInstruct];
+    DrawFormattedText(mainWindow,firstInstruct,'center','center',textColor,70,[],[],1.2);
+    Screen('Flip',mainWindow);
+    waitForKeyboard(subj_keycode,DEVICE);
+end
 % now tell them they will listen again and ge
 nextInstruct = ['Please stay focused, keep listening throughout the entire story, and use your neurofeedback clues to help you along the way.' continueInstruct];
 DrawFormattedText(mainWindow,nextInstruct,'center','center',textColor,70,[],[],1.2);

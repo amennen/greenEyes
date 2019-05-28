@@ -18,6 +18,7 @@ import nibabel as nib
 import argparse
 import sys
 import logging
+import shutil
 currPath = os.path.dirname(os.path.realpath(__file__))
 rootPath = os.path.dirname(os.path.dirname(currPath))
 sys.path.append(rootPath)
@@ -136,37 +137,42 @@ def getTransform():
 def convertToNifti(TRnum,scanNum,cfg,dicomData):
 	#anonymizedDicom = anonymizeDicom(dicomData) # should be anonymized already
 	expected_dicom_name = cfg.dicomNamePattern.format(scanNum,TRnum)
-	new_nifti_name = dnh.saveAsNiftiImage(dicomData,expected_dicom_name,cfg)
+    tempNiftiDir = os.path.join(cfg.dataDir, 'tmp/convertedNiftis/')
+    nameToSaveNifti = expected_dicom_name.split('.')[0] + '.nii.gz'
+    fullNiftiFilename = os.path.join(tempNiftiDir, nameToSaveNifti)
+    if not os.path.isfile(fullNiftiFilename): # only convert if haven't done so yet (check if doesn't exist)
+	   new_nifti_name = dnh.saveAsNiftiImage(dicomData,expected_dicom_name,cfg)
 	return new_nifti_name
 	# ask about nifti conversion or not
 
 def registerNewNiftiToMNI(cfg,full_nifti_name):
-	# should operate over each TR
-	# needs full path of nifti file to register
+    # should operate over each TR
+    # needs full path of nifti file to register
+    base_nifti_name = full_nifti_name.split('/')[-1].split('.')[0]
+    output_nifti_name = '{0}{1}_space-MNI.nii.gz'.format(cfg.subject_reg_dir,base_nifti_name)
+    if not os.path.isfile(output_nifti_name): # only run this code if the file doesn't exist already
+        # (1) run mcflirt with motion correction to align to bold reference
+        command = 'mcflirt -in {0} -reffile {1} -out {2}{3}_MC -mats'.format(full_nifti_name,cfg.ref_BOLD,cfg.subject_reg_dir,base_nifti_name)
+        A = time.time()
+        call(command,shell=True)
+        B = time.time()
+        print(B-A)
 
-	base_nifti_name = full_nifti_name.split('/')[-1].split('.')[0]
-	# (1) run mcflirt with motion correction to align to bold reference
-	command = 'mcflirt -in {0} -reffile {1} -out {2}{3}_MC -mats'.format(full_nifti_name,cfg.ref_BOLD,cfg.subject_reg_dir,base_nifti_name)
-	A = time.time()
-	call(command,shell=True)
-	B = time.time()
-	print(B-A)
+        # (2) run c3daffine tool to convert .mat to .txt
+        command = 'c3d_affine_tool -ref {0} -src {1} {2}{3}_MC.mat/MAT_0000 -fsl2ras -oitk {4}{5}_2ref.txt'.format(cfg.ref_BOLD,full_nifti_name,cfg.subject_reg_dir,base_nifti_name,cfg.subject_reg_dir,base_nifti_name)
+        A = time.time()
+        call(command,shell=True)
+        B = time.time()
+        print(B-A)
 
-	# (2) run c3daffine tool to convert .mat to .txt
-	command = 'c3d_affine_tool -ref {0} -src {1} {2}{3}_MC.mat/MAT_0000 -fsl2ras -oitk {4}{5}_2ref.txt'.format(cfg.ref_BOLD,full_nifti_name,cfg.subject_reg_dir,base_nifti_name,cfg.subject_reg_dir,base_nifti_name)
-	A = time.time()
-	call(command,shell=True)
-	B = time.time()
-	print(B-A)
+        # (3) combine everything with ANTs call
+        command = 'antsApplyTransforms --default-value 0 --float 1 --interpolation LanczosWindowedSinc -d 3 -e 3 --input {0} --reference-image {1} --output {2}{3}_space-MNI.nii.gz --transform {4}{5}_2ref.txt --transform {6} --transform {7} -v 1'.format(full_nifti_name,cfg.MNI_ref_filename,cfg.subject_reg_dir,base_nifti_name,cfg.subject_reg_dir,base_nifti_name,cfg.BOLD_to_T1,cfg.T1_to_MNI)
+        A = time.time()
+        call(command,shell=True)
+        B = time.time()
+        print(B-A)
 
-	# (3) combine everything with ANTs call
-	command = 'antsApplyTransforms --default-value 0 --float 1 --interpolation LanczosWindowedSinc -d 3 -e 3 --input {0} --reference-image {1} --output {2}{3}_space-MNI.nii.gz --transform {4}{5}_2ref.txt --transform {6} --transform {7} -v 1'.format(full_nifti_name,cfg.MNI_ref_filename,cfg.subject_reg_dir,base_nifti_name,cfg.subject_reg_dir,base_nifti_name,cfg.BOLD_to_T1,cfg.T1_to_MNI)
-	A = time.time()
-	call(command,shell=True)
-	B = time.time()
-	print(B-A)
-	output_nifti_name = '{0}{1}_space-MNI.nii.gz'.format(cfg.subject_reg_dir,base_nifti_name)
-	return output_nifti_name 
+    return output_nifti_name 
 
 def getDicomFileName(cfg, scanNum, fileNum):
     if cfg.mode != 'debug':
@@ -243,20 +249,22 @@ def preprocessData(cfg,dataMatrix,previous_badVoxels=None):
 def preprocessAndPredict(cfg,runData,TRindex_story):
     """Predict cheating vs. paranoid probability at given station"""
     stationInd = np.argwhere(TRindex_story == cfg.last_tr_in_station.astype(int))[0][0]
+    stationKey = 'station' + str(stationInd)
+    prevStationKey = 'station' + str(stationInd - 1)
     print('this station is %i' % stationInd)
     print('this story TR is %i' % TRindex_story)
     # indexing for data goes to +1 because we want the index to include the last station TR
     if stationInd == 0 or len(runData.badVoxels) == 0:
-    	runData.dataForClassification[stationInd],runData.badVoxels[stationInd] = preprocessData(cfg,runData.story_data[:,0:TRindex_story+1])
+    	runData.dataForClassification[stationKey],runData.badVoxels[stationKey] = preprocessData(cfg,runData.story_data[:,0:TRindex_story+1])
     else:
-        runData.dataForClassification[stationInd],runData.badVoxels[stationInd] = preprocessData(cfg,runData.story_data[:,0:TRindex_story+1],runData.badVoxels[stationInd-1])
+        runData.dataForClassification[stationKey],runData.badVoxels[stationKey] = preprocessData(cfg,runData.story_data[:,0:TRindex_story+1],runData.badVoxels[prevStationkey])
     loaded_model = loadClassifier(cfg,stationInd)
     this_station_TRs = np.array(cfg.stationsDict[stationInd])
     n_station_TRs = len(this_station_TRs)
-    if len(runData.badVoxels[stationInd]) > 0:
-        voxelsToExclude = runData.badVoxels[stationInd]
-        runData.dataForClassification[stationInd][voxelsToExclude,:] = 0
-    thisStationData = runData.dataForClassification[stationInd][:,this_station_TRs]
+    if len(runData.badVoxels[stationKey]) > 0:
+        voxelsToExclude = runData.badVoxels[stationKey]
+        runData.dataForClassification[stationKey][voxelsToExclude,:] = 0
+    thisStationData = runData.dataForClassification[stationKey][:,this_station_TRs]
     dataForClassification_reshaped = np.reshape(thisStationData,(1,cfg.nVox*n_station_TRs))
     runData.cheating_probability[stationInd] = loaded_model.predict_proba(dataForClassification_reshaped)[0][1]
     if runData.interpretation == 'C':
@@ -294,7 +302,14 @@ def makeTRHeader(cfg,runIndex,TRFilenum,storyTRCount,stationInd,correct_prob):
         cfg.runs[runIndex],TRFilenum,storyTRCount,stStr,stationInd,correct_prob))
     return
 
-
+def deleteTmpFiles(cfg):
+    tempNiftiDir = os.path.join(cfg.dataDir, 'tmp/convertedNiftis/')
+    if os.path.exists(tempNiftiDir):
+        shutil.rmtree(tempNiftiDir)
+        print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+        print('DELETING ALL NIFTIS IN tmp/convertedNiftis')
+        print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+    return
 
 # testing code--debug mode -- run in greenEyes directory
 from greenEyes import *
@@ -317,9 +332,17 @@ def main():
                        help='Named pipe to communicate with webServer')
     argParser.add_argument('--filesremote', '-x', default=False, action='store_true',
                        help='dicom files retrieved from remote server')
+    argParser.add_argument('--deleteTmpNifti, -d', default=1, type=str
+                       help='whether or not to delete all temporary niftis--don''t do if there was just an error')
     args = argParser.parse_args()
     print(args)
     cfg = initializeGreenEyes(args.config,args)
+
+    # DELETE ALL FILES IF FLAGGED TO # 
+    if int(args.deleteTmpNifti):
+        deleteTmpFiles(cfg)
+    # DELETE ALL FILES IF FLAGGED TO # 
+
     # webpipe
     webComm = None
     if args.webpipe:
