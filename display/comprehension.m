@@ -1,6 +1,6 @@
 %% specify any input - run from local directory
-debug = 1;
-subjectNum = 1;
+debug = 0;
+subjectNum = 102;
 bidsId = sprintf('sub-%03d',subjectNum);
 
 saveDir = ['data/' bidsId];
@@ -29,7 +29,7 @@ POSSIBLE_ANSWERS{4,2} = 'Jenny';
 CORRECT_ANSWER(4) = 1;
 QUESTIONS{5} = 'What was Lee''s girlfriend name?';
 POSSIBLE_ANSWERS{5,1} = 'Joanie';
-POSSIBLE_ANSWERS{5,2} = 'Rose'; % change to don't know???
+POSSIBLE_ANSWERS{5,2} = 'Rosie'; % change to don't know???
 CORRECT_ANSWER(5) = 0;
 QUESTIONS{6} = 'Why did Arthur call Lee?';
 POSSIBLE_ANSWERS{6,1} = 'Because Joanie didn''t come home, and he wanted to know if Lee noticed when she left';
@@ -182,7 +182,7 @@ questionDur = -1; % means unlimited amount of time to answer
 % display parameters
 textColor = 255;
 textFont = 'Arial';
-textSize = 25;
+textSize = 35;
 textSpacing = 25;
 fixColor = 0;
 respColor = 255;
@@ -202,22 +202,23 @@ FOUR = KbName('4$');
 FIVE = KbName('5%');
 UP_key = KbName('UpArrow');
 DOWN_key = KbName('DownArrow');
-subj_keycode = LEFT;
 
 basicInstruct{1} = 'Now that you have received all your information and clues, it is time to tell us what you think happened.'; 
 basicInstruct{2} = 'You will now be asked to answer questions about the story you just heard.';
 basicInstruct{2} = 'Please do you best to answer the questions as accurately and honestly as possible.';
-basicInstruct{3} = 'Read the questions carefully. If you respond too fast, your response won''t count';
+basicInstruct{3} = 'Read the questions carefully. If you respond too fast, your response won''t count and you''ll need to respond again.';
 basicInstruct{4} = 'Hit the UP arrow to choose the top response, and hit the DOWN arrow to choose the bottom response.';
 basicInstruct{5} = '-- Press the UP arrow when you are ready to begin. --';
 allBasicInstruct = [basicInstruct{1} '\n' basicInstruct{2} '\n' basicInstruct{3} '\n' basicInstruct{4} '\n\n\n' basicInstruct{5} ];
 ratingsInstruct{1} = 'Next you will provide ratings. Please use the number keys 1-5 for ratings.';
-ratingsInstruct{2} = 'Read the questions carefully. If you respond too fast, your response won''t count';
+ratingsInstruct{2} = 'Read the questions carefully. If you respond too fast, your response won''t count and you''ll need to respond again.';
 ratingsInstruct{3} = '-- Press the UP arrow when you are ready to begin. --';
 allRatingsInstruct = [ratingsInstruct{1} '\n' ratingsInstruct{2}  '\n\n\n' ratingsInstruct{3} ];
 
 ratingsInstruct{3} = 'Please rate on a scale from 1-5 how much you:\n(1 = the least; 5 = the most)';
 %% Initalize screens
+screenNumbers = Screen('Screens');
+Screen('Preference', 'SkipSyncTests', 2);
 if debug
     screenNum = 0;
 else
@@ -342,18 +343,18 @@ for iTrial = 1:nQ
         [keyIsDown, secs, keyCode] = KbCheck(DEVICE); % -1 checks all keyboards
         if keyIsDown
             if keyCode(UP_key) + keyCode(DOWN_key) > 0 % if one of them is pressed
-                fprintf('key pressed\n')
+                %fprintf('key pressed\n')
                 % record response and reaction time
                 stim.question_resps(iTrial) = find(keyCode,1);
                 % record which choice it was to make it easier to go back
                 if stim.all_q_positions(iTrial) == 1
-                    if stim.question_resps(iTrial) == keyCode(UP_key)
+                    if stim.question_resps(iTrial) == UP_key
                         stim.actual_resp(iTrial) = 1;
                     else
                         stim.actual_resp(iTrial) = 2;
                     end
                 else
-                    if stim.question_resps(iTrial) == keyCode(UP_key)
+                    if stim.question_resps(iTrial) == UP_key
                         stim.actual_resp(iTrial) = 2;
                     else
                         stim.actual_resp(iTrial) = 1;
@@ -381,7 +382,7 @@ stim.rating_rts = NaN(nR,1);
 for iTrial = 1:nR
     thisQuestion = ratingsInstruct{3};
     fullQuestion = [ratingsInstruct{3} '\n\n\n\n\n' RATINGS{iTrial}];
-    DrawFormattedText(mainWindow,fullQuestion, 'center', 'center', textColor, wrapat)
+    DrawFormattedText(mainWindow,fullQuestion, 'center', 'center', textColor, wrapat);
 
    timing.ratingOn(iTrial) = Screen('Flip',mainWindow);
     WaitSecs(1);
@@ -405,7 +406,9 @@ end
 
 %% save
 save([saveDir '/responses' '_' datestr(now,30)],'stim', 'timing');
-
+DrawFormattedText(mainWindow,'Thank you!', 'center', 'center', textColor, wrapat);
+Screen('Flip',mainWindow);
+WaitSecs(3);
 % clean up and go home
 sca;
 ListenChar(1);
