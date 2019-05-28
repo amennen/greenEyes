@@ -332,7 +332,7 @@ def main():
                        help='Named pipe to communicate with webServer')
     argParser.add_argument('--filesremote', '-x', default=False, action='store_true',
                        help='dicom files retrieved from remote server')
-    argParser.add_argument('--deleteTmpNifti, -d', default=1, type=str
+    argParser.add_argument('--deleteTmpNifti, -d', default=1, type=str,
                        help='whether or not to delete all temporary niftis--don''t do if there was just an error')
     args = argParser.parse_args()
     print(args)
