@@ -353,8 +353,7 @@ def main():
                 timeout_file = 180
             else:
                 timeout_file = 5
-            dicomBufferData = fileInterface.watchFile(getDicomFileName(cfg, scanNum, TRFilenum), timeout=timeout_file) # if starts with slash it's full path, if not, it assumes it's the watch directory and builds
-            dicomData = readDicomFromBuffer(dicomBufferData)
+            dicomData = readRetryDicomFromFileInterface(fileInterface, getDicomFileName(cfg, scanNum, TRFilenum), timeout=timeout_file)
             full_nifti_name = convertToNifti(TRFilenum,scanNum,cfg,dicomData)
             registeredFileName = registerNewNiftiToMNI(cfg,full_nifti_name)
             maskedData = apply_mask(registeredFileName,cfg.mask_filename)
