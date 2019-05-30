@@ -141,8 +141,10 @@ def convertToNifti(TRnum,scanNum,cfg,dicomData):
     nameToSaveNifti = expected_dicom_name.split('.')[0] + '.nii.gz'
     fullNiftiFilename = os.path.join(tempNiftiDir, nameToSaveNifti)
     if not os.path.isfile(fullNiftiFilename): # only convert if haven't done so yet (check if doesn't exist)
-       new_nifti_name = dnh.saveAsNiftiImage(dicomData,expected_dicom_name,cfg)
-    return new_nifti_name
+       fullNiftiFilename = dnh.saveAsNiftiImage(dicomData,expected_dicom_name,cfg)
+    else:
+        print('SKIPPING CONVERSION FOR EXISTING NIFTI {}'.format(fullNiftiFilename))
+    return fullNiftiFilename
     # ask about nifti conversion or not
 
 def registerNewNiftiToMNI(cfg,full_nifti_name):
@@ -171,6 +173,8 @@ def registerNewNiftiToMNI(cfg,full_nifti_name):
         call(command,shell=True)
         B = time.time()
         print(B-A)
+    else:
+        print('SKIPPING REGISTRATION FOR EXISTING NIFTI {}'.format(output_nifti_name))
 
     return output_nifti_name 
 
@@ -328,7 +332,7 @@ def main():
     argParser.add_argument('--scans', '-s', default='', type=str,
                        help='Comma separated list of scan number')
     argParser.add_argument('--deleteTmpNifti', '-d', default='1', type=str,
-                       help='DO NOT RUN IF RERUNNING WITHIN RUN')
+                       help='Set to 0 if rerunning during a single scanning after error')
     # creates web pipe communication link to send/request responses through web pipe
     argParser.add_argument('--webpipe', '-w', default=None, type=str,
                        help='Named pipe to communicate with webServer')
@@ -343,8 +347,9 @@ def main():
     if args.deleteTmpNifti == '1':
         deleteTmpFiles(cfg)
     else:
-        print(args.deleteTmpNifti)
-        print('NOT DELETING')
+        print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+        print('NOT DELETING NIFTIS IN tmp/convertedNiftis')
+        print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
     # DELETE ALL FILES IF FLAGGED TO # 
 
     # webpipe

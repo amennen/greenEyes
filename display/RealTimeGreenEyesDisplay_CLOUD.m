@@ -289,7 +289,7 @@ FlushEvents('keyDown');
 % for the first time or again
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-firstRun = ['Welcome to the task!\n\nToday you will be listening to a pre-recorded audio story. \nAs explained earlier, please do you best to complete the mission and reveal the truth of the characters.'];
+firstRun = ['Welcome to the task!\n\nToday you will be listening to a pre-recorded audio story. \nAs explained earlier, please do you best to complete the mission and discover the truth.'];
 if runData.run == 1
     % show the first instructions
     firstInstruct = [firstRun continueInstruct];
@@ -297,7 +297,7 @@ if runData.run == 1
     Screen('Flip',mainWindow);
     waitForKeyboard(subj_keycode,DEVICE);
 end
-firstRun = ['Remember, your mission is to decide who the woman is:\n(1)if Arthur''s wife, Joanie, is cheating on him with Lee, then Joanie is in Lee''s bed.\n\n(2) if Arthur is paranoid, then Lee''s girlfriend, Rose in in Lee''s bed.'];
+firstRun = ['Remember, you need to investigate who else is in Lee''s bed:\n(1)if Arthur''s wife, Joanie, is cheating on him with Lee, then Joanie is in Lee''s bed.\n\n(2) if Arthur is paranoid, then Lee''s girlfriend, Rose in in Lee''s bed.'];
 if runData.run == 1
     % show the first instructions
     firstInstruct = [firstRun continueInstruct];
