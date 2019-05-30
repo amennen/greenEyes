@@ -80,9 +80,9 @@ def main():
     argParser = argparse.ArgumentParser()
     argParser.add_argument('--config', '-c', default=defaultConfig, type=str,
                        help='experiment config file (.json or .toml)')
-    argParser.add_argument('--runs', '-r', default=1, type=str,
+    argParser.add_argument('--runs', '-r', default='1', type=str,
                        help='Comma separated list of run numbers')
-    argParser.add_argument('--scans', '-s', default=5, type=str,
+    argParser.add_argument('--scans', '-s', default='5', type=str,
                        help='Comma separated list of scan number')
     # creates web pipe communication link to send/request responses through web pipe
     argParser.add_argument('--webpipe', '-w', default=None, type=str,
