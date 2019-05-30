@@ -267,6 +267,7 @@ def preprocessAndPredict(cfg,runData,TRindex_story):
     n_station_TRs = len(this_station_TRs)
     if len(runData.badVoxels[stationKey]) > 0:
         voxelsToExclude = runData.badVoxels[stationKey]
+        print('excluding {0} voxels-- {1}'.format(len(voxelsToExclude),voxelsToExclude))
         runData.dataForClassification[stationKey][voxelsToExclude,:] = 0
     thisStationData = runData.dataForClassification[stationKey][:,this_station_TRs]
     dataForClassification_reshaped = np.reshape(thisStationData,(1,cfg.nVox*n_station_TRs))
@@ -409,6 +410,9 @@ def main():
             TRheader = makeTRHeader(cfg,runIndex,TRFilenum,storyTRCount-1,stationInd,runData.correct_prob[stationInd])
 
         # SAVE OVER RUN NP FILE
+        runData.scanNum = scanNum # save scanning number
+        runData.subjectName = cfg.subjectName
+        runData.dicomDir = cfg.dicomDir
         run_filename = getRunFilename(cfg.sessionId, run)
         full_run_filename_to_save = os.path.join(cfg.subject_full_day_path,run_filename)
         #try:
