@@ -132,9 +132,9 @@ def main():
         cfg = buildSubjectFoldersIntelrt(cfg)
         if cfg.subjectDay == 2:
             cluster_wf_dir = '{0}/derivatives/work/fmriprep_wf/single_subject_{1:03d}_wf'.format(cfg.cluster.clusterBidsDir,cfg.subjectNum)
-            cluster_BOLD_to_T1 = cluster_wf_dir + '/func_preproc_ses_01_task_story_run_01_wf/bold_reg_wf/bbreg_wf/fsl2itk_fwd/affine.txt'
+            cluster_BOLD_to_T1 = cluster_wf_dir + '/func_preproc_ses_01_task_examplefunc_run_01_wf/bold_reg_wf/bbreg_wf/fsl2itk_fwd/affine.txt'
             cluster_T1_to_MNI = cluster_wf_dir + '/anat_preproc_wf/t1_2_mni/ants_t1_to_mniComposite.h5'
-            cluster_ref_BOLD = cluster_wf_dir + '/func_preproc_ses_01_task_story_run_01_wf/bold_reference_wf/gen_ref/ref_image.nii.gz'
+            cluster_ref_BOLD = cluster_wf_dir + '/func_preproc_ses_01_task_examplefunc_run_01_wf/bold_reference_wf/gen_ref/ref_image.nii.gz'
             copyClusterFileToIntel(cluster_BOLD_to_T1,cfg.subject_offline_registration_path)
             copyClusterFileToIntel(cluster_T1_to_MNI,cfg.subject_offline_registration_path)
             copyClusterFileToIntel(cluster_ref_BOLD,cfg.subject_offline_registration_path)
