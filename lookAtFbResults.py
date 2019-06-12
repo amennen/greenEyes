@@ -46,7 +46,7 @@ def getCorrectProbability(cfg):
         all_correct_prob[r,:] = run_data.correct_prob[0,:]
     return all_correct_prob
 
-def getReward(all_correct_prob):
+def getReward(cfg,all_correct_prob):
     nRuns = len(cfg.Runs)
     run_avg = np.zeros((nRuns,))
     for r in np.arange(nRuns):
@@ -100,7 +100,7 @@ def main():
     print('Prob for each run (col) over all stations (row)')
     print(correct_prob.T)
     if args.getReward:
-        total_reward = getReward(correct_prob)
+        total_reward = getReward(cfg,correct_prob)
     if args.makePlots:
         plotCorrectProbability(cfg,correct_prob)
 

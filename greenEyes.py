@@ -36,7 +36,7 @@ import rtCommon.dicomNiftiHandler as dnh
 defaultConfig = os.path.join(currPath, 'conf/greenEyes_organized.toml')
 
 
-def initializeGreenEyes(configFile,params):
+def initializeGreenEyes(configFile,args):
     # load subject information
     # create directories for new niftis
     # randomize which category they'll be attending to and save that
@@ -50,11 +50,15 @@ def initializeGreenEyes(configFile,params):
     else:
         cfg.useSessionTimestamp = False
     # MERGE WITH PARAMS
-    if params.runs != '' and params.scans != '':
+    if args.runs != '' and args.scans != '':
         # use the run and scan numbers passed in as parameters
-        cfg.runs = [int(x) for x in params.runs.split(',')]
-        cfg.scanNums = [int(x) for x in params.scans.split(',')]
-
+        cfg.Runs = [int(x) for x in args.runs.split(',')]
+        cfg.ScanNums = [int(x) for x in args.scans.split(',')]
+    else: # when you're not specifying on the command line it's already in a list
+        cfg.Runs = [int(x) for x in cfg.Runs]
+        cfg.ScanNums = [int(x) for x in cfg.ScanNums]
+    print(cfg.Runs)
+    print(type(cfg.Runs[0]))   
     # GET DICOM DIRECTORY
     if cfg.mode != 'debug':
         if cfg.buildImgPath:
@@ -74,8 +78,8 @@ def initializeGreenEyes(configFile,params):
     else:
         cfg.dicomDir = glob.glob(cfg.cluster.imgDir.format(cfg.subjectName))[0]
         cfg.dicomNamePattern = cfg.cluster.dicomNamePattern
-    cfg.webpipe = params.webpipe
-    cfg.webfilesremote = params.filesremote # FLAG FOR REMOTE OR LOCAL
+    cfg.webpipe = args.webpipe
+    cfg.webfilesremote = args.filesremote # FLAG FOR REMOTE OR LOCAL
 	########
     cfg.bids_id = 'sub-{0:03d}'.format(cfg.subjectNum)
     cfg.ses_id = 'ses-{0:02d}'.format(cfg.subjectDay)
@@ -286,8 +290,8 @@ def makeRunHeader(cfg,runIndex):
     print('* Date/Time: ' + now.isoformat()) 
     print('* Subject Number: ' + str(cfg.subjectNum)) 
     print('* Subject Name: ' + str(cfg.subjectName)) 
-    print('* Run Number: ' + str(cfg.runs[runIndex])) 
-    print('* Scan Number: ' + str(cfg.scanNums[runIndex])) 
+    print('* Run Number: ' + str(cfg.Runs[runIndex])) 
+    print('* Scan Number: ' + str(cfg.ScanNums[runIndex])) 
     print('* Real-Time Data: ' + str(cfg.rtData))     
     print('* Mode: ' + str(cfg.mode)) 
     print('* Machine: ' + str(cfg.machine)) 
@@ -304,7 +308,7 @@ def makeTRHeader(cfg,runIndex,TRFilenum,storyTRCount,stationInd,correct_prob):
     else:
         stStr = 'listen'
     print('{:<10.0f}{:<10d}{:<10d}{:<10s}{:<10d}{:<10.3f}'.format(
-        cfg.runs[runIndex],TRFilenum,storyTRCount,stStr,stationInd,correct_prob))
+        cfg.Runs[runIndex],TRFilenum,storyTRCount,stStr,stationInd,correct_prob))
     return
 
 def deleteTmpFiles(cfg):
@@ -317,12 +321,12 @@ def deleteTmpFiles(cfg):
     return
 
 # testing code--debug mode -- run in greenEyes directory
-from greenEyes import *
-params = StructDict({'config':defaultConfig, 'runs': '1', 'scans': '9', 'webpipe': 'None', 'webfilesremote': False})
-cfg = initializeGreenEyes(params.config,params)
-args = StructDict()
-args.filesremote = False
-webComm = None
+#from greenEyes import *
+#params = StructDict({'config':defaultConfig, 'runs': '1', 'scans': '9', 'webpipe': 'None', 'webfilesremote': False})
+#cfg = initializeGreenEyes(params.config,params)
+#args = StructDict()
+#args.filesremote = False
+#webComm = None
 
 def main():
     argParser = argparse.ArgumentParser()
@@ -364,7 +368,7 @@ def main():
     fileInterface.initWatch(cfg.dicomDir, cfg.dicomNamePattern, cfg.minExpectedDicomSize) 
     story_TRs = cfg.story_TR_2 - cfg.story_TR_1 + 1
     #### MAIN PROCESSING ###
-    nRuns = len(cfg.runs)
+    nRuns = len(cfg.Runs)
     for runIndex in np.arange(nRuns):
         runData = StructDict()
         runData.cheating_probability = np.zeros((cfg.nStations,))
@@ -376,8 +380,8 @@ def main():
         runData.story_data = np.zeros((cfg.nVox,story_TRs))
 
         makeRunHeader(cfg,runIndex)
-        run = cfg.runs[runIndex]
-        scanNum = cfg.scanNums[runIndex]
+        run = cfg.Runs[runIndex]
+        scanNum = cfg.ScanNums[runIndex]
         storyTRCount = 0
         stationInd=0
         for TRFilenum in np.arange(cfg.nTR_skip+1,cfg.nTR_run+1):
@@ -404,8 +408,11 @@ def main():
                     else:
                         full_filename_to_save = os.path.join(cfg.subject_full_day_path,file_name_to_save) 
                     fileInterface.putTextFile(full_filename_to_save,text_to_save)
+                    
                     if args.webpipe:    
-                        wcutils.sendClassicationResult(webComm, run, TRFilenum, val)
+                        # JUST TO PLOT ON WEB SERVER
+
+                        wcutils.sendClassicationResult(webComm, run,int(stationInd) ,runData.correct_prob[stationInd] )
                 storyTRCount += 1
             TRheader = makeTRHeader(cfg,runIndex,TRFilenum,storyTRCount-1,stationInd,runData.correct_prob[stationInd])
 
