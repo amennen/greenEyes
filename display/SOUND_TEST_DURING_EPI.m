@@ -1,6 +1,7 @@
 % PURPOSE: TEST SOUND WITH EXAMPLE FUNCTIONAL SCAN
 dbstop if error;
-toml_file = '/Volumes/norman/amennen/github/brainiak/rt-cloud/projects/greenEyes/conf/greenEyes_organized.toml';
+%toml_file = '/Volumes/norman/amennen/github/brainiak/rt-cloud/projects/greenEyes/conf/greenEyes_organized.toml';
+toml_file = '/Data1/code/rt-cloud/projects/greenEyes/conf/greenEyes_organized.toml';
 addpath(genpath('matlab-toml'));
 raw_text = fileread(toml_file);
 cfg = toml.decode(raw_text);
@@ -48,6 +49,8 @@ PsychPortAudio('FillBuffer', pahandle, wavedata);
 %%
 tStart = GetSecs;
 tOn = PsychPortAudio('Start', pahandle, [], tStart,1);
-WaitSecs(20);
-tOff = PsychPortAudio('Stop', pahandle,0);
-PsychPortAudio('Close', pahandle);
+%WaitSecs(25);
+tOff = PsychPortAudio('Stop', pahandle,1);
+PsychPortAudio('Close', pahandle);3
+
+

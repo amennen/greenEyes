@@ -35,9 +35,8 @@ import greenEyes
 
 defaultConfig = os.path.join(currPath, 'conf/greenEyes_organized.toml')
 # date doesn't have to be right, but just make sure subject number, session number, computers are correct
-
 def getCorrectProbability(cfg):
-    nRuns = len(cfg.Runs)
+    nRuns = int(cfg.totalNumberRuns)
     all_correct_prob = np.zeros((nRuns,cfg.nStations))
     for r in np.arange(nRuns):
         fileStr = '{0}/patternsData_r{1}*'.format(cfg.subject_full_day_path,r+1)
@@ -47,12 +46,14 @@ def getCorrectProbability(cfg):
     return all_correct_prob
 
 def getReward(cfg,all_correct_prob):
-    nRuns = len(cfg.Runs)
+    nRuns = int(cfg.totalNumberRuns)
     run_avg = np.zeros((nRuns,))
     for r in np.arange(nRuns):
         this_run = all_correct_prob[r,:]
         this_run[this_run < 0.5] = 0
         run_avg[r] = np.nanmean(this_run)
+    print('all runs were:')
+    print(run_avg)
     total_money_reward = np.nansum(run_avg)*5
     rewardStr = 'TOTAL REWARD: %5.2f\n' % total_money_reward
     print(rewardStr)
@@ -60,7 +61,7 @@ def getReward(cfg,all_correct_prob):
 
 def plotCorrectProbability(cfg,all_correct_prob):
     # now plot everything
-    nRuns = len(cfg.Runs)
+    nRuns = int(cfg.totalNumberRuns)
     cmap = plt.get_cmap('Blues')
     color_idx = np.linspace(0, 1, nRuns)
     plt.figure()
@@ -80,9 +81,9 @@ def main():
     argParser = argparse.ArgumentParser()
     argParser.add_argument('--config', '-c', default=defaultConfig, type=str,
                        help='experiment config file (.json or .toml)')
-    argParser.add_argument('--runs', '-r', default='1', type=str,
+    argParser.add_argument('--runs', '-r', default='', type=str,
                        help='Comma separated list of run numbers')
-    argParser.add_argument('--scans', '-s', default='5', type=str,
+    argParser.add_argument('--scans', '-s', default='', type=str,
                        help='Comma separated list of scan number')
     # creates web pipe communication link to send/request responses through web pipe
     argParser.add_argument('--webpipe', '-w', default=None, type=str,

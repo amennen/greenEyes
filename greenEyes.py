@@ -57,8 +57,6 @@ def initializeGreenEyes(configFile,args):
     else: # when you're not specifying on the command line it's already in a list
         cfg.Runs = [int(x) for x in cfg.Runs]
         cfg.ScanNums = [int(x) for x in cfg.ScanNums]
-    print(cfg.Runs)
-    print(type(cfg.Runs[0]))   
     # GET DICOM DIRECTORY
     if cfg.mode != 'debug':
         if cfg.buildImgPath:

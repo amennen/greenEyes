@@ -1,3 +1,5 @@
+
+
 % display parameters
 textColor = 0;
 textFont = 'Arial';
