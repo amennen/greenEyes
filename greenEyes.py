@@ -85,14 +85,14 @@ def initializeGreenEyes(configFile,args):
         # then all processing is happening on linux too
         cfg.dataDir = cfg.intelrt.codeDir + 'data'
         cfg.classifierDir = cfg.intelrt.classifierDir
-        cfg.mask_filename = cfg.intelrt.maskDir + cfg.MASK
-        cfg.MNI_ref_filename = cfg.intelrt.maskDir + cfg.MNI_ref_BOLD
+        cfg.mask_filename = os.path.join(cfg.intelrt.maskDir, cfg.MASK)
+        cfg.MNI_ref_filename = os.path.join(cfg.intelrt.maskDir, cfg.MNI_ref_BOLD)
     elif cfg.mode == 'cloud':
         cfg.dataDir = cfg.cloud.codeDir + 'data'
         cfg.classifierDir = cfg.cloud.classifierDir
-        cfg.mask_filename = cfg.cloud.maskDir + cfg.MASK
-        cfg.MNI_ref_filename = cfg.intelrt.maskDir + cfg.MNI_ref_BOLD
-        cfg.intelrt.subject_full_day_path = '{0}/data/{1}/{2}'.format(cfg.intelrt.codeDir,dataDir,cfg.bids_id,cfg.ses_id)
+        cfg.mask_filename = os.path.join(cfg.cloud.maskDir, cfg.MASK)
+        cfg.MNI_ref_filename = os.path.join(cfg.cloud.maskDir, cfg.MNI_ref_BOLD)
+        cfg.intelrt.subject_full_day_path = '{0}/data/{1}/{2}'.format(cfg.intelrt.codeDir,cfg.bids_id,cfg.ses_id)
     elif cfg.mode == 'debug':
         cfg.dataDir = cfg.cluster.codeDir + 'data'
         cfg.classifierDir = cfg.cluster.classifierDir
