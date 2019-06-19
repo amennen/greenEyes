@@ -2,8 +2,8 @@
 dbstop if error;
 Screen('Preference', 'SkipSyncTests', 2);
 
-toml_file = '/Volumes/norman/amennen/github/brainiak/rt-cloud/projects/greenEyes/conf/greenEyes_organized.toml';
-%toml_file = '/Data1/code/rt-cloud/projects/greenEyes/conf/greenEyes_organized.toml';
+%toml_file = '/Volumes/norman/amennen/github/brainiak/rt-cloud/projects/greenEyes/conf/greenEyes_organized.toml';
+toml_file = '/Data1/code/rt-cloud/projects/greenEyes/conf/greenEyes_organized.toml';
 addpath(genpath('matlab-toml'));
 raw_text = fileread(toml_file);
 cfg = toml.decode(raw_text);

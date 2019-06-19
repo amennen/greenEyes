@@ -6,8 +6,8 @@ model = "greenEyes"
 
 rtData = true
 date = "today" # "2018-08-16"  # or "today", "now", "2018-03-01" or "03/01/2018" etc.
-subjectName = "0523191_greenEyes"
-subjectNum = 102
+subjectName = "061819_greenEyes"
+subjectNum = 4
 subjectDay = 2
 mode = "local"  #"debug"
 machine = "intel" #"cluster"
@@ -60,6 +60,7 @@ calcClockSkewIters = 30
 # Specify default run numbers
 Runs = [1, 2, 3, 4]
 ScanNums = [5, 6 ,7 ,8]
+totalNumberRuns = 4
 
 ## DISPLAY PARAMETERS ##
 [display]
