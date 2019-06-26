@@ -33,6 +33,7 @@ from rtCommon.structDict import StructDict
 import rtCommon.dicomNiftiHandler as dnh
 # in tests directory can see test script
 
+logLevel = logging.INFO
 defaultConfig = os.path.join(currPath, 'conf/greenEyes_organized.toml')
 
 
@@ -332,6 +333,9 @@ def deleteTmpFiles(cfg):
 #webComm = None
 
 def main():
+    logger = logging.getLogger()
+    logger.setLevel(logLevel)
+    logging.info('GREEN EYES: first log message!')
     argParser = argparse.ArgumentParser()
     argParser.add_argument('--config', '-c', default=defaultConfig, type=str,
                        help='experiment config file (.json or .toml)')
