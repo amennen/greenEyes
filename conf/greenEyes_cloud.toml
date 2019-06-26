@@ -5,9 +5,9 @@ experimentId = 1
 model = "greenEyes"
 
 rtData = true
-date = "5/23/19" # "2018-08-16"  # or "today", "now", "2018-03-01" or "03/01/2018" etc.
-subjectName = "0523191_greenEyes"
-subjectNum = 102
+date = "today" # "2018-08-16"  # or "today", "now", "2018-03-01" or "03/01/2018" etc.
+subjectName = "0626191_greenEyes"
+subjectNum = 8
 subjectDay = 2
 mode = "cloud"  #"debug"
 machine = "cloud" #"cluster"
@@ -71,6 +71,7 @@ usePython = 1
 # ON LOCAL (INTEL LINUX)
 [intelrt]
 imgDir = "/Data1/subjects/"
+#imgDir = "/Data1/code/rt-cloud/projects/greenEyes/tmp/"
 codeDir = "/Data1/code/rt-cloud/projects/greenEyes/"
 classifierDir="/Data1/code/utils_greenEyes/greenEyes_clf/"
 maskDir="/Data1/code/utils_greenEyes/greenEyes_masks/"
