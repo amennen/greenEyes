@@ -173,3 +173,19 @@ plt.ylabel('Cheating probability')
 plt.xlabel('Run #')
 plt.show()
 #plt.xticks(np.array([0,1]), labels) 
+
+# calculate diff from first to last run and plot
+run_diff = prob_cheating[3,:] - prob_cheating[0,:]
+plt.figure()
+for s in np.arange(nSub):
+    subjectNum = allSubjects[s]
+    interpretation = getSubjectInterpretation(subjectNum)
+    if interpretation == 'C':
+        index = 0 
+    elif interpretation == 'P':
+        index = 1
+    plt.plot(index,run_diff[s] , '.', color=colors[index], ms=20,alpha=0.3)
+plt.title('Diff prob cheating R4 - R1')
+plt.xticks(np.array([0,1]), labels) 
+plt.ylabel('Diff in cheating prob')
+plt.show()
