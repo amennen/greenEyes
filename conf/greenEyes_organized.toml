@@ -79,7 +79,7 @@ dicomNamePattern = "001_0000{}_000{}.dcm"
 
 # ON CLOUD VM (WHEN USING CLOUD)
 [cloud]
-codeDir = "/home/amennen/rt-cloud/projects/greenEyes/"
+codeDir = "/home/amennen/code/rt-cloud/projects/greenEyes/"
 classifierDir = "/home/amennen/utils/greenEyes_clf/"
 maskDir = "/home/amennen/utils/greenEyes_masks"
 
