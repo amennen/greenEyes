@@ -1,6 +1,7 @@
 import os
 import sys
 import argparse
+import logging
 # import project modules
 # Add base project path (two directories up)
 currPath = os.path.dirname(os.path.realpath(__file__))
@@ -14,6 +15,8 @@ defaultConfig = os.path.join(currPath, 'conf/greenEyes_organized.toml')
 
 
 if __name__ == "__main__":
+    installLoggers(logging.INFO, logging.INFO, filename=os.path.join(currPath, 'logs/webServer.log'))
+
     argParser = argparse.ArgumentParser()
     argParser.add_argument('--filesremote', '-x', default=False, action='store_true',
                            help='dicom files retrieved from remote server')
