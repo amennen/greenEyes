@@ -33,14 +33,14 @@ def copyClusterFileToIntel(fileOnCluster,pathOnLinux):
 	#return command
 
 
-def copyIntelFileToCloud(fileOnIntel,pathOnCloud):
+def copyIntelFileToCloud(fileOnIntel,pathOnCloud,serverAddr):
 	"""This copies a file from the intel computer to the cloud VM, assuming that you're on the intel linux calling the function"""
-	command = 'scp -i ~/.ssh/azure_id_rsa {0} amennen@52.170.198.87:{1} '.format(fileOnIntel,pathOnCloud)
+	command = 'scp -i ~/.ssh/azure_id_rsa {0} amennen@{1}:{2} '.format(fileOnIntel,serverAddr,pathOnCloud)
 	call(command,shell=True)
 
-def copyIntelFolderToCloud(folderOnIntel,pathOnCloud):
+def copyIntelFolderToCloud(folderOnIntel,pathOnCloud,serverAddr):
         """This copies a file from the intel computer to the cloud VM, assuming that you're on the intel linux calling the function"""
-        command = 'scp -i ~/.ssh/azure_id_rsa -r {0} amennen@52.170.198.87:{1} '.format(folderOnIntel,pathOnCloud)
+        command = 'scp -i ~/.ssh/azure_id_rsa -r {0} amennen@{1}:{2} '.format(folderOnIntel,serverAddr,pathOnCloud)
         call(command,shell=True)
 
 def copyClusterFileToCluster(fileOnCluster,pathOnCluster):
@@ -131,6 +131,8 @@ def main():
     argParser = argparse.ArgumentParser()
     argParser.add_argument('--config', '-c', default=defaultConfig,type=str,
                    help='experiment config file (.json or .toml)')
+    argParser.add_argument('--addr', '-a', default='localhost', type=str, 
+                   help='server ip address')
     args = argParser.parse_args()
     params = StructDict({'config': args.config})
 
@@ -155,7 +157,11 @@ def main():
             if cfg.mode == 'cloud': # also copy files to the cloud computer -- easier here to just copy entire folder
                 cfg.subject_full_path = '{0}/data/{1}'.format(cfg.intelrt.codeDir,cfg.bids_id)
                 locationToSend = '{0}/data/'.format(cfg.cloud.codeDir)
-                copyIntelFolderToCloud(cfg.subject_full_path,locationToSend)
+                if args.addr is not 'localhost':
+                    copyIntelFolderToCloud(cfg.subject_full_path,locationToSend,args.addr)
+                else:
+                    logging.warning('YOU NEED TO INPUT CLOUD IP ADDR!!')
+                    print('YOU NEED TO INPUT CLOUD IP ADDR!!')
     # elif cfg.machine == 'cloud':
     #     # get cloud computer ready
     #     cfg = buildSubjectFoldersCloud(cfg)
