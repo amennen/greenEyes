@@ -138,7 +138,9 @@ def getTransform():
 
 def convertToNifti(TRnum,scanNum,cfg,dicomData):
     #anonymizedDicom = anonymizeDicom(dicomData) # should be anonymized already
-    expected_dicom_name = cfg.dicomNamePattern.format(scanNum,TRnum)
+    scanNumStr = str(scanNum).zfill(2)
+    fileNumStr = str(TRnum).zfill(3)
+    expected_dicom_name = cfg.dicomNamePattern.format(scanNumStr,fileNumStr)
     tempNiftiDir = os.path.join(cfg.dataDir, 'tmp/convertedNiftis/')
     nameToSaveNifti = expected_dicom_name.split('.')[0] + '.nii.gz'
     fullNiftiFilename = os.path.join(tempNiftiDir, nameToSaveNifti)

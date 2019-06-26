@@ -19,6 +19,7 @@ rootPath = os.path.dirname(os.path.dirname(currPath))
 sys.path.append(rootPath)
 #WHEN TESTING
 #sys.path.append('/jukebox/norman/amennen/github/br
+#sys.path.append('/Data1/code/rt-cloud/')
 from rtCommon.utils import loadConfigFile
 from rtCommon.structDict import StructDict
 #from rtfMRI.FileInterface import FileInterface this won't work because don't have inotify--i think this caused numpy problem
@@ -151,19 +152,19 @@ def main():
             copyClusterFileToIntel(cluster_ref_BOLD,cfg.subject_offline_registration_path)
             # now see if you need to randomly draw the intepretation
             makeSubjectInterpretation(cfg)
-            if cfg.mode == 'cloud': # also copy files to the cloud computer
+            if cfg.mode == 'cloud': # also copy files to the cloud computer -- easier here to just copy entire folder
                 cfg.subject_full_path = '{0}/data/{1}'.format(cfg.intelrt.codeDir,cfg.bids_id)
                 locationToSend = '{0}/data/'.format(cfg.cloud.codeDir)
                 copyIntelFolderToCloud(cfg.subject_full_path,locationToSend)
-    elif cfg.machine == 'cloud':
-        # get cloud computer ready
-        cfg = buildSubjectFoldersCloud(cfg)
-        fileInterface = FileInterface()
-        retrieveIntelFileAndSaveToCloud(cfg.intelrt.BOLD_to_T1,cfg.subject_offline_registration_path,fileInterface)
-        retrieveIntelFileAndSaveToCloud(cfg.intelrt.T1_to_MNI,cfg.subject_offline_registration_path,fileInterface)
-        retrieveIntelFileAndSaveToCloud(cfg.intelrt.ref_BOLD,cfg.subject_offline_registration_path,fileInterface)
-        retrieveInfelFileAndSaveToCloud(cfg.intelrt.interpretationFile,cfg.subject_full_day_path,fileInterface)
-    else: # running on cluster computer
+    # elif cfg.machine == 'cloud':
+    #     # get cloud computer ready
+    #     cfg = buildSubjectFoldersCloud(cfg)
+    #     fileInterface = FileInterface()
+    #     retrieveIntelFileAndSaveToCloud(cfg.intelrt.BOLD_to_T1,cfg.subject_offline_registration_path,fileInterface)
+    #     retrieveIntelFileAndSaveToCloud(cfg.intelrt.T1_to_MNI,cfg.subject_offline_registration_path,fileInterface)
+    #     retrieveIntelFileAndSaveToCloud(cfg.intelrt.ref_BOLD,cfg.subject_offline_registration_path,fileInterface)
+    #     retrieveInfelFileAndSaveToCloud(cfg.intelrt.interpretationFile,cfg.subject_full_day_path,fileInterface)
+    elif cfg.machine == 'cluster': # running on cluster computer
         cluster_wf_dir='{0}/derivatives/work/fmriprep_wf/single_subject_{1:03d}_wf'.format(cfg.cluster.clusterBidsDir,cfg.subjectNum)
         cluster_BOLD_to_T1= cluster_wf_dir + '/func_preproc_ses_01_task_story_run_01_wf/bold_reg_wf/bbreg_wf/fsl2itk_fwd/affine.txt'
         cluster_T1_to_MNI= cluster_wf_dir + '/anat_preproc_wf/t1_2_mni/ants_t1_to_mniComposite.h5'
