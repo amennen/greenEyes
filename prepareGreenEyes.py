@@ -31,6 +31,17 @@ def copyClusterFileToIntel(fileOnCluster,pathOnLinux):
 	call(command,shell=True)
 	#return command
 
+
+def copyIntelFileToCloud(fileOnIntel,pathOnCloud):
+	"""This copies a file from the intel computer to the cloud VM, assuming that you're on the intel linux calling the function"""
+	command = 'scp -i ~/.ssh/azure_id_rsa {0} amennen@52.170.198.87:{1} '.format(fileOnIntel,pathOnCloud)
+	call(command,shell=True)
+
+def copyIntelFolderToCloud(folderOnIntel,pathOnCloud):
+        """This copies a file from the intel computer to the cloud VM, assuming that you're on the intel linux calling the function"""
+        command = 'scp -i ~/.ssh/azure_id_rsa -r {0} amennen@52.170.198.87:{1} '.format(folderOnIntel,pathOnCloud)
+        call(command,shell=True)
+
 def copyClusterFileToCluster(fileOnCluster,pathOnCluster):
     """This copies a file from the cluster to cluster, assuming you're on the cluster calling the function"""
     command = 'cp {0} {1} '.format(fileOnCluster,pathOnCluster)
@@ -140,6 +151,10 @@ def main():
             copyClusterFileToIntel(cluster_ref_BOLD,cfg.subject_offline_registration_path)
             # now see if you need to randomly draw the intepretation
             makeSubjectInterpretation(cfg)
+            if cfg.mode == 'cloud': # also copy files to the cloud computer
+                cfg.subject_full_path = '{0}/data/{1}'.format(cfg.intelrt.codeDir,cfg.bids_id)
+                locationToSend = '{0}/data/'.format(cfg.cloud.codeDir)
+                copyIntelFolderToCloud(cfg.subject_full_path,locationToSend)
     elif cfg.machine == 'cloud':
         # get cloud computer ready
         cfg = buildSubjectFoldersCloud(cfg)

@@ -388,17 +388,23 @@ def main():
                 timeout_file = 180
             else:
                 timeout_file = 5
+            A = time.time()
             dicomData = readRetryDicomFromFileInterface(fileInterface, getDicomFileName(cfg, scanNum, TRFilenum), timeout=timeout_file)
             full_nifti_name = convertToNifti(TRFilenum,scanNum,cfg,dicomData)
             registeredFileName = registerNewNiftiToMNI(cfg,full_nifti_name)
             maskedData = apply_mask(registeredFileName,cfg.mask_filename)
             all_data[:,TRFilenum] = maskedData
+            B = time.time()
+            print('read to mask time: {:5f}'.format(B-A))
             if TRFilenum >= cfg.fileNum_story_TR_1 and TRFilenum <= cfg.fileNum_story_TR_2: # we're at a story TR now
                 runData.story_data[:,storyTRCount] = maskedData
                 if np.any(storyTRCount == cfg.last_tr_in_station.astype(int)):
                     # NOW PREPROCESS AND CLASSIFY
                     stationInd = np.argwhere(storyTRCount == cfg.last_tr_in_station.astype(int))[0][0]
+                    A = time.time()
                     runData = preprocessAndPredict(cfg,runData,storyTRCount)
+                    B = time.time()
+                    print('preprocessAndPredict time: {:5f}'.format(B-A))
                     text_to_save = '{0:05f}'.format(runData.correct_prob[stationInd])
                     file_name_to_save = getStationClassoutputFilename(run, stationInd)
                     if cfg.mode == 'cloud':
