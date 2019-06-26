@@ -7,7 +7,7 @@ import logging
 currPath = os.path.dirname(os.path.realpath(__file__))
 rootPath = os.path.dirname(os.path.dirname(currPath))
 sys.path.append(rootPath)
-from rtCommon.utils import loadConfigFile
+from rtCommon.utils import loadConfigFile, installLoggers
 from rtCommon.structDict import StructDict
 from web.webServer import Web
 
