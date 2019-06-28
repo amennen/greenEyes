@@ -106,14 +106,47 @@ def buildSubjectFoldersCloud(cfg):
         cfg.intelrt.interpretationFile = '{0}/{1}_{2}_interpretation.txt'.format(cfg.intelrt.subject_full_day_path,cfg.bids_id,cfg.ses_id)
     return cfg
 
+def getAllPrevInterpretations(allPreviousSubjects,cfg):
+    nPrevSubj = len(allPreviousSubjects)
+    n_cheating = 0
+    n_paranoid = 0
+    if cfg.machine == 'intel':
+        dataDir = os.path.join(cfg.intelrt.codeDir, 'data')
+    elif cfg.machine == 'cluster':
+        dataDir = os.path.join(cfg.cluster.codeDir, 'data')
+    for s in np.arange(nPrevSubj):
+        subjectNum = allPreviousSubjects[s]
+        bids_id = 'sub-{0:03d}'.format(subjectNum)
+        ses_id = 'ses-{0:02d}'.format(2)
+        filename = dataDir + '/' + bids_id + '/' + ses_id + '/' + bids_id + '_' + ses_id + '_' + 'intepretation.txt'
+        z = open(filename, "r")
+        temp_interpretation = z.read()
+        if 'C' in temp_interpretation:
+            n_cheating += 1
+        elif 'P' in temp_interpretation:
+            n_paranoid += 1
+    return n_cheating, n_paranoid
+
+
 def makeSubjectInterpretation(cfg):
     """Run this if interpretation isn't code--set to random"""
     if cfg.interpretation != 'C' and cfg.interpretation != 'P':
-        randomDraw = random.randint(1,2)
-        if randomDraw == 1:
-            interpretation = 'C'
-        else:
-            interpretation = 'P'
+        updateRatio = 1
+        if updateRatio: # if you want to update the probability of group based on previous people
+            allPreviousSubjects = [1,2,3,4,5,6,7,8]
+            n_c,n_p= getAllPrevInterpretations(allPreviousSubjects,cfg)
+            randomDraw = random.randint(1,100)
+            c_ratio = n_c/(n_c + n_p)
+            if randomDraw >= c_ratio*100:
+                interpretation = 'C'
+            else:
+                interpretation = 'P'
+        else: # if you just want to keep at 50% odds
+            randomDraw = random.randint(1,2)
+            if randomDraw == 1:
+                interpretation = 'C'
+            else:
+                interpretation = 'P'
     else:
         interpretation = cfg.interpretation
     # save interpretation
@@ -128,6 +161,7 @@ def main():
     random.seed(datetime.now())
     # MAKES STRUCT WITH ALL PARAMETERS IN IT
     defaultConfig = os.path.join(currPath , 'conf/greenEyes_organized.toml')
+    #defaultConfig = 'conf/greenEyes_organized.toml'
     argParser = argparse.ArgumentParser()
     argParser.add_argument('--config', '-c', default=defaultConfig,type=str,
                    help='experiment config file (.json or .toml)')
