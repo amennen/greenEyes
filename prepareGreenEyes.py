@@ -133,14 +133,24 @@ def makeSubjectInterpretation(cfg):
     if cfg.interpretation != 'C' and cfg.interpretation != 'P':
         updateRatio = 1
         if updateRatio: # if you want to update the probability of group based on previous people
-            allPreviousSubjects = [1,2,3,4,5,6,7,8]
+            n_per_group = 8 # let's say we want 16 per group
+            allPreviousSubjects = [2,3,4,5,6,7,8]
             n_c,n_p= getAllPrevInterpretations(allPreviousSubjects,cfg)
-            randomDraw = random.randint(1,100)
-            c_ratio = n_c/(n_c + n_p)
-            if randomDraw >= c_ratio*100:
-                interpretation = 'C'
-            else:
-                interpretation = 'P'
+            number_needed_cheating = n_per_group - n_c
+            number_needed_paranoid = n_per_group - n_p
+            list_cheating = ['C'] * number_needed_cheating
+            list_paranoid = ['P'] * number_needed_paranoid
+            list_of_all = list_cheating + list_paranoid
+            n_new = len(list_of_all)
+            shuffled_list = random.sample(list_of_all,n_new) 
+            randomDraw = random.randint(0,n_new-1) # subtract 1 bc we want index
+            interpretation = shuffled_list[randomDraw]
+            #randomDraw = random.randint(1,100)
+            #c_ratio = n_c/(n_c + n_p)
+            #if randomDraw >= c_ratio*100:
+            #    interpretation = 'C'
+            #else:
+            #    interpretation = 'P'
         else: # if you just want to keep at 50% odds
             randomDraw = random.randint(1,2)
             if randomDraw == 1:
@@ -171,6 +181,7 @@ def main():
     params = StructDict({'config': args.config})
 
     cfg = loadConfigFile(params.config)
+    cfg = loadConfigFile(defaultConfig)
     # TESTING
     cfg.bids_id = 'sub-{0:03d}'.format(cfg.subjectNum)
     cfg.ses_id = 'ses-{0:02d}'.format(cfg.subjectDay)
