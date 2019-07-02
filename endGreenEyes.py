@@ -48,7 +48,7 @@ def main():
     # get subj
     if cfg.machine == 'intel':
         if args.syncCloud:
-            print('transferring from cloud to intelrt for subject %i' % cfg.bids_id)
+            print('transferring from cloud to intelrt for subject %s' % cfg.bids_id)
             intel_subject_full_path = '{0}/data/{1}/'.format(cfg.intelrt.codeDir,cfg.bids_id)
             cloud_subject_full_path = '{0}/data/{1}/'.format(cfg.cloud.codeDir,cfg.bids_id)
             # now see if you need to randomly draw the intepretation
@@ -59,10 +59,10 @@ def main():
                 logging.warning('YOU NEED TO INPUT CLOUD IP ADDR!!')
                 print('YOU NEED TO INPUT CLOUD IP ADDR!!')
         if args.syncCluster:
-            print('transferring to cluster for subject %i' % cfg.bids_id)
+            print('transferring to cluster for subject %s' % cfg.bids_id)
             intel_subject_full_path = '{0}/data/{1}'.format(cfg.intelrt.codeDir,cfg.bids_id)
-            cluster_subject_full_path = '/jukebox/norman/amennen/RT_prettymouth/data/intelData/{0}'.format(cfg.bids_id)
-            command = 'rsync -e  -av {0} amennen@scotty:{1} '.format(intel_subject_full_path,cluster_subject_full_path)
+            cluster_subject_full_path = '/jukebox/norman/amennen/RT_prettymouth/data/intelData/'
+            command = 'rsync  -av {0} amennen@scotty:{1} '.format(intel_subject_full_path,cluster_subject_full_path)
             call(command,shell=True)
 
 if __name__ == "__main__":
