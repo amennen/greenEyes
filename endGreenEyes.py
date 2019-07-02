@@ -31,24 +31,37 @@ def main():
                    help='experiment config file (.json or .toml)')
     argParser.add_argument('--addr', '-a', default='localhost', type=str, 
                    help='server ip address')
+    argParser.add_argument('--syncCloud', '-s',default=False, action='store_true',
+                   help='get data from cloud')
+    argParser.add_argument('--syncCluster', '-k', default=False, action='store_true',
+                   help='whether or not to move to cluster too')
+    argParser.add_argument('--subjectNumber', '-i', default=None, type=str,
+                   help='enter specific subject number if you want, otherwise will go with config')
     args = argParser.parse_args()
     params = StructDict({'config': args.config})
 
     cfg = loadConfigFile(params.config)
-    cfg.bids_id = 'sub-{0:03d}'.format(cfg.subjectNum)
-    cfg.ses_id = 'ses-{0:02d}'.format(cfg.subjectDay)
+    if args.subjectNumber is None:
+        cfg.bids_id = 'sub-{0:03d}'.format(cfg.subjectNum)
+    else:
+        cfg.bids_id = 'sub-{0:03d}'.format(args.subjectNumber)
     # get subj
     if cfg.machine == 'intel':
+        if args.syncCloud:
+            intel_subject_full_path = '{0}/data/{1}/'.format(cfg.intelrt.codeDir,cfg.bids_id)
+            cloud_subject_full_path = '{0}/data/{1}/'.format(cfg.cloud.codeDir,cfg.bids_id)
+            # now see if you need to randomly draw the intepretation
+            if args.addr is not 'localhost':
+                command = 'rsync -e "ssh -i ~/.ssh/azure_id_rsa" -av --remove-source-files amennen@{0}:{1} {2}'.format(args.addr,cloud_subject_full_path,intel_subject_full_path)
+                call(command,shell=True)
+            else:
+                logging.warning('YOU NEED TO INPUT CLOUD IP ADDR!!')
+                print('YOU NEED TO INPUT CLOUD IP ADDR!!')
+        if args.syncCluster:
+            intel_subject_full_path = '{0}/data/{1}'.format(cfg.intelrt.codeDir,cfg.bids_id)
+            cluster_subject_full_path = '/jukebox/norman/amennen/RT_prettymouth/data/intelData/{0}'.format(cfg.bids_id)
+            command = 'rsync -e  -av {0} amennen@scotty:{1} '.format(cloud_subject_full_path,intel_subject_full_path)
 
-        intel_subject_full_path = '{0}/data/{1}/'.format(cfg.intelrt.codeDir,cfg.bids_id)
-        cloud_subject_full_path = '{0}/data/{1}/'.format(cfg.cloud.codeDir,cfg.bids_id)
-        # now see if you need to randomly draw the intepretation
-        if args.addr is not 'localhost':
-            command = 'rsync -e "ssh -i ~/.ssh/azure_id_rsa" -av --remove-source-files amennen@{0}:{1} {2}'.format(args.addr,cloud_subject_full_path,intel_subject_full_path)
-            call(command,shell=True)
-        else:
-            logging.warning('YOU NEED TO INPUT CLOUD IP ADDR!!')
-            print('YOU NEED TO INPUT CLOUD IP ADDR!!')
 if __name__ == "__main__":
     # execute only if run as a script
     main()

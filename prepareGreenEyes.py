@@ -28,7 +28,7 @@ from rtCommon.structDict import StructDict
 # subject path from previous day
 def copyClusterFileToIntel(fileOnCluster,pathOnLinux):
 	"""This copies a file from the cluster to intel, assuming you're on the intel linux calling the function"""
-	command = 'scp amennen@apps.pni.princeton.edu:{0} {1} '.format(fileOnCluster,pathOnLinux)
+	command = 'scp amennen@scotty:{0} {1} '.format(fileOnCluster,pathOnLinux)
 	call(command,shell=True)
 	#return command
 
@@ -181,7 +181,7 @@ def main():
     params = StructDict({'config': args.config})
 
     cfg = loadConfigFile(params.config)
-    cfg = loadConfigFile(defaultConfig)
+    #cfg = loadConfigFile(defaultConfig)
     # TESTING
     cfg.bids_id = 'sub-{0:03d}'.format(cfg.subjectNum)
     cfg.ses_id = 'ses-{0:02d}'.format(cfg.subjectDay)
