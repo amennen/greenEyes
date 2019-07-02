@@ -65,6 +65,12 @@ def main():
             command = 'rsync  -av {0} amennen@scotty:{1} '.format(intel_subject_full_path,cluster_subject_full_path)
             call(command,shell=True)
 
+            print('transferring behavioral data for cluster for subject %s' % cfg.bids_id)
+            intel_subject_full_path = '{0}/display/data/{1}/'.format(cfg.intelrt.codeDir,cfg.bids_id)
+            cluster_subject_full_path = '/jukebox/norman/amennen/RT_prettymouth/data/intelData/{0}/'.format(cfg.bids_id)
+            command = 'rsync  -av {0} amennen@scotty:{1} '.format(intel_subject_full_path,cluster_subject_full_path)
+            call(command,shell=True)
+
 if __name__ == "__main__":
     # execute only if run as a script
     main()
