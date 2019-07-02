@@ -44,7 +44,7 @@ def main():
         cloud_subject_full_path = '{0}/data/{1}/'.format(cfg.cloud.codeDir,cfg.bids_id)
         # now see if you need to randomly draw the intepretation
         if args.addr is not 'localhost':
-            command = 'rsync -e "ssh -i ~/.ssh/azure_id_rsa" -av amennen@{0}:{1} {2}'.format(args.addr,cloud_subject_full_path,intel_subject_full_path)
+            command = 'rsync -e "ssh -i ~/.ssh/azure_id_rsa" -av --remove-source-files amennen@{0}:{1} {2}'.format(args.addr,cloud_subject_full_path,intel_subject_full_path)
             call(command,shell=True)
         else:
             logging.warning('YOU NEED TO INPUT CLOUD IP ADDR!!')
