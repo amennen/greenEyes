@@ -44,6 +44,7 @@ def main():
         cfg.bids_id = 'sub-{0:03d}'.format(cfg.subjectNum)
     else:
         cfg.bids_id = 'sub-{0:03d}'.format(int(args.subjectNumber))
+    cfg.ses_id = 'ses-{0:02d}'.format(2)
     # get subj
     if cfg.machine == 'intel':
         if args.syncCloud:
@@ -66,7 +67,7 @@ def main():
 
             print('transferring behavioral data for cluster for subject %s' % cfg.bids_id)
             intel_subject_full_path = '{0}/display/data/{1}/'.format(cfg.intelrt.codeDir,cfg.bids_id)
-            cluster_subject_full_path = '/jukebox/norman/amennen/RT_prettymouth/data/intelData/{0}/'.format(cfg.bids_id)
+            cluster_subject_full_path = '/jukebox/norman/amennen/RT_prettymouth/data/intelData/{0}/{1}/'.format(cfg.bids_id,cfg.ses_id)
             command = 'rsync  -av {0} amennen@scotty:{1} '.format(intel_subject_full_path,cluster_subject_full_path)
             call(command,shell=True)
     if cfg.machine == 'laptop':
