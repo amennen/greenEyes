@@ -1,6 +1,6 @@
 %% specify any input - run from local directory
 debug = 0;
-subjectNum = 4;
+subjectNum =11;
 bidsId = sprintf('sub-%03d',subjectNum);
 
 saveDir = ['data/' bidsId];
@@ -206,10 +206,11 @@ DOWN_key = KbName('DownArrow');
 basicInstruct{1} = 'Now that you have received all your information and clues, it is time to tell us what you think happened.'; 
 basicInstruct{2} = 'You will now be asked to answer questions about the story you just heard.';
 basicInstruct{2} = 'Please do you best to answer the questions as accurately and honestly as possible.';
-basicInstruct{3} = 'Read the questions carefully. If you respond too fast, your response won''t count and you''ll need to respond again.';
-basicInstruct{4} = 'Hit the UP arrow to choose the top response, and hit the DOWN arrow to choose the bottom response.';
-basicInstruct{5} = '-- Press the UP arrow when you are ready to begin. --';
-allBasicInstruct = [basicInstruct{1} '\n' basicInstruct{2} '\n' basicInstruct{3} '\n' basicInstruct{4} '\n\n\n' basicInstruct{5} ];
+basicInstruct{3} = 'The questions are NOT meant to change your interpretation. They are meant to capture your interpretation as it is currently.';
+basicInstruct{4} = 'Read the questions carefully. If you respond too fast, your response won''t count and you''ll need to respond again.';
+basicInstruct{5} = 'Hit the UP arrow to choose the top response, and hit the DOWN arrow to choose the bottom response.';
+basicInstruct{6} = '-- Press the UP arrow when you are ready to begin. --';
+allBasicInstruct = [basicInstruct{1} '\n' basicInstruct{2} '\n' basicInstruct{3} '\n' basicInstruct{4} '\n' basicInstruct{5} '\n\n\n' basicInstruct{6} ];
 ratingsInstruct{1} = 'Next you will provide ratings. Please use the number keys 1-5 for ratings.';
 ratingsInstruct{2} = 'Read the questions carefully. If you respond too fast, your response won''t count and you''ll need to respond again.';
 ratingsInstruct{3} = '-- Press the UP arrow when you are ready to begin. --';

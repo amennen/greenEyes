@@ -5,7 +5,6 @@ import glob
 import numpy as np
 from subprocess import call
 import time
-import nilearn
 from scipy import stats
 import scipy.io as sio
 import pickle
@@ -70,7 +69,13 @@ def main():
             cluster_subject_full_path = '/jukebox/norman/amennen/RT_prettymouth/data/intelData/{0}/'.format(cfg.bids_id)
             command = 'rsync  -av {0} amennen@scotty:{1} '.format(intel_subject_full_path,cluster_subject_full_path)
             call(command,shell=True)
-
+    if cfg.machine == 'laptop':
+        if args.syncCluster: # copy behavioral files to cluster
+            print('transferring to cluster for subject %s' % cfg.bids_id)
+            laptop_subject_full_path = '/Users/amennen/rt-cloud/projects/greenEyes/display/data/{0}'.format(cfg.bids_id)
+            cluster_subject_full_path = '/jukebox/norman/amennen/RT_prettymouth/data/laptopData/'
+            command = 'rsync  -av {0} amennen@scotty:{1} '.format(laptop_subject_full_path,cluster_subject_full_path)
+            call(command,shell=True)
 if __name__ == "__main__":
     # execute only if run as a script
     main()

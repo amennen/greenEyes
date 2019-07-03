@@ -1,14 +1,17 @@
 % now plot results
 
-interp(101) = 'C';
-interp(102) = 'P';
+%interp(101) = 'C';
+%interp(102) = 'P';
 interp(1) = 'C';
 interp(2) = 'P';
 interp(3) = 'P';
 interp(4) = 'C';
 interp(5) = 'C';
+interp(6) = 'C';
+interp(7) = 'C';
+interp(8) = 'C';
 
-subjects = [101 102 1 2 3 4 5];
+subjects = [ 1 2 3 4 5 6 7 8];
 nSub = length(subjects);
 % plot in 2 different bars
 figure(1);

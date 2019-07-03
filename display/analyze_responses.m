@@ -200,7 +200,7 @@ RATINGS{9} = 'Were sleepy in the scanner';
 
 %%
 % find newest file
-subject = 4;
+subject = 11;
 bids_id = sprintf('%03d', subject);
 file_dir = ['data/sub-' bids_id '/'];
 fn = findNewestFile(file_dir, [file_dir '/responses_20*']);
@@ -209,8 +209,8 @@ ratings = z.stim.rating_resps;
 ntrials = length(ratings);
 for t = 1:ntrials
     key_rating(t) = find(ratings(t) == all_responses);
-    RATINGS{t};
-    key_rating(t);
+    RATINGS{t}
+    key_rating(t)
 end
 
 
