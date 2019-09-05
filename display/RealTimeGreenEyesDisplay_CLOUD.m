@@ -297,7 +297,7 @@ if runData.run == 1
     Screen('Flip',mainWindow);
     waitForKeyboard(subj_keycode,DEVICE);
 end
-firstRun = ['Remember, you need to investigate who else is in Lee''s bed:\n(1)if Arthur''s wife, Joanie, is cheating on him with Lee, then Joanie is in Lee''s bed.\n\n(2) if Arthur is paranoid, then Lee''s girlfriend, Rose in in Lee''s bed.'];
+firstRun = ['Remember, you need to investigate who else is in Lee''s bed:\n(1)if Arthur''s wife, Joanie, is cheating on him with Lee, then Joanie is in Lee''s bed.\n\n(2) if Arthur is paranoid, then Lee''s girlfriend, Rose in in Lee''s bed.\n One of these options is correct, and the other is incorrect.'];
 if runData.run == 1
     % show the first instructions
     firstInstruct = [firstRun continueInstruct];

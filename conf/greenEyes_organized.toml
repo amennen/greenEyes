@@ -5,9 +5,9 @@ experimentId = 1
 model = "greenEyes"
 
 rtData = true
-date = "today" # "2018-08-16"  # or "today", "now", "2018-03-01" or "03/01/2018" etc.
-subjectName = "061819_greenEyes"
-subjectNum = 4
+date = "8/23/19" # "2018-08-16"  # or "today", "now", "2018-03-01" or "03/01/2018" etc.
+subjectName = "0823191_greenEyes"
+subjectNum = 21
 subjectDay = 2
 mode = "local"  #"debug"
 machine = "intel" #"cluster"
@@ -44,7 +44,7 @@ MNI_ref_BOLD="mni_icbm152_t1_tal_nlin_asym_09c_BOLD_brain.nii.gz"
 MASK="TOM_large_resampled_maskedbybrain.nii.gz"
 
 ## CLASSIFIER NAMES ##
-classifierNamePattern = "UPPERRIGHT_stationInd_{}_ROI_1_AVGREMOVE_1_filter_0_k1_0_k2_25.sav"
+classifierNamePattern = "LOGISTIC_lbfgs_UPPERRIGHT_stationInd_{}_ROI_1_AVGREMOVE_1_filter_0_k1_0_k2_25.sav"
 averageSignal = "averageSignal_ROI_1_AVGREMOVE_1_filter_0_k1_0_k2_25.npy"
 stationDict = "upper_right_winners_nofilter.npy"
 
@@ -58,8 +58,8 @@ retrieveServerFiles = false
 enforceDeadlines = true
 calcClockSkewIters = 30
 # Specify default run numbers
-Runs = [1, 2, 3, 4]
-ScanNums = [5, 6 ,7 ,8]
+runNum = [1, 2, 3, 4]
+scanNum = [5, 6 ,7 ,8]
 totalNumberRuns = 4
 
 ## DISPLAY PARAMETERS ##
@@ -72,6 +72,7 @@ usePython = 1
 # ON LOCAL (INTEL LINUX)
 [intelrt]
 imgDir = "/Data1/subjects/"
+#imgDir = "/Data1/code/rt-cloud/projects/greenEyes/tmp/"
 codeDir = "/Data1/code/rt-cloud/projects/greenEyes/"
 classifierDir="/Data1/code/utils_greenEyes/greenEyes_clf/"
 maskDir="/Data1/code/utils_greenEyes/greenEyes_masks/"
