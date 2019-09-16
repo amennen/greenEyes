@@ -99,8 +99,7 @@ def initializeGreenEyes(configFile,args):
         cfg.classifierDir = cfg.cluster.classifierDir
         cfg.mask_filename = cfg.cluster.maskDir + cfg.MASK
         cfg.MNI_ref_filename = cfg.cluster.maskDir + cfg.MNI_ref_BOLD
-
-	
+    cfg.station_stats = cfg.classifierDir + 'station_stats.npz'
     cfg.subject_full_day_path = '{0}/{1}/{2}'.format(cfg.dataDir,cfg.bids_id,cfg.ses_id)
     cfg.temp_nifti_dir = '{0}/converted_niftis/'.format(cfg.subject_full_day_path)
     cfg.subject_reg_dir = '{0}/registration_outputs/'.format(cfg.subject_full_day_path)
@@ -258,6 +257,16 @@ def preprocessData(cfg,dataMatrix,previous_badVoxels=None):
     preprocessedData = zscoredData - signalAvg[:,0:t_end]
     return preprocessedData,updated_badVoxels
 
+def getTransferredZ(cheating_prob,station,allmean,allstd):
+    z_val = (cheating_prob - allmean[station])/allstd[station]
+    z_transferred = (z_val/3) + 0.5
+    # now correct if greater or less than 1.5 std above or below the mean
+    if z_transferred > 1:
+        z_transferred = 1
+    if z_transferred < 0:
+        z_transferred = 0
+    return z_transferred
+
 def preprocessAndPredict(cfg,runData,TRindex_story):
     """Predict cheating vs. paranoid probability at given station"""
     stationInd = np.argwhere(TRindex_story == cfg.last_tr_in_station.astype(int))[0][0]
@@ -280,10 +289,15 @@ def preprocessAndPredict(cfg,runData,TRindex_story):
     thisStationData = runData.dataForClassification[stationKey][:,this_station_TRs]
     dataForClassification_reshaped = np.reshape(thisStationData,(1,cfg.nVox*n_station_TRs))
     runData.cheating_probability[stationInd] = loaded_model.predict_proba(dataForClassification_reshaped)[0][1]
+
+    a = np.load(cfg.station_stats)
+    all_means = a['m']
+    all_std = a['s']  
+    runData.zTransferred[stationInd] = getTransferredZ(runData.cheating_probability[stationInd],stationInd,all_means,all_std)
     if runData.interpretation == 'C':
-        runData.correct_prob[stationInd] = runData.cheating_probability[stationInd]
+        runData.correct_prob[stationInd] = runData.zTransferred[stationInd]
     elif runData.interpretation == 'P':
-        runData.correct_prob[stationInd] = 1 - runData.cheating_probability[stationInd]
+        runData.correct_prob[stationInd] = 1 - runData.zTransferred[stationInd]
     return runData
 
 def makeRunHeader(cfg,runIndex): 
@@ -369,6 +383,7 @@ def main():
     for runIndex in np.arange(nRuns):
         runData = StructDict()
         runData.cheating_probability = np.zeros((cfg.nStations,))
+        runData.zTransferred = np.zeros((cfg.nStations,))
         runData.correct_prob = np.zeros((cfg.nStations,))
         runData.interpretation = getSubjectInterpretation(cfg)
         runData.badVoxels = {}
