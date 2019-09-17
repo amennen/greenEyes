@@ -5,7 +5,7 @@ plotTitle = 'Story Classification'
 plotXLabel = 'Station #'
 plotYLabel = 'p(correct)'
 plotXRangeLow = 0
-plotXRangeHigh = 9
+plotXRangeHigh = 7
 plotYRangeLow = 0
 plotYRangeHigh = 1
 
@@ -51,7 +51,7 @@ MASK="TOM_large_resampled_maskedbybrain.nii.gz"
 ## CLASSIFIER NAMES ##
 classifierNamePattern = "LOGISTIC_lbfgs_UPPERRIGHT_stationInd_{}_ROI_1_AVGREMOVE_1_filter_0_k1_0_k2_25.sav"
 averageSignal = "averageSignal_ROI_1_AVGREMOVE_1_filter_0_k1_0_k2_25.npy"
-stationDict = "upper_right_winners_nofilter.npy"
+stationDict = "upper_right_winners_nofilter_7st.npy"
 
 ## EXP DESIGN ##
 buildImgPath = true
