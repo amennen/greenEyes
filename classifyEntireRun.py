@@ -90,7 +90,7 @@ classifierType = 2
 filename_clf = offline_path + '/' + 'ROI_' + str(maskType) + '_AVGREMOVE_' + str(removeAvg) + '_classifierType_' + str(classifierType) + '_filter_' + str(filterType)  + '_k1_' + str(k1) + '_k2_' + str(k2)  + '.sav'
 loaded_model = pickle.load(open(filename_clf, 'rb'))
 
-allSubjects = [101,102,1,2,3,4,5]
+allSubjects = [2,3,4,5,6,7,8,9,10,11,12,13,14]
 nSub = len(allSubjects)
 
 story_TR_1 = 14
@@ -189,3 +189,55 @@ plt.title('Diff prob cheating R4 - R1')
 plt.xticks(np.array([0,1]), labels) 
 plt.ylabel('Diff in cheating prob')
 plt.show()
+
+# are the peopel who go in the right direction score better?
+all_context_scores = np.zeros((nSub,))
+all_story_scores = np.zeros((nSub,))
+nR = 9
+all_rating_scores = np.zeros((nSub,nR))
+for s in np.arange(nSub):  
+    subject = allSubjects[s]
+    context = getSubjectInterpretation(subject)
+    bids_id = 'sub-{0:03d}'.format(subject)
+    response_mat = '/jukebox/norman/amennen/RT_prettymouth/data/laptopData/' + bids_id + '/' + 'responses_scored.mat'
+    z = scipy.io.loadmat(response_mat)
+    ratings =  z['key_rating'][0]
+    all_rating_scores[s,:] = ratings
+    context_score =  z['mean_context_score'][0][0]
+    all_context_scores[s] = context_score
+    story_score = z['story_score'][0][0]
+    all_story_scores[s] = story_score
+
+# plot context score x and run diff on y
+plt.figure()
+for s in np.arange(nSub):
+    subjectNum = allSubjects[s]
+    interpretation = getSubjectInterpretation(subjectNum)
+    if interpretation == 'C':
+        index = 0 
+    elif interpretation == 'P':
+        index = 1
+    plt.plot(all_context_scores[s],run_diff[s],'.',color=colors[index],ms=20,alpha=0.3)
+#plt.title('Diff prob cheating R4 - R1')
+#plt.xticks(np.array([0,1]), labels) 
+plt.ylabel('Diff in cheating prob')
+plt.xlabel('Interp score')
+plt.show()
+
+plt.figure()
+for s in np.arange(nSub):
+    subjectNum = allSubjects[s]
+    interpretation = getSubjectInterpretation(subjectNum)
+    if interpretation == 'C':
+        index = 0 
+    elif interpretation == 'P':
+        index = 1
+    plt.plot(np.mean(prob_cheating[:,s]),all_context_scores[s],'.',color=colors[index],ms=30,alpha=0.3)
+#plt.title('Diff prob cheating R4 - R1')
+#plt.xticks(np.array([0,1]), labels) 
+plt.yticks(fontsize=15)
+plt.xlabel('Average p(cheating) over all runs',fontsize=20)
+plt.ylabel('Interpretation score')
+plt.show()
+
+
