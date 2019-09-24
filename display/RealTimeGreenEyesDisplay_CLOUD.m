@@ -254,7 +254,7 @@ nTRs_music = musicDur/TR;
 stationTRs = zeros(nTRs_story,1); % actual files wer're going to use to test classifier
 recordedTRs = zeros(nTRs_story,1);
 st = load('stationsMat.mat');
-nStations = size(st.stationsDict,2);
+nStations = 7; %size(st.stationsDict,2);
 for s = 1:nStations
    this_station_TRs = st.stationsDict{s} + 1;
    stationTRs(this_station_TRs) = s;
@@ -298,13 +298,20 @@ if runData.run == 1
     waitForKeyboard(subj_keycode,DEVICE);
 end
 firstRun = ['Remember, you need to investigate who else is in Lee''s bed:\n(1)if Arthur''s wife, Joanie, is cheating on him with Lee, then Joanie is in Lee''s bed.\n\n(2) if Arthur is paranoid, then Lee''s girlfriend, Rose in in Lee''s bed.\n One of these options is correct, and the other is incorrect.'];
-if runData.run == 1
+%if runData.run == 1
     % show the first instructions
-    firstInstruct = [firstRun continueInstruct];
-    DrawFormattedText(mainWindow,firstInstruct,'center','center',textColor,70,[],[],1.2);
-    Screen('Flip',mainWindow);
-    waitForKeyboard(subj_keycode,DEVICE);
-end
+firstInstruct = [firstRun continueInstruct];
+DrawFormattedText(mainWindow,firstInstruct,'center','center',textColor,70,[],[],1.2);
+Screen('Flip',mainWindow);
+waitForKeyboard(subj_keycode,DEVICE);
+%end
+
+reminder = ['Each time you listen to the story, you should always pay attention to the neurofeedback\nand use it to bias your interpretation of your story.\nEven if you think that the story has directly revealed which interpretation is correct, characters might be lying.\nYour job is to try to interpret the story according to what the neurofeedback is telling you,\nnot to try to figure out which interpretation the author intended.'];
+reminderInstruct = [reminder continueInstruct];
+DrawFormattedText(mainWindow,reminderInstruct,'center','center',textColor,70,[],[],1.2);
+Screen('Flip',mainWindow);
+waitForKeyboard(subj_keycode,DEVICE);
+
 % now tell them they will listen again and ge
 nextInstruct = ['Please stay focused, keep listening throughout the entire story, and use your neurofeedback clues to help you along the way.' continueInstruct];
 DrawFormattedText(mainWindow,nextInstruct,'center','center',textColor,70,[],[],1.2);
