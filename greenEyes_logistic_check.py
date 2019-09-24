@@ -4,7 +4,7 @@ import os
 import glob
 import numpy as np
 import pandas as pd
-import json	
+import json 
 import datetime
 from dateutil import parser
 from subprocess import call
@@ -28,7 +28,7 @@ sys.path.append(rootPath)
 from rtCommon.utils import loadConfigFile, dateStr30, DebugLevels, writeFile
 from rtCommon.readDicom import readDicomFromBuffer, readRetryDicomFromFileInterface
 from rtCommon.fileClient import FileInterface
-import rtCommon.projectUtils as projUtils
+import rtCommon.webClientUtils as wcutils
 from rtCommon.structDict import StructDict
 import rtCommon.dicomNiftiHandler as dnh
 # in tests directory can see test script
@@ -53,11 +53,11 @@ def initializeGreenEyes(configFile,args):
     # MERGE WITH PARAMS
     if args.runs != '' and args.scans != '':
         # use the run and scan numbers passed in as parameters
-        cfg.runNum = [int(x) for x in args.runs.split(',')]
-        cfg.scanNum = [int(x) for x in args.scans.split(',')]
+        cfg.Runs = [int(x) for x in args.runs.split(',')]
+        cfg.ScanNums = [int(x) for x in args.scans.split(',')]
     else: # when you're not specifying on the command line it's already in a list
-        cfg.runNum = [int(x) for x in cfg.runNum]
-        cfg.scanNum = [int(x) for x in cfg.scanNum]
+        cfg.Runs = [int(x) for x in cfg.Runs]
+        cfg.ScanNums = [int(x) for x in cfg.ScanNums]
     # GET DICOM DIRECTORY
     if cfg.mode != 'debug':
         if cfg.buildImgPath:
@@ -77,9 +77,9 @@ def initializeGreenEyes(configFile,args):
     else:
         cfg.dicomDir = glob.glob(cfg.cluster.imgDir.format(cfg.subjectName))[0]
         cfg.dicomNamePattern = cfg.cluster.dicomNamePattern
-    #cfg.commPipe = args.commPipe
-    #cfg.webfilesremote = args.filesremote # FLAG FOR REMOTE OR LOCAL
-	########
+    cfg.webpipe = args.webpipe
+    cfg.webfilesremote = args.filesremote # FLAG FOR REMOTE OR LOCAL
+    ########
     cfg.bids_id = 'sub-{0:03d}'.format(cfg.subjectNum)
     cfg.ses_id = 'ses-{0:02d}'.format(cfg.subjectDay)
     if cfg.mode == 'local':
@@ -99,13 +99,14 @@ def initializeGreenEyes(configFile,args):
         cfg.classifierDir = cfg.cluster.classifierDir
         cfg.mask_filename = cfg.cluster.maskDir + cfg.MASK
         cfg.MNI_ref_filename = cfg.cluster.maskDir + cfg.MNI_ref_BOLD
-    cfg.station_stats = cfg.classifierDir + 'station_stats.npz'
+
+    
     cfg.subject_full_day_path = '{0}/{1}/{2}'.format(cfg.dataDir,cfg.bids_id,cfg.ses_id)
     cfg.temp_nifti_dir = '{0}/converted_niftis/'.format(cfg.subject_full_day_path)
     cfg.subject_reg_dir = '{0}/registration_outputs/'.format(cfg.subject_full_day_path)
     cfg.nStations, cfg.stationsDict, cfg.last_tr_in_station, cfg.all_station_TRs = getStationInformation(cfg)
 
-	# REGISTRATION THINGS
+    # REGISTRATION THINGS
     cfg.wf_dir = '{0}/{1}/ses-{2:02d}/registration/'.format(cfg.dataDir,cfg.bids_id,1)
     cfg.BOLD_to_T1= cfg.wf_dir + 'affine.txt'
     cfg.T1_to_MNI= cfg.wf_dir + 'ants_t1_to_mniComposite.h5'
@@ -117,7 +118,7 @@ def initializeGreenEyes(configFile,args):
     return cfg
 
 def getSubjectInterpretation(cfg):
-	# load interpretation file and get it
+    # load interpretation file and get it
     # will be saved in subject full day path
     filename = cfg.bids_id + '_' + cfg.ses_id + '_' + 'intepretation.txt'
     full_path_filename = cfg.subject_full_day_path + '/' + filename
@@ -130,10 +131,10 @@ def getSubjectInterpretation(cfg):
     return interpretation
 
 def getTransform():
-	target_orientation = nib.orientations.axcodes2ornt(('L', 'A', 'S'))
-	dicom_orientation = nib.orientations.axcodes2ornt(('P', 'L', 'S'))
-	transform = nib.orientations.ornt_transform(dicom_orientation,target_orientation)
-	return transform
+    target_orientation = nib.orientations.axcodes2ornt(('L', 'A', 'S'))
+    dicom_orientation = nib.orientations.axcodes2ornt(('P', 'L', 'S'))
+    transform = nib.orientations.ornt_transform(dicom_orientation,target_orientation)
+    return transform
 
 
 def convertToNifti(TRnum,scanNum,cfg,dicomData):
@@ -200,13 +201,13 @@ def getDicomFileName(cfg, scanNum, fileNum):
     return fullFileName
 
 def loadClassifier(cfg,station):
-	thisClassifierFileName = cfg.classifierDir + cfg.classifierNamePattern.format(station)
-	loaded_model = pickle.load(open(thisClassifierFileName, 'rb'))
-	return loaded_model
+    thisClassifierFileName = cfg.classifierDir + cfg.classifierNamePattern.format(station)
+    loaded_model = pickle.load(open(thisClassifierFileName, 'rb'))
+    return loaded_model
 
 def getAvgSignal(cfg):
-	averageSignal = np.load(cfg.classifierDir +  cfg.averageSignal)
-	return averageSignal
+    averageSignal = np.load(cfg.classifierDir +  cfg.averageSignal)
+    return averageSignal
 
 def getStationInformation(cfg):
     allinfo = {}
@@ -221,18 +222,18 @@ def getStationInformation(cfg):
     return nStations, stationDict, last_tr_in_station, all_station_TRs
 
 def getStationClassoutputFilename(runId, stationId):
-	""""Return station classification filename"""
-	filename = "classOutput_r{}_st{}_py.txt".format(runId,stationId)
-	return filename
+    """"Return station classification filename"""
+    filename = "classOutput_r{}_st{}_py.txt".format(runId,stationId)
+    return filename
 
 def getRunFilename(sessionId, runId):
-	"""Return run filename given session and run"""
-	filename = "patternsData_r{}_{}_py.mat".format(runId,sessionId)
-	return filename
+    """Return run filename given session and run"""
+    filename = "patternsData_r{}_{}_py.mat".format(runId,sessionId)
+    return filename
 
 def retrieveIntelFileAndSaveToCloud(intelFilePath,pathToSaveOnCloud,fileInterface):
-	data = fileInterface.getFile(intelFilePath)
-	writeFile(pathToSaveOnCloud,data)
+    data = fileInterface.getFile(intelFilePath)
+    writeFile(pathToSaveOnCloud,data)
 
 def preprocessData(cfg,dataMatrix,previous_badVoxels=None):
     # steps: zscore///check bad voxels//remove signal average
@@ -257,16 +258,6 @@ def preprocessData(cfg,dataMatrix,previous_badVoxels=None):
     preprocessedData = zscoredData - signalAvg[:,0:t_end]
     return preprocessedData,updated_badVoxels
 
-def getTransferredZ(cheating_prob,station,allmean,allstd):
-    z_val = (cheating_prob - allmean[station])/allstd[station]
-    z_transferred = (z_val/3) + 0.5
-    # now correct if greater or less than 1.5 std above or below the mean
-    if z_transferred > 1:
-        z_transferred = 1
-    if z_transferred < 0:
-        z_transferred = 0
-    return z_transferred
-
 def preprocessAndPredict(cfg,runData,TRindex_story):
     """Predict cheating vs. paranoid probability at given station"""
     stationInd = np.argwhere(TRindex_story == cfg.last_tr_in_station.astype(int))[0][0]
@@ -276,7 +267,7 @@ def preprocessAndPredict(cfg,runData,TRindex_story):
     print('this story TR is %i' % TRindex_story)
     # indexing for data goes to +1 because we want the index to include the last station TR
     if stationInd == 0 or len(runData.badVoxels) == 0:
-    	runData.dataForClassification[stationKey],runData.badVoxels[stationKey] = preprocessData(cfg,runData.story_data[:,0:TRindex_story+1])
+        runData.dataForClassification[stationKey],runData.badVoxels[stationKey] = preprocessData(cfg,runData.story_data[:,0:TRindex_story+1])
     else:
         runData.dataForClassification[stationKey],runData.badVoxels[stationKey] = preprocessData(cfg,runData.story_data[:,0:TRindex_story+1],runData.badVoxels[prevStationKey])
     loaded_model = loadClassifier(cfg,stationInd)
@@ -289,15 +280,10 @@ def preprocessAndPredict(cfg,runData,TRindex_story):
     thisStationData = runData.dataForClassification[stationKey][:,this_station_TRs]
     dataForClassification_reshaped = np.reshape(thisStationData,(1,cfg.nVox*n_station_TRs))
     runData.cheating_probability[stationInd] = loaded_model.predict_proba(dataForClassification_reshaped)[0][1]
-
-    a = np.load(cfg.station_stats)
-    all_means = a['m']
-    all_std = a['s']  
-    runData.zTransferred[stationInd] = getTransferredZ(runData.cheating_probability[stationInd],stationInd,all_means,all_std)
     if runData.interpretation == 'C':
-        runData.correct_prob[stationInd] = runData.zTransferred[stationInd]
+        runData.correct_prob[stationInd] = runData.cheating_probability[stationInd]
     elif runData.interpretation == 'P':
-        runData.correct_prob[stationInd] = 1 - runData.zTransferred[stationInd]
+        runData.correct_prob[stationInd] = 1 - runData.cheating_probability[stationInd]
     return runData
 
 def makeRunHeader(cfg,runIndex): 
@@ -308,8 +294,8 @@ def makeRunHeader(cfg,runIndex):
     print('* Date/Time: ' + now.isoformat()) 
     print('* Subject Number: ' + str(cfg.subjectNum)) 
     print('* Subject Name: ' + str(cfg.subjectName)) 
-    print('* Run Number: ' + str(cfg.runNum[runIndex])) 
-    print('* Scan Number: ' + str(cfg.scanNum[runIndex])) 
+    print('* Run Number: ' + str(cfg.Runs[runIndex])) 
+    print('* Scan Number: ' + str(cfg.ScanNums[runIndex])) 
     print('* Real-Time Data: ' + str(cfg.rtData))     
     print('* Mode: ' + str(cfg.mode)) 
     print('* Machine: ' + str(cfg.machine)) 
@@ -326,7 +312,7 @@ def makeTRHeader(cfg,runIndex,TRFilenum,storyTRCount,stationInd,correct_prob):
     else:
         stStr = 'listen'
     print('{:<10.0f}{:<10d}{:<10d}{:<10s}{:<10d}{:<10.3f}'.format(
-        cfg.runNum[runIndex],TRFilenum,storyTRCount,stStr,stationInd,correct_prob))
+        cfg.Runs[runIndex],TRFilenum,storyTRCount,stStr,stationInd,correct_prob))
     return
 
 def deleteTmpFiles(cfg):
@@ -338,6 +324,13 @@ def deleteTmpFiles(cfg):
         print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
     return
 
+# testing code--debug mode -- run in greenEyes directory
+#from greenEyes import *
+#params = StructDict({'config':defaultConfig, 'runs': '1', 'scans': '9', 'webpipe': 'None', 'webfilesremote': False})
+#cfg = initializeGreenEyes(params.config,params)
+#args = StructDict()
+#args.filesremote = False
+#webComm = None
 
 def main():
     logger = logging.getLogger()
@@ -352,9 +345,9 @@ def main():
                        help='Comma separated list of scan number')
     argParser.add_argument('--deleteTmpNifti', '-d', default='1', type=str,
                        help='Set to 0 if rerunning during a single scanning after error')
-    # creates pipe communication link to send/request responses through pipe
-    argParser.add_argument('--commpipe', '-q', default=None, type=str,
-                       help='Named pipe to communicate with projectInterface')
+    # creates web pipe communication link to send/request responses through web pipe
+    argParser.add_argument('--webpipe', '-w', default=None, type=str,
+                       help='Named pipe to communicate with webServer')
     argParser.add_argument('--filesremote', '-x', default=False, action='store_true',
                        help='dicom files retrieved from remote server')
 
@@ -371,19 +364,21 @@ def main():
         print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
     # DELETE ALL FILES IF FLAGGED TO # 
 
-    # comm pipe
-    projComm = projUtils.initProjectComm(args.commpipe,args.filesremote)
+    # webpipe
+    webComm = None
+    if args.webpipe:
+        webComm = wcutils.openWebServerConnection(args.webpipe)
+        wcutils.watchForExit()
     # initialize file interface class -- for now only local
-    fileInterface = FileInterface(filesremote=args.filesremote, commPipes=projComm)
+    fileInterface = FileInterface(filesremote=args.filesremote, webpipes=webComm)
     # intialize watching in particular directory
     fileInterface.initWatch(cfg.dicomDir, cfg.dicomNamePattern, cfg.minExpectedDicomSize) 
     story_TRs = cfg.story_TR_2 - cfg.story_TR_1 + 1
     #### MAIN PROCESSING ###
-    nRuns = len(cfg.runNum)
+    nRuns = len(cfg.Runs)
     for runIndex in np.arange(nRuns):
         runData = StructDict()
         runData.cheating_probability = np.zeros((cfg.nStations,))
-        runData.zTransferred = np.zeros((cfg.nStations,))
         runData.correct_prob = np.zeros((cfg.nStations,))
         runData.interpretation = getSubjectInterpretation(cfg)
         runData.badVoxels = {}
@@ -392,8 +387,8 @@ def main():
         runData.story_data = np.zeros((cfg.nVox,story_TRs))
 
         makeRunHeader(cfg,runIndex)
-        run = cfg.runNum[runIndex]
-        scanNum = cfg.scanNum[runIndex]
+        run = cfg.Runs[runIndex]
+        scanNum = cfg.ScanNums[runIndex]
         storyTRCount = 0
         stationInd=0
         for TRFilenum in np.arange(cfg.nTR_skip+1,cfg.nTR_run+1):
@@ -427,10 +422,10 @@ def main():
                         full_filename_to_save = os.path.join(cfg.subject_full_day_path,file_name_to_save) 
                     fileInterface.putTextFile(full_filename_to_save,text_to_save)
                     
-                    if args.commpipe:    
+                    if args.webpipe:    
                         # JUST TO PLOT ON WEB SERVER
 
-                        projUtils.sendResultToWeb(projComm, run,int(stationInd) ,runData.correct_prob[stationInd] )
+                        wcutils.sendClassicationResult(webComm, run,int(stationInd) ,runData.correct_prob[stationInd] )
                 storyTRCount += 1
             TRheader = makeTRHeader(cfg,runIndex,TRFilenum,storyTRCount-1,stationInd,runData.correct_prob[stationInd])
 

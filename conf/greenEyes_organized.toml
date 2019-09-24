@@ -4,7 +4,7 @@ plotTitle = 'Story Classification'
 plotXLabel = 'Station #'
 plotYLabel = 'p(correct)'
 plotXRangeLow = 0
-plotXRangeHigh = 9
+plotXRangeHigh = 7
 plotYRangeLow = 0
 plotYRangeHigh = 1
 
