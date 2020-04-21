@@ -28,7 +28,7 @@ sys.path.append('/jukebox/norman/amennen/github/brainiak/rt-cloud')
 from rtCommon.utils import loadConfigFile, dateStr30, DebugLevels, writeFile, loadMatFile
 from rtCommon.readDicom import readDicomFromBuffer
 from rtCommon.fileClient import FileInterface
-import rtCommon.webClientUtils as wcutils
+import rtCommon.projectUtils as projUtils
 from rtCommon.structDict import StructDict
 import rtCommon.dicomNiftiHandler as dnh
 import greenEyes
@@ -41,7 +41,7 @@ params = {'legend.fontsize': 'large',
 font = {'weight': 'bold',
         'size': 22}
 plt.rc('font', **font)
-defaultConfig = os.path.join(os.getcwd(), 'conf/greenEyes_organized.toml')
+defaultConfig = os.path.join(os.getcwd(), 'conf/greenEyes_cluster.toml')
 cfg = loadConfigFile(defaultConfig)
 params = StructDict({'config':defaultConfig, 'runs': '1', 'scans': '9', 'webpipe': 'None', 'webfilesremote': False})
 cfg = greenEyes.initializeGreenEyes(defaultConfig,params)
@@ -257,7 +257,7 @@ c_max = a['max']
 p_max = 1 - a['min']
 
 labels = ['cheating', 'paranoid']
-allSubjects = [2,3,4,5,6,7,8,9,10,11,12,13,14,16,17,18,19,20,21,22]
+#allSubjects = [2,3,4,5,6,7,8,9,10,11,12,13,14,16,17,18,19,20,21,22]
 #allSubjects = [21]
 nSubs = len(allSubjects)
 nRuns = 4
