@@ -117,7 +117,7 @@ def createStationVector(stationDict):
     nTRs_story = len(allTRs)
     recorded_TRs = np.zeros((nTRs_story,))
     for st in np.arange(nStations):
-        this_station_TRs = np.array(stationDict[st]) + 1 # going from python --> matlab indexing
+        this_station_TRs = np.array(stationDict[st]) # removing this + 1 # going from python --> matlab indexing
         recorded_TRs[this_station_TRs - 3] = st +1 # this is the literal matlab TRs
     return recorded_TRs
 
@@ -167,11 +167,11 @@ def getProbeKeyPresses(behavData,recorded_TRs):
         RIGHT = 0
         display_TR = np.argwhere(recorded_TRs == st+1)[0][0] # first display
         print(display_TR)
-        if len(np.intersect1d(np.argwhere(display_TR - allLeftTRs[:,0] > 0),np.argwhere(display_TR - allLeftTRs[:,0] <= 3)) ) > 0:
+        if len(np.intersect1d(np.argwhere(display_TR - allLeftTRs[:,0] >= 0),np.argwhere(display_TR - allLeftTRs[:,0] < 3)) ) > 0:
             # then there was a left keypress for this station
             LEFT = 1
             probe_response_st = left_key
-        if len(np.intersect1d(np.argwhere(display_TR - allRightTRs[:,0] > 0),np.argwhere(display_TR - allRightTRs[:,0] <= 3)) ) > 0:
+        if len(np.intersect1d(np.argwhere(display_TR - allRightTRs[:,0] >= 0),np.argwhere(display_TR - allRightTRs[:,0] < 3)) ) > 0:
             RIGHT = 1
             probe_response_st = right_key
         if LEFT and RIGHT:
