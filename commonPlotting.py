@@ -6,9 +6,11 @@ import scipy
 sys.path.append(os.getcwd())
 import matplotlib
 import matplotlib.pyplot as plt
-font = {'weight':'normal',
-'size':22}
-plt.rc('axes',linewidth=5)
+font = {'size': 22,
+        'weight': 'normal'}
+plt.rc('axes', linewidth=3)
+plt.rc('xtick.major', size=0, width = 3)
+plt.rc('ytick.major', size=0, width = 3)
 import pandas as pd
 import seaborn as sns
 matplotlib.rc('font',**font)

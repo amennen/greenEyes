@@ -10,15 +10,15 @@ import matplotlib
 import matplotlib.pyplot as plt
 import scipy
 import nilearn.masking
-params = {'legend.fontsize': 'large',
-          'figure.figsize': (5, 3),
-          'axes.labelsize': 'x-large',
-          'axes.titlesize': 'x-large',
-          'xtick.labelsize': 'x-large',
-          'ytick.labelsize': 'x-large'}
-font = {'weight': 'normal',
-        'size': 22}
-plt.rc('font', **font)
+# params = {'legend.fontsize': 'large',
+#           'figure.figsize': (5, 3),
+#           'axes.labelsize': 'x-large',
+#           'axes.titlesize': 'x-large',
+#           'xtick.labelsize': 'x-large',
+#           'ytick.labelsize': 'x-large'}
+# font = {'weight': 'normal',
+#         'size': 22}
+# plt.rc('font', **font)
 from commonPlotting import *
 
 
@@ -67,15 +67,9 @@ subject_ratings_empathy_diff = np.concatenate((all_rating_scores[:,0:2],arthur_m
 maxH = 1.1
 fig,ax = plotPosterStyle_DF(scores[:,0],subjects)
 plt.xticks(np.array([-.2,.2]), ['paranoid','cheating'],fontsize=20) 
-plt.ylabel('comprehension score')
-plt.xlabel('group')
-plt.title('comprehension score')
-# x,y=nonNan(scores[P_ind,0],[])
-# t,p = scipy.stats.ttest_1samp(x,0.5)
-# addComparisonStat_SYM(p/2,-.2,-0.2,maxH,.05,0,text_above='P>0.5')
-# x,y=nonNan(scores[C_ind,0],[])
-# t,p = scipy.stats.ttest_1samp(x,0.5)
-# addComparisonStat_SYM(p/2,.2,0.2,maxH,.05,0,text_above='C>0.5')
+plt.ylabel('accuracy',fontsize=25)
+plt.xlabel('assigned group',fontsize=25)
+plt.title('Comprehension scores',fontsize=30)
 plt.ylim([0.5,1.05])
 plt.yticks(np.array([0.5,0.75,1]))
 plt.savefig('savedPlots_checked/comprehension_score.pdf')
@@ -88,9 +82,9 @@ printStatsResults('comprehension group diff',t, p)
 # (2) plot interpretation scores by group
 fig,ax = plotPosterStyle_DF(scores[:,1],subjects)
 plt.xticks(np.array([-.2,.2]), ['paranoid','cheating'],fontsize=20) 
-plt.ylabel('interpretation score')
-plt.xlabel('group')
-plt.title('interpretation score')
+plt.ylabel('skewness to one interpretation',fontsize=25)
+plt.xlabel('assigned group',fontsize=25)
+plt.title('Interpretation scores',fontsize=30)
 plt.plot([-2,2],[0,0], '--', color='k')
 plt.yticks(np.array([-1,0,1]), ['paranoid','neutral','cheating'],fontsize=20,rotation=45) 
 maxH=1.03
@@ -109,11 +103,11 @@ printStatsResults('did the cheating group show bias?',r, p/2)
 # (3) plot empathy ratings, first for all characters
 maxH=5.1
 fig,ax = plotPosterStyle_DF(subject_ratings_empathy,subjects)
-plt.title('How much do you empathize with...')
+plt.title('How much do you empathize with...', fontsize = 30)
 nq = 4
 labels=['Arthur','Lee','Joanie','the girl']
-plt.ylabel('empathy (1-5)')
-plt.xticks(np.arange(nq), labels,fontsize=20) 
+plt.ylabel('empathy rating', fontsize=25)
+plt.xticks(np.arange(nq), labels,fontsize=25) 
 plt.yticks(np.arange(1,6),fontsize=20)
 plt.ylim([.1,6.5])
 x,y=nonNan(all_rating_scores[C_ind,0],all_rating_scores[P_ind,0])
@@ -138,13 +132,13 @@ plt.savefig('savedPlots_checked/all_ratings.pdf')
 
 # (4) plot empathy difference for Arthur - Lee
 fig,ax = plotPosterStyle_DF(arthur_minus_lee,subjects)
-plt.title('Arthur minus Lee')
+plt.title('Arthur minus Lee',fontsize=30)
 labels=['paranoid','cheating']
 plt.xticks(np.array([-.2,.2]), labels,fontsize=20) 
 plt.yticks(np.array([-5,0,5]),fontsize=20)
 plt.ylim([-5,6.5])
-plt.xlabel('')
-plt.ylabel('empathy difference')
+plt.xlabel('assigned group', fontsize=25)
+plt.ylabel('empathy difference',fontsize=25)
 plt.plot([-2,2],[0,0], '--', color='k')
 x,y=nonNan(arthur_minus_lee[C_ind],arthur_minus_lee[P_ind])
 t,p = scipy.stats.ttest_ind(x,y)

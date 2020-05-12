@@ -37,15 +37,15 @@ import greenEyes
 from matplotlib.lines import Line2D
 from commonPlotting import *
 
-params = {'legend.fontsize': 'large',
-          'figure.figsize': (5, 3),
-          'axes.labelsize': 'x-large',
-          'axes.titlesize': 'x-large',
-          'xtick.labelsize': 'x-large',
-          'ytick.labelsize': 'x-large'}
-font = {'weight': 'normal',
-        'size': 22}
-plt.rc('font', **font)
+# params = {'legend.fontsize': 'large',
+#           'figure.figsize': (5, 3),
+#           'axes.labelsize': 'x-large',
+#           'axes.titlesize': 'x-large',
+#           'xtick.labelsize': 'x-large',
+#           'ytick.labelsize': 'x-large'}
+# font = {'weight': 'normal',
+#         'size': 22}
+# plt.rc('font', **font)
 defaultConfig = os.path.join(os.getcwd(), 'conf/greenEyes_cluster.toml')
 cfg = loadConfigFile(defaultConfig)
 params = StructDict({'config':defaultConfig, 'runs': '1', 'scans': '9', 'webpipe': 'None', 'webfilesremote': False})
@@ -273,27 +273,29 @@ DATA['group'] = group_vector
 df = pd.DataFrame.from_dict(DATA)
 
 # (1) plot average classifier separation by subject
-fig,ax = plt.subplots(figsize=(17,9))
+fig,ax = plt.subplots(figsize=(12,9))
 sns.despine()
 sns.barplot(data=df,x='resp',y='p(cheating)',ci=68,order=['CHEATING', 'PARANOID'],color='k',alpha=0.5)
 g = sns.swarmplot(data=df[df['group']=='C'],x='resp',y='p(cheating)',order=['CHEATING', 'PARANOID'],color=cheating_c,alpha=0.5,size=10)
 g = sns.swarmplot(data=df[df['group']=='P'],x='resp',y='p(cheating)',order=['CHEATING', 'PARANOID'],color=paranoid_c,alpha=0.5,size=10)
 for s in np.arange(nSubs):
     plt.plot([0,1],subj_means[s,:], '--', color='k', lw=1, alpha=0.3)
-plt.title('Classification averaged over all subjects')
+plt.title('Classification divided by probe response',fontsize=30)
 plt.ylim([0,1])
-plt.xlabel('Probe response')
-plt.ylabel('p(cheating)')
+plt.xlabel('probe response',fontsize=25)
+plt.ylabel('p(cheating)',fontsize=25)
+plt.xticks(fontsize=20)
+plt.xticks(fontsize=20)
 x,y=nonNan(subj_means[:,0],subj_means[:,1])
 r,p=scipy.stats.ttest_rel(x,y)
-addComparisonStat_SYM(p/2,0,1,0.9,.05,0,text_above='C>P')
+addComparisonStat_SYM(p/2,0,1,0.92,.05,0,text_above='C>P')
 printStatsResults('avg classification based on probe responses 1-sided', r, p/2)
 plt.ylim([0,1.1])
 plt.savefig('savedPlots_checked/classification_averaged.pdf')
 #plt.show()
 
 # (2) plot the linear relationship between correct context responses and classifier accuracy
-fig,ax = plt.subplots(figsize=(17,9))
+fig,ax = plt.subplots(figsize=(12,9))
 sns.despine()
 for s in np.arange(nSubs):
     if interpretations[s] == 'C':
@@ -303,18 +305,19 @@ for s in np.arange(nSubs):
     plt.plot(classifier_separation[s],all_correct_context[s],'.',ms=20,color=color,alpha=1)
 b, m = polyfit(classifier_separation, all_correct_context, 1)
 plt.plot(classifier_separation, b + m * classifier_separation, '-',alpha=0.6,lw=3, color='k')
-plt.xlabel('difference in p(cheating) based on probe response',fontsize=15)
-plt.ylabel('interpretation score (correct=1)',rotation='vertical')
+plt.xlabel('classification accuracy',fontsize=25)
+plt.ylabel('correct interpretation score', fontsize=25)
+plt.title('Interpretation and classification relationship',fontsize=30)
 r,p=scipy.stats.pearsonr(classifier_separation,all_correct_context)
 printStatsResults('interpretation and classifier linear relationship',r, p)
 text_f = 'r = %2.2f\np = %2.2f' % (r,p)
-plt.text(-0.2,0.9,text_f,fontsize=20)
+plt.text(-0.2,0.8,text_f,fontsize=25)
 plt.savefig('savedPlots_checked/classification_context.pdf')
 #plt.show()
 
 
 # (3) plot linear relationship between empathy difference and intepretation score
-fig,ax = plt.subplots(figsize=(17,9))
+fig,ax = plt.subplots(figsize=(12,9))
 sns.despine()
 for s in np.arange(nSubs):
     if interpretations[s] == 'C':
@@ -322,9 +325,11 @@ for s in np.arange(nSubs):
     elif interpretations[s] == 'P':
         color=paranoid_c
     plt.plot(all_correct_context[s],arthur_minus_lee_cor[s],'.',ms=20,color=color,alpha=1)
-plt.xlabel('interpretation score (correct=1)')
-plt.ylabel('correct empathy difference')
-plt.title('empathy and interpretation relationship')
+plt.xlabel('correct interpretation score',fontsize=25)
+plt.ylabel('correct empathy difference',fontsize=25)
+plt.xticks(fontsize=20)
+plt.yticks(fontsize=20)
+plt.title('Empathy and interpretation relationship',fontsize=30)
 x = all_correct_context
 y = arthur_minus_lee_cor
 b, m = polyfit(x, y, 1)
@@ -332,7 +337,7 @@ plt.plot(x, b + m * x, '-',alpha=0.6,lw=3, color='k')
 r,p=scipy.stats.pearsonr(x,y)
 printStatsResults('interpretation and empathy linear relationship', r, p)
 text_f = 'r = %2.2f\np = %2.2f' % (r,p)
-plt.text(-1,3,text_f,fontsize=20)
+plt.text(-1,3,text_f,fontsize=25)
 plt.savefig('savedPlots_checked/empathy_context.pdf')
 #plt.show()
 
@@ -340,22 +345,30 @@ plt.savefig('savedPlots_checked/empathy_context.pdf')
 # (4) - plot neurofeedback scores over all run, averaged by group
 fig = plotPosterStyle_multiplePTS(all_nf_score,subjects)
 plt.subplot(1,4,1)
-plt.ylabel('NF score ($)')
-plt.title('run 1')
+plt.ylabel('NF score ($)',fontsize=25)
 plt.ylim([0,1])
-plt.xlabel('station')
+plt.xticks(fontsize=20)
+plt.yticks(fontsize=20)
+plt.title('run 1',fontsize=30)
+plt.xlabel('station',fontsize=25)
 plt.subplot(1,4,2)
-plt.title('run 2')
+plt.xticks(fontsize=20)
+plt.yticks(fontsize=20)
 plt.ylim([0,1])
-plt.xlabel('station')
+plt.title('run 2',fontsize=30)
+plt.xlabel('station',fontsize=25)
 plt.subplot(1,4,3)
-plt.title('run 3')
+plt.xticks(fontsize=20)
+plt.yticks(fontsize=20)
 plt.ylim([0,1])
-plt.xlabel('station')
+plt.title('run 3',fontsize=30)
+plt.xlabel('station',fontsize=25)
 plt.subplot(1,4,4)
-plt.title('run 4')
+plt.title('run 4',fontsize=30)
+plt.xticks(fontsize=20)
+plt.yticks(fontsize=20)
 plt.ylim([0,1])
-plt.xlabel('station')
+plt.xlabel('station',fontsize=25)
 plt.savefig('savedPlots_checked/nf_score.pdf')
 #plt.show()
 

@@ -35,15 +35,15 @@ from rtCommon.fileClient import FileInterface
 from rtCommon.structDict import StructDict
 import rtCommon.dicomNiftiHandler as dnh
 import greenEyes
-params = {'legend.fontsize': 'large',
-          'figure.figsize': (5, 3),
-          'axes.labelsize': 'x-large',
-          'axes.titlesize': 'x-large',
-          'xtick.labelsize': 'x-large',
-          'ytick.labelsize': 'x-large'}
-font = {'weight': 'bold',
-        'size': 22}
-plt.rc('font', **font)
+# params = {'legend.fontsize': 'large',
+#           'figure.figsize': (5, 3),
+#           'axes.labelsize': 'x-large',
+#           'axes.titlesize': 'x-large',
+#           'xtick.labelsize': 'x-large',
+#           'ytick.labelsize': 'x-large'}
+# font = {'weight': 'bold',
+#         'size': 22}
+# plt.rc('font', **font)
 defaultConfig = os.path.join(os.getcwd(), 'conf/greenEyes_cluster.toml')
 cfg = loadConfigFile(defaultConfig)
 params = StructDict({'config':defaultConfig, 'runs': '1', 'scans': '9', 'webpipe': 'None', 'webfilesremote': False})
@@ -224,12 +224,12 @@ maxH=1.1
 scores = np.concatenate((all_story_scores[:,np.newaxis],all_context_scores[:,np.newaxis]),axis=1)
 fig,ax = plotPosterStyle_DF(scores[:,0],Exp1Subjects)
 plt.xticks(np.array([-.2,.2]), ['paranoid','cheating'],fontsize=20) 
-plt.ylabel('comprehension score')
-plt.xlabel('group')
-plt.title('comprehension score')
+plt.ylabel('accuracy',fontsize=25)
+plt.xlabel('assigned group',fontsize=25)
+plt.title('Comprehension scores',fontsize=30)
 x,y=nonNan(scores[P_ind,0],[])
 plt.ylim([0.5,1.05])
-plt.yticks(np.array([0.5,0.75,1]))
+plt.yticks(np.array([0.5,0.75,1]),fontsize=20)
 plt.savefig('savedPlots_checked/comprehension_score_EXP1.pdf')
 #plt.show()
 # do they differ in comprehension scores - t-test
@@ -240,9 +240,9 @@ printStatsResults('comprehension, group diff', t, p)
 # (2) Interpretation scores
 fig,ax = plotPosterStyle_DF(scores[:,1],Exp1Subjects)
 plt.xticks(np.array([-.2,.2]), ['paranoid','cheating'],fontsize=20) 
-plt.ylabel('interpretation score')
-plt.xlabel('group')
-plt.title('interpretation score')
+plt.ylabel('skewness to one interpretation',fontsize=25)
+plt.xlabel('assigned group',fontsize=25)
+plt.title('Interpretation scores',fontsize=30)
 plt.plot([-2,2],[0,0], '--', color='k')
 plt.yticks(np.array([-1,0,1]), ['paranoid','neutral','cheating'],fontsize=20,rotation=45) 
 maxH=1.03
@@ -261,11 +261,11 @@ arthur_minus_lee = all_rating_scores[:,0] - all_rating_scores[:,1]
 # (4) Plot empathy for each character by group
 maxH=5.1
 fig,ax = plotPosterStyle_DF(subject_ratings_empathy,Exp1Subjects)
-plt.title('How much do you empathize with...')
+plt.title('How much do you empathize with...', fontsize = 30)
 nq = 4
 labels=['Arthur','Lee','Joanie','the girl']
-plt.ylabel('empathy (1-5)')
-plt.xticks(np.arange(nq), labels,fontsize=20) 
+plt.ylabel('empathy rating', fontsize=25)
+plt.xticks(np.arange(nq), labels,fontsize=25) 
 plt.yticks(np.arange(1,6),fontsize=20)
 plt.ylim([.1,6.5])
 x,y=nonNan(all_rating_scores[C_ind,0],all_rating_scores[P_ind,0])
@@ -290,13 +290,13 @@ plt.savefig('savedPlots_checked/all_ratings_EXP1.pdf')
 
 # (5) Plot empathy difference for Arthur minus Lee empathy
 fig,ax = plotPosterStyle_DF(arthur_minus_lee,Exp1Subjects)
-plt.title('Arthur minus Lee')
+plt.title('Arthur minus Lee',fontsize=30)
 labels=['paranoid','cheating']
 plt.xticks(np.array([-.2,.2]), labels,fontsize=20) 
 plt.yticks(np.array([-5,0,5]),fontsize=20)
 plt.ylim([-5,6.5])
-plt.xlabel('')
-plt.ylabel('empathy difference')
+plt.xlabel('assigned group', fontsize=25)
+plt.ylabel('empathy difference',fontsize=25)
 plt.plot([-2,2],[0,0], '--', color='k')
 x,y=nonNan(arthur_minus_lee[C_ind],arthur_minus_lee[P_ind])
 t,p = scipy.stats.ttest_ind(x,y)
@@ -310,7 +310,7 @@ paranoid_c = '#99d8c9'
 cheating_c = '#fc9272'
 arthur_minus_lee_cor = arthur_minus_lee.copy()
 arthur_minus_lee_cor[P_ind] = -1*arthur_minus_lee[P_ind]
-fig,ax = plt.subplots(figsize=(17,9))
+fig,ax = plt.subplots(figsize=(12,9))
 sns.despine()
 for s in np.arange(nSubs):
     if interpretations[s] == 'C':
@@ -318,16 +318,18 @@ for s in np.arange(nSubs):
     elif interpretations[s] == 'P':
         color=paranoid_c
     plt.plot(all_correct_context[s],arthur_minus_lee_cor[s],'.',ms=20,color=color,alpha=1)
-plt.xlabel('interpretation score (correct=1)')
-plt.ylabel('correct empathy difference')
-plt.title('empathy and interpretation relationship')
+plt.xlabel('correct interpretation score',fontsize=25)
+plt.ylabel('correct empathy difference',fontsize=25)
+plt.xticks(fontsize=20)
+plt.yticks(fontsize=20)
+plt.title('Empathy and interpretation relationship',fontsize=30)
 x = all_correct_context
 y = arthur_minus_lee_cor
 b, m = polyfit(x, y, 1)
 plt.plot(x, b + m * x, '-',alpha=0.6,lw=3, color='k')
 r,p=scipy.stats.pearsonr(x,y)
 text_f = 'r = %2.2f\np = %2.2f' % (r,p)
-plt.text(-1,3,text_f,fontsize=20)
+plt.text(-1,3,text_f,fontsize=25)
 plt.ylim([-3,4])
 plt.savefig('savedPlots_checked/empathy_context_EXP1.pdf')
 #plt.show()
@@ -337,22 +339,30 @@ printStatsResults('Empathy-Interpretation linear relationship', r, p)
 # NEUROFEEDBACK CLASSIFICATION PLOTS
 fig = plotPosterStyle_multiplePTS(orig_cheating_prob,Exp1Subjects)
 plt.subplot(1,4,1)
-plt.ylabel('p(cheating)')
+plt.ylabel('p(cheating)',fontsize=25)
 plt.ylim([0,1])
-plt.title('run 1')
-plt.xlabel('station')
+plt.xticks(fontsize=20)
+plt.yticks(fontsize=20)
+plt.title('run 1',fontsize=30)
+plt.xlabel('station',fontsize=25)
 plt.subplot(1,4,2)
+plt.xticks(fontsize=20)
+plt.yticks(fontsize=20)
 plt.ylim([0,1])
-plt.title('run 2')
-plt.xlabel('station')
+plt.title('run 2',fontsize=30)
+plt.xlabel('station',fontsize=25)
 plt.subplot(1,4,3)
 plt.ylim([0,1])
-plt.title('run 3')
-plt.xlabel('station')
+plt.xticks(fontsize=20)
+plt.yticks(fontsize=20)
+plt.title('run 3',fontsize=30)
+plt.xlabel('station',fontsize=25)
 plt.subplot(1,4,4)
-plt.title('run 4')
+plt.title('run 4',fontsize=30)
 plt.ylim([0,1])
-plt.xlabel('station')
+plt.xticks(fontsize=20)
+plt.yticks(fontsize=20)
+plt.xlabel('station',fontsize=25)
 plt.savefig('savedPlots_checked/p_cheating_EXP1.pdf')
 #plt.show()
 
@@ -369,22 +379,30 @@ printStatsResults('Within group variance C correct_prob', np.mean(stationVarianc
 
 fig = plotPosterStyle_multiplePTS(all_nf_scores,Exp1Subjects)
 plt.subplot(1,4,1)
-plt.ylabel('NF score ($)')
+plt.ylabel('NF score ($)',fontsize=25)
 plt.ylim([0,1])
-plt.title('run 1')
-plt.xlabel('station')
+plt.xticks(fontsize=20)
+plt.yticks(fontsize=20)
+plt.title('run 1',fontsize=30)
+plt.xlabel('station',fontsize=25)
 plt.subplot(1,4,2)
+plt.xticks(fontsize=20)
+plt.yticks(fontsize=20)
 plt.ylim([0,1])
-plt.title('run 2')
-plt.xlabel('station')
+plt.title('run 2',fontsize=30)
+plt.xlabel('station',fontsize=25)
 plt.subplot(1,4,3)
+plt.xticks(fontsize=20)
+plt.yticks(fontsize=20)
 plt.ylim([0,1])
-plt.title('run 3')
-plt.xlabel('station')
+plt.title('run 3',fontsize=30)
+plt.xlabel('station',fontsize=25)
 plt.subplot(1,4,4)
-plt.title('run 4')
+plt.title('run 4',fontsize=30)
+plt.xticks(fontsize=20)
+plt.yticks(fontsize=20)
 plt.ylim([0,1])
-plt.xlabel('station')
+plt.xlabel('station',fontsize=25)
 plt.savefig('savedPlots_checked/nf_score_EXP1.pdf')
 #plt.show()
 
