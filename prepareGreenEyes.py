@@ -133,8 +133,8 @@ def makeSubjectInterpretation(cfg):
     if cfg.interpretation != 'C' and cfg.interpretation != 'P':
         updateRatio = 1
         if updateRatio: # if you want to update the probability of group based on previous people
-            n_per_group = 8 # let's say we want 16 per group
-            allPreviousSubjects = [2,3,4,5,6,7,8]
+            n_per_group = 10 # let's say we want 16 per group
+            allPreviousSubjects = [25,26,28,29,30,31,32,33,35,36,37,38,39,40,41,42,43,44,45]
             n_c,n_p= getAllPrevInterpretations(allPreviousSubjects,cfg)
             number_needed_cheating = n_per_group - n_c
             number_needed_paranoid = n_per_group - n_p
