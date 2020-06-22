@@ -11,7 +11,7 @@ from rtCommon.utils import loadConfigFile, installLoggers
 from rtCommon.structDict import StructDict
 from rtCommon.projectInterface import Web
 
-defaultConfig = os.path.join(currPath, 'conf/greenEyes_organized.toml')
+defaultConfig = os.path.join(currPath, 'conf/greenEyes_cloud.toml')
 
 
 if __name__ == "__main__":
