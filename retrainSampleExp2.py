@@ -29,7 +29,6 @@ sys.path.append('/jukebox/norman/amennen/github/brainiak/rt-cloud')
 from rtCommon.utils import loadConfigFile, dateStr30, DebugLevels, writeFile, loadMatFile
 from rtCommon.readDicom import readDicomFromBuffer
 from rtCommon.fileClient import FileInterface
-import rtCommon.webClientUtils as wcutils
 from rtCommon.structDict import StructDict
 import rtCommon.dicomNiftiHandler as dnh
 import greenEyes
@@ -42,7 +41,7 @@ params = {'legend.fontsize': 'large',
 font = {'weight': 'bold',
         'size': 22}
 plt.rc('font', **font)
-defaultConfig = os.path.join(os.getcwd(), 'conf/greenEyes_organized.toml')
+defaultConfig = os.path.join(os.getcwd(), 'conf/greenEyes_cluster.toml')
 cfg = loadConfigFile(defaultConfig)
 params = StructDict({'config':defaultConfig, 'runs': '1', 'scans': '9', 'webpipe': 'None', 'webfilesremote': False})
 cfg = greenEyes.initializeGreenEyes(defaultConfig,params)
@@ -128,7 +127,7 @@ def getSubjectInterpretation(subjectNum):
         interpretation = 'P'
     return interpretation
 
-def getStationInformation(config='conf/greenEyes_organized.toml'):
+def getStationInformation(config='conf/greenEyes_cluster.toml'):
     allinfo = {}
     cfg = loadConfigFile(config)
     station_FN = cfg.cluster.classifierDir + '/' + cfg.stationDict
@@ -305,6 +304,9 @@ z = [log2_cheating_prob[:,:,s] for s in np.arange(nSubs)]
 all_data_by_stations = np.concatenate(z,axis=0)
 overall_mean = np.mean(all_data_by_stations,axis=0)
 overall_std = np.std(all_data_by_stations,axis=0,ddof=1)
+all_p_data_by_stations = 1 - all_data_by_stations
+overall_mean_p = np.mean(all_p_data_by_stations,axis=0)
+overall_std_p = np.std(all_p_data_by_stations,axis=0,ddof=1)
 # maybe instead take mean and std 
 plt.figure()
 plt.errorbar(np.arange(nStations),overall_mean,yerr=overall_std*2,color='r', label='2 std')
@@ -402,7 +404,8 @@ plt.show()
 #     new_station_dict[st] = stationDict[st]
 # np.save('stations_upper_right_nofilter_7st.npy', new_station_dict)
 
-
+# resaving paranoid version
+np.savez('station_stats_p.npz',m=overall_mean_p,s=overall_std_p)
 # new_overall_mean = overall_mean[0:7]
 # new_overall_std = overall_std[0:7]
 # np.savez('station_stats.npz', m=new_overall_mean,s=new_overall_std)
@@ -412,7 +415,8 @@ overall_mean = station_info['m']
 overall_std = station_info['s']
 ############################################################
 # NOW DO FOR NEW SUBJECTS
-new_subj = [20,21,22]
+#new_subj = [20,21,22]
+new_subj = [23,24]
 nNew = len(new_subj)
 new_log2_cheating_prob = np.zeros((nRuns,nStations,nNew))
 
@@ -444,6 +448,9 @@ for s in np.arange(nNew):
     for r in np.arange(nRuns):
         this_subj_score = new_log2_cheating_prob[r,:,s]
         for st in np.arange(nStations):
+            # check using paranoid scores if get the same thing
+            #z_transferred = getTransferredZ(1-this_subj_score[st],st,overall_mean_p,overall_std_p)
+            # gets the same thing as 
             z_transferred = getTransferredZ(this_subj_score[st],st,overall_mean,overall_std)
             new_new_scores[r,st,s] = z_transferred
 run_avg = np.mean(new_new_scores,axis=0)
@@ -467,10 +474,12 @@ for r in np.arange(nRuns):
             color='r'
         else:
             color = 'g'
-        plt.plot(new_new_scores[r,:,s], color=color,alpha=0.5)
-    plt.plot(new_C_avg[r,:],color='r',label='cheating',lw=5)
-    plt.plot(P_avg[r,:],color='g', label='paranoid',lw=5)
+        label='interp=%2.2f' % new_all_context_scores[s]
+        plt.plot(new_new_scores[r,:,s], color=color,alpha=0.5, lw=1*(s+0.5), label=label)
+    #plt.plot(new_C_avg[r,:],color='r',label='cheating',lw=5)
+    #plt.plot(P_avg[r,:],color='g', label='paranoid',lw=5)
     plt.xlim([-1,nStations])
     plt.ylim([0,1])
-#plt.legend()
+    plt.ylabel('p(cheating)')
+plt.legend()
 plt.show()

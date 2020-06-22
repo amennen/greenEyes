@@ -36,7 +36,8 @@ def getSubjectInterpretation(subjectNum):
 projectDir = '/jukebox/norman/amennen/RT_prettymouth/data/laptopData/'
 
 interpretations = {}
-subjects = [2 ,3 ,4 ,5,6,7,8,9,10,11,12,13,14,16,18]
+#subjects = [2 ,3 ,4 ,5,6,7,8,9,10,11,12,13,14,16,18]
+subjects = [25,26,28,29,30,31]
 nSub = len(subjects)
 for s in np.arange(nSub):
     interpretations[s] = getSubjectInterpretation(subjects[s])
