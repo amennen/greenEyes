@@ -1,6 +1,6 @@
 %% specify any input - run from local directory
 debug = 0;
-subjectNum =11;
+subjectNum =46;
 bidsId = sprintf('sub-%03d',subjectNum);
 
 saveDir = ['data/' bidsId];

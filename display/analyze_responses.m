@@ -200,7 +200,7 @@ RATINGS{9} = 'Were sleepy in the scanner';
 
 %%
 % find newest file
-subject = 11;
+subject = 46;
 bids_id = sprintf('%03d', subject);
 file_dir = ['data/sub-' bids_id '/'];
 fn = findNewestFile(file_dir, [file_dir '/responses_20*']);
@@ -242,9 +242,12 @@ fprintf('mean comphrehension is %2.2f\n',  story_score)
 %% now analyze cheating vs. paranoid responses
 n_context = length(CONTEXT_QUESTIONS);
 context_score = 0;
+
 for q = 1:n_context
    question = CONTEXT_QUESTIONS(q);
+   QUESTIONS{CONTEXT_QUESTIONS(q)};
    response = z.stim.actual_resp(question);
+   POSSIBLE_ANSWERS{CONTEXT_QUESTIONS(q),response};
    if response == 1 % then cheating response
        context_score = context_score + 1;
    elseif response == 2 % then paranoid response
