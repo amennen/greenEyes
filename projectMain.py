@@ -9,9 +9,9 @@ rootPath = os.path.dirname(os.path.dirname(currPath))
 sys.path.append(rootPath)
 from rtCommon.utils import loadConfigFile, installLoggers
 from rtCommon.structDict import StructDict
-from web.webServer import Web
+from rtCommon.projectInterface import Web
 
-defaultConfig = os.path.join(currPath, 'conf/greenEyes_organized.toml')
+defaultConfig = os.path.join(currPath, 'conf/greenEyes_cloud.toml')
 
 
 if __name__ == "__main__":

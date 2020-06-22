@@ -1,13 +1,18 @@
 # this version: organized into what is saved on cloud vs. saved on local
 
-experimentName = "greenEyes"
-experimentId = 1
-model = "greenEyes"
+title = "greenEyes"
+plotTitle = 'Story Classification'
+plotXLabel = 'Station #'
+plotYLabel = 'p(correct)'
+plotXRangeLow = 0
+plotXRangeHigh = 7
+plotYRangeLow = 0
+plotYRangeHigh = 1
 
 rtData = true
-date = "today" # "2018-08-16"  # or "today", "now", "2018-03-01" or "03/01/2018" etc.
-subjectName = "0626191_greenEyes"
-subjectNum = 8
+date = "8/23/19" # "2018-08-16"  # or "today", "now", "2018-03-01" or "03/01/2018" etc.
+subjectName = "0823191_greenEyes"
+subjectNum = 21
 subjectDay = 2
 mode = "cloud"  #"debug"
 machine = "cloud" #"cluster"
@@ -44,9 +49,9 @@ MNI_ref_BOLD="mni_icbm152_t1_tal_nlin_asym_09c_BOLD_brain.nii.gz"
 MASK="TOM_large_resampled_maskedbybrain.nii.gz"
 
 ## CLASSIFIER NAMES ##
-classifierNamePattern = "UPPERRIGHT_stationInd_{}_ROI_1_AVGREMOVE_1_filter_0_k1_0_k2_25.sav"
+classifierNamePattern = "LOGISTIC_lbfgs_UPPERRIGHT_stationInd_{}_ROI_1_AVGREMOVE_1_filter_0_k1_0_k2_25.sav"
 averageSignal = "averageSignal_ROI_1_AVGREMOVE_1_filter_0_k1_0_k2_25.npy"
-stationDict = "upper_right_winners_nofilter.npy"
+stationDict = "upper_right_winners_nofilter_7st.npy"
 
 ## EXP DESIGN ##
 buildImgPath = true
@@ -58,8 +63,8 @@ retrieveServerFiles = false
 enforceDeadlines = true
 calcClockSkewIters = 30
 # Specify default run numbers
-Runs = [1, 2, 3, 4]
-ScanNums = [5, 6 ,7 ,8]
+runNum = [1, 2, 3, 4]
+scanNum = [5, 6 ,7 ,8]
 
 ## DISPLAY PARAMETERS ##
 [display]
