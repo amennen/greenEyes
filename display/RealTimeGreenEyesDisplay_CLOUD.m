@@ -113,11 +113,11 @@ end
 % display parameters
 textColor = 0;
 textFont = 'Arial';
-textSize = 30;
+textSize = 34;
 textSpacing = 25;
 fixColor = 0;
 backColor = 127;
-fixationSize = 4;% pixels
+fixationSize = 45;% pixels
 minimumDisplay = 0.25;
 KbName('UnifyKeyNames');
 LEFT = KbName('1!');
@@ -152,13 +152,20 @@ if useButtonBox && (~debug)
     end
 elseif ~useButtonBox && fmri
     % let's set it to look for the Dell keyboard instead
-    DEVICENAME = 'Dell KB216 Wired Keyboard';
+    DEVICENAME = 'Apple, Inc Apple Keyboard';%'Dell KB216 Wired Keyboard';
     [index devName] = GetKeyboardIndices;
-    for device = 1:length(index)
+    stop = 0;
+    device=1;
+    while stop == 0
+        %device <= length(index)
         if strcmp(devName(device),DEVICENAME)
             DEVICE = index(device);
+            stop = 1;
         end
+        device = device + 1;
     end
+    device = device - 1; % added 1 after 
+
 end
 
 
@@ -171,10 +178,10 @@ maxGreenCircleColor=[90 204 2];
 badColor = 50*[1 1 1];
 
 % RECTANGLE PARAMETERS GO HERE
-rectWidth = 100;
-rectHeight = 300;
+rectWidth = 100*1.125;
+rectHeight = 300*1.125;
 
-circleFontSize = 60;
+circleFontSize = 68;
 feedbackDur = 2; % seconds - how long to show feedback
 deltat = .1;
 %% Initialize Screens
@@ -309,7 +316,7 @@ firstRun = ['Welcome to the task!\n\nToday you will be listening to a pre-record
 if runData.run == 1
     % show the first instructions
     firstInstruct = [firstRun continueInstruct];
-    DrawFormattedText(mainWindow,firstInstruct,'center','center',textColor,70,[],[],1.2);
+    DrawFormattedText(mainWindow,firstInstruct,'center','center',textColor,60,[],[],1.2);
     Screen('Flip',mainWindow);
     waitForKeyboard(subj_keycode,DEVICE);
 end
@@ -317,20 +324,20 @@ firstRun = ['Remember, you need to investigate who else is in Lee''s bed:\n(1)if
 %if runData.run == 1
 % show the first instructions
 firstInstruct = [firstRun continueInstruct];
-DrawFormattedText(mainWindow,firstInstruct,'center','center',textColor,70,[],[],1.2);
+DrawFormattedText(mainWindow,firstInstruct,'center','center',textColor,60,[],[],1.2);
 Screen('Flip',mainWindow);
 waitForKeyboard(subj_keycode,DEVICE);
 %end
 
 reminder = ['Each time you listen to the story, you should always pay attention to the neurofeedback\nand use it to bias your interpretation of your story.\nEven if you think that the story has directly revealed which interpretation is correct, characters might be lying.\nYour job is to try to interpret the story according to what the neurofeedback is telling you,\nnot to try to figure out which interpretation the author intended.'];
 reminderInstruct = [reminder continueInstruct];
-DrawFormattedText(mainWindow,reminderInstruct,'center','center',textColor,70,[],[],1.2);
+DrawFormattedText(mainWindow,reminderInstruct,'center','center',textColor,60,[],[],1.2);
 Screen('Flip',mainWindow);
 waitForKeyboard(subj_keycode,DEVICE);
 
 % now tell them they will listen again and ge
 nextInstruct = ['Please stay focused, keep listening throughout the entire story, and use your neurofeedback clues to help you along the way.' continueInstruct];
-DrawFormattedText(mainWindow,nextInstruct,'center','center',textColor,70,[],[],1.2);
+DrawFormattedText(mainWindow,nextInstruct,'center','center',textColor,60,[],[],1.2);
 Screen('Flip',mainWindow);
 waitForKeyboard(subj_keycode,DEVICE);
 
@@ -404,7 +411,6 @@ runData.leftPress = NaN(1,nTRs_story);
 runData.leftPressRT = NaN(1,nTRs_story);
 runData.rightPress = NaN(1,nTRs_story);
 runData.rightPressRT = NaN(1,nTRs_story);
-timing.probeResp = zeros(1,nStations);
 timing.plannedOnsets.story = timing.plannedOnsets.audioStart + musicDur + silenceDur1 + [0 cumsum(repmat(TR, 1,nTRs_story-1))];
 % get all timing for stations starrt
 % then subtract that by 4
@@ -424,7 +430,7 @@ fprintf(dataFile,'%-8s%-8s%-8s%-8s%-8s%-8s%-8s%-8s%-8s%-8s%-8s\n', 'run', 'TR', 
 fprintf('%-8s%-8s%-8s%-8s%-8s%-8s%-8s%-8s%-8s%-8s%-8s\n', 'run', 'TR', 'storyTR', 'tondiff', 'trig', 'LEFT', 'RIGHT', 'station', 'looking', 'loaded', 'p(cor)')
 %%
 KbQueueCreate(DEVICE,key_map);
-KbQueueStart;
+KbQueueStart(DEVICE);
 KbQueueFlush(DEVICE);
 SHOWINGFEEDBACK = 0;
 Screen(mainWindow,'TextFont',textFont);
@@ -485,8 +491,8 @@ for iTR = 1:nTRs_story
             Screen('FillRect', mainWindow,restCircleColor, rect);
             SHOWINGFEEDBACK = 0;
         else % redraw so can flip on next TR anyway
-            Screen('DrawLine',mainWindow, 0,rect(1)-lineW,centerY,rect(3)+lineW,centerY,[7])
-            Screen(mainWindow, 'FillRect', restCircleColor, rect)
+            Screen('DrawLine',mainWindow, 0,rect(1)-lineW,centerY,rect(3)+lineW,centerY,[7]);
+            Screen(mainWindow, 'FillRect', restCircleColor, rect);
             feedbackRect = rect;
             feedbackRect(2) = rect(4) - (rect(4) - rect(2))*this_ev;
             if this_ev <= 0.5
@@ -508,10 +514,12 @@ for iTR = 1:nTRs_story
 
         %fprintf('here\n')
         if keep_display
-            Screen('drawtext',mainWindow,'INDEX',centerX - centerX/2 -tempBounds_IND(3)/2,centerY-rectHeight/2 - tempBounds_IND(4)/2,textColor);
+            Screen('drawtext',mainWindow,'INDEX',centerX - centerX/2 -tempBounds_IND(3)/2,rect(2),textColor);
             Screen('drawtext',mainWindow,runData.LEFT_PRESS,centerX - centerX/2 -tempBounds_L(3)/2,centerY - tempBounds_L(4)/2,textColor);
-            Screen('drawtext',mainWindow,'MIDDLE',centerX+centerX/2+tempBounds_MID(3)/2,centerY-rectHeight/2 - tempBounds_MID(4)/2,textColor);
-            Screen('drawtext',mainWindow,runData.RIGHT_PRESS,centerX+centerX/2+tempBounds_R(3)/2,centerY - tempBounds_R(4)/2,textColor);
+            Screen('drawtext',mainWindow,'MIDDLE',centerX+centerX/2-tempBounds_MID(3)/2,rect(2),textColor);
+            Screen('drawtext',mainWindow,runData.RIGHT_PRESS,centerX+centerX/2-tempBounds_R(3)/2,centerY - tempBounds_R(4)/2,textColor);
+            
+
         end
         if ~probe_start(nextStation) && abs(GetSecs - timing.plannedOnsets.probeON(nextStation)) <= 1
             %fprintf('HERE IN ON')
@@ -525,18 +533,17 @@ for iTR = 1:nTRs_story
             tempBounds_MID = Screen('TextBounds', mainWindow, 'MIDDLE');
             tempBounds_L = Screen('TextBounds', mainWindow, runData.LEFT_PRESS);
             tempBounds_R = Screen('TextBounds', mainWindow, runData.RIGHT_PRESS);
-            Screen('drawtext',mainWindow,'INDEX',centerX - centerX/2 -tempBounds_IND(3)/2,centerY-rectHeight/2 - tempBounds_IND(4)/2,textColor);
+            Screen('drawtext',mainWindow,'INDEX',centerX - centerX/2 -tempBounds_IND(3)/2,rect(2),textColor);
             Screen('drawtext',mainWindow,runData.LEFT_PRESS,centerX - centerX/2 -tempBounds_L(3)/2,centerY - tempBounds_L(4)/2,textColor);
-            Screen('drawtext',mainWindow,'MIDDLE',centerX+centerX/2+tempBounds_MID(3)/2,centerY-rectHeight/2 - tempBounds_MID(4)/2,textColor);
-            Screen('drawtext',mainWindow,runData.RIGHT_PRESS,centerX+centerX/2+tempBounds_R(3)/2,centerY - tempBounds_R(4)/2,textColor);
-            %KbQueueFlush(DEVICE);
+            Screen('drawtext',mainWindow,'MIDDLE',centerX+centerX/2-tempBounds_MID(3)/2,rect(2),textColor);
+            Screen('drawtext',mainWindow,runData.RIGHT_PRESS,centerX+centerX/2-tempBounds_R(3)/2,centerY - tempBounds_R(4)/2,textColor);
             timespec = timing.plannedOnsets.probeON(nextStation) - slack;
             timing.actualOnsets.probeON(nextStation) = Screen('Flip',mainWindow,timespec); % flip as soon as it's ready
             Screen('FillRect', mainWindow,restCircleColor, rect);
-            Screen('drawtext',mainWindow,'INDEX',centerX - centerX/2 -tempBounds_IND(3)/2,centerY-rectHeight/2 - tempBounds_IND(4)/2,textColor);
+            Screen('drawtext',mainWindow,'INDEX',centerX - centerX/2 -tempBounds_IND(3)/2,rect(2),textColor);
             Screen('drawtext',mainWindow,runData.LEFT_PRESS,centerX - centerX/2 -tempBounds_L(3)/2,centerY - tempBounds_L(4)/2,textColor);
-            Screen('drawtext',mainWindow,'MIDDLE',centerX+centerX/2+tempBounds_MID(3)/2,centerY-rectHeight/2 - tempBounds_MID(4)/2,textColor);
-            Screen('drawtext',mainWindow,runData.RIGHT_PRESS,centerX+centerX/2+tempBounds_R(3)/2,centerY - tempBounds_R(4)/2,textColor);
+            Screen('drawtext',mainWindow,'MIDDLE',centerX+centerX/2-tempBounds_MID(3)/2,rect(2),textColor);
+            Screen('drawtext',mainWindow,runData.RIGHT_PRESS,centerX+centerX/2-tempBounds_R(3)/2,centerY - tempBounds_R(4)/2,textColor);
         elseif ~probe_stop(nextStation) && (GetSecs - timing.actualOnsets.probeON(nextStation)) >= 0.5
             % just go back to a regular display
             %fprintf('here in OFF')
@@ -621,8 +628,8 @@ for iTR = 1:nTRs_story
         %  lastStation = 1; % initialize it here for print
     end
     % print out TR information
-    fprintf(dataFile,'%-8d%-8d%-8d%-8.3f%-8d%-8df%-8df%-8d%-8d%-8d%-8.3f\n', runNum,volCounter,iTR,timing.actualOnsets.story(iTR)-timing.plannedOnsets.story(iTR),runData.pulses(volCounter),runData.leftPress(iTR),runData.rightPress(iTR),isStation,isLookingStation,runData.classOutputFileLoad(iTR,lastStation),runData.stationScore(lastStation));
-    fprintf('%-8d%-8d%-8d%-8.3f%-8d%-8d%-8df%-8d%-8d%-8d%-8.3f\n', runNum,volCounter,iTR,timing.actualOnsets.story(iTR)-timing.plannedOnsets.story(iTR),runData.pulses(volCounter),runData.leftPress(iTR),runData.rightPress(iTR),isStation,isLookingStation,runData.classOutputFileLoad(iTR,lastStation),runData.stationScore(lastStation));
+    fprintf(dataFile,'%-8d%-8d%-8d%-8.3f%-8d%-8d%-8df%-8d%-8d%-8d%-8.3f\n', runNum,volCounter,iTR,timing.actualOnsets.story(iTR)-timing.plannedOnsets.story(iTR),runData.pulses(volCounter),runData.leftPress(iTR),runData.rightPress(iTR),isStation,isLookingStation,runData.classOutputFileLoad(iTR,lastStation),runData.stationScore(lastStation));
+    fprintf('%-8d%-8d%-8d%-8.3f%-8d%-8d%-8d%-8d%-8d%-8d%-8.3f\n', runNum,volCounter,iTR,timing.actualOnsets.story(iTR)-timing.plannedOnsets.story(iTR),runData.pulses(volCounter),runData.leftPress(iTR),runData.rightPress(iTR),isStation,isLookingStation,runData.classOutputFileLoad(iTR,lastStation),runData.stationScore(lastStation));
 end
 
 Screen(mainWindow,'TextSize',textSize);

@@ -28,7 +28,6 @@ sys.path.append(rootPath)
 from rtCommon.utils import loadConfigFile, dateStr30, DebugLevels, writeFile, loadMatFile
 from rtCommon.readDicom import readDicomFromBuffer
 from rtCommon.fileClient import FileInterface
-import rtCommon.webClientUtils as wcutils
 from rtCommon.structDict import StructDict
 import rtCommon.dicomNiftiHandler as dnh
 import greenEyes
@@ -37,7 +36,7 @@ defaultConfig = os.path.join(currPath, 'conf/greenEyes_organized.toml')
 # date doesn't have to be right, but just make sure subject number, session number, computers are correct
 def getCorrectProbability(cfg):
     nRuns = int(cfg.totalNumberRuns)
-    all_correct_prob = np.zeros((nRuns,cfg.nStations))
+    all_correct_prob = np.zeros((nRuns,7))
     for r in np.arange(nRuns):
         fileStr = '{0}/patternsData_r{1}*'.format(cfg.subject_full_day_path,r+1)
         run_pat = glob.glob(fileStr)[-1]
