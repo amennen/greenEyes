@@ -446,6 +446,16 @@ def main():
         #    errorReply = self.createReplyMessage(msg, MsgResult.Errsor)
         #    errorReply.data = "Error: Unable to save blkGrpFile %s: %r" % (blkGrpFilename, err)
         #    return errorReply
+
+    # DELETE ALL FILES IF FLAGGED TO # 
+    # REPEAT AT THE END OF THE RUN AS WELL
+    if args.deleteTmpNifti == '1':
+        deleteTmpFiles(cfg)
+    else:
+        print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+        print('NOT DELETING NIFTIS IN tmp/convertedNiftis')
+        print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+    # DELETE ALL FILES IF FLAGGED TO # 
     sys.exit(0)
 
 if __name__ == "__main__":
