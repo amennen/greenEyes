@@ -161,13 +161,13 @@ def getTransferredZ(cheating_prob,station,all_mean,all_std):
 
 labels = ['cheating', 'paranoid']
 nRuns = 4
-nStations, cfg.stationsDict, last_tr_in_station, all_station_TRs = getStationInformation()
+nStations, cfg.stationsDict, last_tr_in_station, all_station_TRs = getStationInformation() # returns 9 stations
 
 Exp1Subjects = [2,3,4,5,6,7,8,9,10,11,12,13,14,16,17,18,19]
 nSubs = len(Exp1Subjects)
 all_cheating_prob = np.zeros((nSubs,nStations,nRuns))*np.nan
 all_nf_scores = np.zeros((nSubs,nStations,nRuns))*np.nan
-orig_cheating_prob = np.zeros((nSubs,nStations,nRuns))*np.nan
+orig_cheating_prob = np.zeros((nSubs,nStations,nRuns))*np.nan 
 
 interpretations = {}
 for s in np.arange(nSubs):
@@ -364,6 +364,36 @@ plt.xticks(fontsize=20)
 plt.yticks(fontsize=20)
 plt.xlabel('station',fontsize=25)
 plt.savefig('savedPlots_checked/p_cheating_EXP1.pdf')
+#plt.show()
+
+# NOW PLOT P(CHEATING) FOR LOGISTIC CLF
+fig = plotPosterStyle_multiplePTS(all_cheating_prob,Exp1Subjects)
+plt.subplot(1,4,1)
+plt.ylabel('p(cheating)',fontsize=25)
+plt.ylim([0,1])
+plt.xticks(fontsize=20)
+plt.yticks(fontsize=20)
+plt.title('run 1',fontsize=30)
+plt.xlabel('station',fontsize=25)
+plt.subplot(1,4,2)
+plt.xticks(fontsize=20)
+plt.yticks(fontsize=20)
+plt.ylim([0,1])
+plt.title('run 2',fontsize=30)
+plt.xlabel('station',fontsize=25)
+plt.subplot(1,4,3)
+plt.ylim([0,1])
+plt.xticks(fontsize=20)
+plt.yticks(fontsize=20)
+plt.title('run 3',fontsize=30)
+plt.xlabel('station',fontsize=25)
+plt.subplot(1,4,4)
+plt.title('run 4',fontsize=30)
+plt.ylim([0,1])
+plt.xticks(fontsize=20)
+plt.yticks(fontsize=20)
+plt.xlabel('station',fontsize=25)
+plt.savefig('savedPlots_checked/p_cheating_EXP1_logistic.pdf')
 #plt.show()
 
 # calculate variance

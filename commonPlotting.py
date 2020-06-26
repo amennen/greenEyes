@@ -126,6 +126,36 @@ def plotPosterStyle_DF_valence(all_data,subjects,ylabel):
   ax.legend().remove()
   return fig,ax
 
+def plotPosterStyle_multiplePTS_1sub(sub_data,subjects,this_sub):
+    """Assume data is in PTS x day """
+    colors_dark = ['#2ca25f','#de2d26']
+    colors_light = ['#99d8c9','#fc9272']
+    n_subs = len(subjects)
+    interpretations = {}
+    for s in np.arange(n_subs):
+      interpretations[s] = getSubjectInterpretation(subjects[s])
+    C_ind = [sub for sub, interp in interpretations.items() if interp == 'C']
+    P_ind = [sub for sub, interp in interpretations.items() if interp == 'P']
+    alpha=0.2
+    nDays = 4
+    nPoints = 7
+    fig,ax = plt.subplots(figsize=(20,9))
+    for d in np.arange(nDays):
+      plt.subplot(1,nDays,d+1)
+      sns.despine()
+      if this_sub in P_ind:
+          color = 0
+      elif s in C_ind:
+          color = 1
+      plt.plot(np.arange(nPoints),sub_data[:,d],'-o',ms=10,color=colors_light[color],lw=5)
+      plt.xlabel('point')
+      #plt.ylabel('area under -0.1')
+      plt.xticks(np.arange(nPoints))
+    #  plt.legend()
+    #ax.get_legend().remove()
+    #plt.show()
+    return fig
+
 def plotPosterStyle_multiplePTS(all_data,subjects):
     """Assume data is in subject x PTS x day """
     colors_dark = ['#2ca25f','#de2d26']

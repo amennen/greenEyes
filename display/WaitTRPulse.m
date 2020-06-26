@@ -4,7 +4,7 @@ recorded = false;
 secs = -1;
 loop_delay = .0005;
 TIMEOUT = 0.050; % 50 ms waiting period for trigger
-TRlength = 2;
+TRlength = 1.5;
 if ~exist('timeToWait', 'var')
     timeToWait = inf;
 end
