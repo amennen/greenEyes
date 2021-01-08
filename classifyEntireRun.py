@@ -87,10 +87,12 @@ filterType = 0
 k1 = 0
 k2 = 25
 classifierType = 2
-filename_clf = offline_path + '/' + 'ROI_' + str(maskType) + '_AVGREMOVE_' + str(removeAvg) + '_classifierType_' + str(classifierType) + '_filter_' + str(filterType)  + '_k1_' + str(k1) + '_k2_' + str(k2)  + '.sav'
+filename_clf = offline_path + '/' 'LOGISTIC_lbfgs_UPPERRIGHT_NOstations_' + '_' + 'ROI_' + str(maskType) + '_AVGREMOVE_' + str(removeAvg)  + '_filter_' + str(filterType) + '_k1_' + str(k1) + '_k2_' + str(k2)  + '.sav'
 loaded_model = pickle.load(open(filename_clf, 'rb'))
 
-allSubjects = [2,3,4,5,6,7,8,9,10,11,12,13,14]
+# allSubjects = [2,3,4,5,6,7,8,9,10,11,12,13,14]
+allSubjects = np.array([25,26,28,29,30,31,32,33,35,36,37,38,39,41,40,42,43,44,45,46])
+
 nSub = len(allSubjects)
 
 story_TR_1 = 14
