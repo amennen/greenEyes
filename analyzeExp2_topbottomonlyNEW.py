@@ -214,6 +214,8 @@ top_C_subj = C_ind2[ord_C[0:5]]
 bottom_C_subj = C_ind2[ord_C[5:]]
 top_subj = np.concatenate((top_P_subj,top_C_subj))
 bottom_subj = np.concatenate((bottom_P_subj,bottom_C_subj))
+np.save('top_subj.npy', top_subj)
+np.save('bottom_subj.npy', bottom_subj)
 
 # now get the behavioral data 
 projectDir = '/jukebox/norman/amennen/RT_prettymouth/data/laptopData/'

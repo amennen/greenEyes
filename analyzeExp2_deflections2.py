@@ -419,6 +419,124 @@ plt.yticks([])
 plt.savefig('savedPlots_checked/cprob_correct_incor.pdf')
 #plt.show()
 
+# ken comments -- plot by station instead
+cor = nStations*nRuns # correction - wait for error correction
+fig,ax = plt.subplots(figsize=(20,9))
+for d in np.arange(nStations):
+  plt.subplot(2,4,d+1)
+  sns.despine()
+  nPoints = nRuns
+  plt.errorbar(
+    x=np.arange(nPoints),
+    y=np.nanmean(all_correct_prob[top_subj,d,:],axis=0),
+    yerr=scipy.stats.sem(all_correct_prob[top_subj,d,:],axis=0,nan_policy='omit'),
+    color='k',
+    alpha=0.7,
+    lw=3,
+    label='top',
+    fmt='-o',
+    ms=10
+    )
+  plt.errorbar(
+    x=np.arange(nPoints),
+    y=np.nanmean(all_correct_prob[bottom_subj,d,:],axis=0),
+    yerr=scipy.stats.sem(all_correct_prob[bottom_subj,d,:],axis=0,nan_policy='omit'),
+    color='k',
+    alpha=0.5,
+    lw=3,
+    label='bottom',
+    fmt='--X',
+    ms=10
+    )
+  if d  > 3:
+    plt.xlabel('run',fontsize=15)
+  if d == 0 or d == 4:
+    plt.ylabel('p(assigned group)', fontsize=15)
+  plt.xticks(np.arange(nPoints),fontsize=10)
+  plt.yticks(fontsize=10)
+  title = 'Station {0}'.format(d)
+  plt.title(title, fontsize=15)
+  plt.ylim([0,1])
+  plt.savefig('savedPlots_checked/cprob_correct_incor_byStation.pdf')
+
+  #plt.plot(np.arange(nStations),all_means,'--',color='k')
+
+# plt.subplot(1,4,1)
+# # test significance across all points and do Bonferroni correction
+# cor = nStations*nRuns
+# for st in np.arange(nStations):
+#     x,y=nonNan(all_correct_prob[top_subj,st,0],all_correct_prob[bottom_subj,st,0],)
+#     t,p = scipy.stats.ttest_ind(x,y)
+#     p =p * cor
+#     if np.mod(st,2):
+#         maxH = 1
+#     else:
+#         maxH = 1.05
+#     addComparisonStat_SYM(p/2,st,st,maxH,.05,0,text_above='')
+#     if p/2 < 0.1:
+#         text = '1-sided r %i station %i' % (0, st)
+#         printStatsResults(text, t, p/2)
+# plt.ylim([0,1.15])
+# plt.title('run 1',fontsize=30)
+# plt.xlim([-0.25,6.25])
+# plt.ylabel('p(assigned group)',fontsize=25)
+# plt.yticks(np.array([0,0.5,1]),fontsize=20)
+
+# plt.subplot(1,4,2)
+# for st in np.arange(nStations):
+#     x,y=nonNan(all_correct_prob[top_subj,st,1],all_correct_prob[bottom_subj,st,1],)
+#     t,p = scipy.stats.ttest_ind(x,y)
+#     p =p * cor
+#     if np.mod(st,2):
+#         maxH = 1
+#     else:
+#         maxH = 1.05
+#     addComparisonStat_SYM(p/2,st,st,maxH,.05,0,text_above='')
+#     if p/2 < 0.1:
+#         text = '1-sided r %i station %i' % (1, st)
+#         printStatsResults(text, t, p/2)
+# plt.ylim([0,1.15])
+# plt.xlim([-0.25,6.25])
+# plt.yticks([])
+# plt.title('run 2',fontsize=30)
+
+# plt.subplot(1,4,3)
+# for st in np.arange(nStations):
+#     x,y=nonNan(all_correct_prob[top_subj,st,2],all_correct_prob[bottom_subj,st,2],)
+#     t,p = scipy.stats.ttest_ind(x,y)
+#     p =p * cor
+#     if np.mod(st,2):
+#         maxH = 1
+#     else:
+#         maxH = 1.05
+#     addComparisonStat_SYM(p/2,st,st,maxH,.05,0,text_above='')
+#     if p/2 < 0.1:
+#         text = '1-sided r %i station %i' % (2, st)
+#         printStatsResults(text, t, p/2)
+# plt.yticks([])
+# plt.xlim([-0.25,6.25])
+# plt.ylim([0,1.15])
+# plt.title('run 3',fontsize=30)
+
+# plt.subplot(1,4,4)
+# for st in np.arange(nStations):
+#     x,y=nonNan(all_correct_prob[top_subj,st,3],all_correct_prob[bottom_subj,st,3],)
+#     t,p = scipy.stats.ttest_ind(x,y)
+#     p =p * cor
+#     if np.mod(st,2):
+#         maxH = 1
+#     else:
+#         maxH = 1.05
+#     addComparisonStat_SYM(p/2,st,st,maxH,.05,0,text_above='')
+#     if p/2 < 0.1:
+#         text = '1-sided r %i station %i' % (3, st)
+#         printStatsResults(text, t, p/2)
+# plt.ylim([0,1.15])
+# plt.title('run 4',fontsize=30)
+# plt.xlim([-0.25,6.25])
+# plt.yticks([])
+#plt.savefig('savedPlots_checked/cprob_correct_incor_byStation.pdf')
+
 # NOW AVERAGE OVER ALL STATIONS IN A RUN FOR EACH SUBJECT!
 all_correct_run = np.nanmean(all_correct_prob,axis=1)
 fig,ax = plt.subplots(figsize=(20,9))
@@ -435,6 +553,7 @@ addComparisonStat_SYM(p/2,3,3,maxH,.05,0,text_above='')
 #plt.plot(np.arange(4),np.ones(4,)*np.mean(all_means),'--',color='k')
 plt.savefig('savedPlots_checked/cprob_correct_incor_run.pdf')
 
+## ken comment--plot each station on it's own over all runs instead
 
 
 ##########################################################################################
