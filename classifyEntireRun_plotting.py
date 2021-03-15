@@ -310,7 +310,7 @@ for run in np.arange(4):
 			color=cheating_c
 		elif s in P_ind:
 			color=paranoid_c
-		plt.plot(prob_cheating_whole_run[s,run], all_context_scores[s], '.', color=color, ms=10)
+		plt.plot(prob_cheating_opp_run[s,run], all_context_scores[s], '.', color=color, ms=10)
 	plt.xlim([0,1])
 	plt.ylim([-1.05,1.05])
 	if run > 1:
@@ -320,7 +320,7 @@ for run in np.arange(4):
 	plt.ylabel('Context score')
 	title = 'Run %i' %run
 	plt.title(title)
-	x,y=nonNan(prob_cheating_whole_run[:,run],all_context_scores)
+	x,y=nonNan(prob_cheating_opp_run[:,run],all_context_scores)
 	b, m = polyfit(x, y, 1)
 	plt.plot(x, b + m * x, '-',alpha=0.6,lw=3, color='k')
 	r,p=scipy.stats.pearsonr(x,y)
@@ -329,29 +329,16 @@ for run in np.arange(4):
 	printStatsResults('corr', r, p)
 	plot_text = 'r={0:2.2f}\np={1:2.2f}'.format(r,p)
 	plt.text(0.9,-0.8, plot_text, fontsize=12)
-plt.savefig('savedPlots_checked/cprob__context_wholeRun.pdf')
+plt.savefig('savedPlots_checked/cprob__context_oppRun.pdf')
 
-run=0
-for s in np.arange(n_subs):
-	if s in C_ind:
-		color=cheating_c
-	elif s in P_ind:
-		color=paranoid_c
-	plt.plot(prob_cheating_pre_post[s,1,run], all_context_scores[s], '.', color=color, ms=10)
-plt.xlabel('p(cheating)')
-plt.ylabel('Context score')
-x,y=nonNan(prob_cheating_pre_post[:,1,run],all_context_scores)
-r,p=scipy.stats.pearsonr(x,y)
-text_f = 'r = %2.2f\np = %2.2f' % (r,p)
-print(text_f)
 
 # next separate by top/bottom subjects
 fig,ax = plt.subplots(figsize=(20,9))
 sns.despine()
 plt.errorbar(
 	x=np.arange(4),
-	y=np.nanmean(all_correct_prob_whole_run[top_subjects,:],axis=0),
-	yerr=scipy.stats.sem(all_correct_prob_whole_run[top_subjects,:],
+	y=np.nanmean(all_correct_prob_opp_run[top_subjects,:],axis=0),
+	yerr=scipy.stats.sem(all_correct_prob_opp_run[top_subjects,:],
 	axis=0,nan_policy='omit'
 	),
 	color='k',
@@ -362,8 +349,8 @@ plt.errorbar(
 	ms=10)
 plt.errorbar(
 	x=np.arange(4),
-	y=np.nanmean(all_correct_prob_whole_run[bottom_subjects,:],axis=0),
-	yerr=scipy.stats.sem(all_correct_prob_whole_run[bottom_subjects,:],
+	y=np.nanmean(all_correct_prob_opp_run[bottom_subjects,:],axis=0),
+	yerr=scipy.stats.sem(all_correct_prob_opp_run[bottom_subjects,:],
 	axis=0,nan_policy='omit'
 	),
 	color='k',
@@ -377,7 +364,7 @@ plt.xlabel('run',fontsize=25)
 plt.ylabel('p(correct)')
 # plt.ylim([0,1.15])
 plt.xticks(np.arange(n_runs),fontsize=20)
-plt.savefig('savedPlots_checked/cprob_correct_incor_wholeRun.pdf')
+plt.savefig('savedPlots_checked/cprob_correct_incor_oppRun.pdf')
 
 
 
