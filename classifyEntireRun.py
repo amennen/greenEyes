@@ -88,11 +88,12 @@ filterType = 0
 k1 = 0
 k2 = 25
 filename_clf = offline_path + '/' 'LOGISTIC_lbfgs_UPPERRIGHT_NOstations_' + '_' + 'ROI_' + str(maskType) + '_AVGREMOVE_' + str(removeAvg)  + '_filter_' + str(filterType) + '_k1_' + str(k1) + '_k2_' + str(k2)  + '.sav'
-loaded_model = pickle.load(open(filename_clf, 'rb'))
+filename_clf_opposite = offline_path + '/' 'LOGISTIC_lbfgs_UPPERRIGHT_OPPOSITEstations_' + '_' + 'ROI_' + str(maskType) + '_AVGREMOVE_' + str(removeAvg)  + '_filter_' + str(filterType) + '_k1_' + str(k1) + '_k2_' + str(k2)  + '.sav'
 
-# allSubjects = [2,3,4,5,6,7,8,9,10,11,12,13,14]
-# allSubjects = np.array([25,26,28,29,30,31,32,33,35,36,37,38,39,41,40,42,43,44,45,46])
-allSubjects = [2,3,4,5,6,7,8,9,10,11,12,13,14,16,17,18,19]
+loaded_model = pickle.load(open(filename_clf_opposite, 'rb'))
+
+allSubjects = np.array([25,26,28,29,30,31,32,33,35,36,37,38,39,41,40,42,43,44,45,46])
+# allSubjects = [2,3,4,5,6,7,8,9,10,11,12,13,14,16,17,18,19]
 
 nSub = len(allSubjects)
 
@@ -152,7 +153,7 @@ for s in np.arange(nSub):
             allData[:,:,r,s] = np.nan
 
 # save the data
-np.save('allSubjectsData_fmripreped_Exp1.npy', allData)
+np.save('allSubjectsData_fmripreped_opposite_Exp2.npy', allData)
 
 ###############################################################
 # # once completed just load 
