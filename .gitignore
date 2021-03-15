@@ -3,3 +3,7 @@ data/
 tmp/
 cloud_code/masks/
 cloud_code/classifiers/
+*.npy
+*.wav
+*.npz
+*.docx
