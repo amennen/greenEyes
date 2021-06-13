@@ -7,6 +7,6 @@ cloud_code/classifiers/
 *.wav
 *.npz
 *.docx
-stimuli/display/*.docx
-stimuli/display/*.mat
-stimuli/display/*.wav
+display/stimuli/*.docx
+display/stimuli/*.mat
+display/stimuli/*.wav
