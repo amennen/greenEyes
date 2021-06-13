@@ -305,9 +305,9 @@ for s in np.arange(nSubs):
     plt.plot(classifier_separation[s],all_correct_context[s],'.',ms=20,color=color,alpha=1)
 b, m = polyfit(classifier_separation, all_correct_context, 1)
 plt.plot(classifier_separation, b + m * classifier_separation, '-',alpha=0.6,lw=3, color='k')
-plt.xlabel('classification accuracy',fontsize=25)
+plt.xlabel('decoding accuracy',fontsize=25)
 plt.ylabel('correct interpretation score', fontsize=25)
-plt.title('Interpretation and classification relationship',fontsize=30)
+plt.title('Interpretation and decoding relationship',fontsize=30)
 r,p=scipy.stats.pearsonr(classifier_separation,all_correct_context)
 printStatsResults('interpretation and classifier linear relationship',r, p)
 text_f = 'r = %2.2f\np = %2.2f' % (r,p)
@@ -343,6 +343,17 @@ plt.savefig('savedPlots_checked/empathy_context.pdf')
 
 
 # (4) - plot neurofeedback scores over all run, averaged by group
+# New - calculate average within-group standard deviation
+interpretations = {}
+for s in np.arange(len(subjects)):
+  interpretations[s] = getSubjectInterpretation(subjects[s])
+C_i = [sub for sub, interp in interpretations.items() if interp == 'C']
+P_i = [sub for sub, interp in interpretations.items() if interp == 'P']
+all_nf_C = np.nanmean(np.nanstd(all_nf_score[C_i,:,:],axis=0)) # standard deviation across subjects for every station and run 
+all_nf_P = np.nanmean(np.nanstd(all_nf_score[C_i,:,:],axis=0)) 
+all_avg_std = np.mean([all_nf_C, all_nf_P])
+print('AVG WITHIN GROUP STD')
+print(all_avg_std)
 fig = plotPosterStyle_multiplePTS(all_nf_score,subjects)
 plt.subplot(1,4,1)
 plt.ylabel('NF score ($)',fontsize=25)
@@ -371,6 +382,53 @@ plt.ylim([0,1])
 plt.xlabel('station',fontsize=25)
 plt.savefig('savedPlots_checked/nf_score.pdf')
 #plt.show()
+
+
+##########################################################################################
+# same plot but now go to zero if score < 0.5 like for actual reward amount
+##########################################################################################
+all_nf_score_reward = all_nf_score.copy()
+# set all values <= 0.5 to be 0
+all_nf_score_reward[all_nf_score<=0.5] = 0
+all_nf_score_reward[np.isnan(all_nf_score)] = np.nan
+
+fig = plotPosterStyle_multiplePTS(all_nf_score_reward,subjects)
+plt.subplot(1,4,1)
+plt.ylabel('NF score ($)',fontsize=25)
+plt.ylim([0,1])
+plt.xticks(fontsize=20)
+plt.yticks(fontsize=20)
+plt.title('run 1',fontsize=30)
+plt.xlabel('station',fontsize=25)
+plt.subplot(1,4,2)
+plt.xticks(fontsize=20)
+plt.yticks(fontsize=20)
+plt.ylim([0,1])
+plt.title('run 2',fontsize=30)
+plt.xlabel('station',fontsize=25)
+plt.subplot(1,4,3)
+plt.xticks(fontsize=20)
+plt.yticks(fontsize=20)
+plt.ylim([0,1])
+plt.title('run 3',fontsize=30)
+plt.xlabel('station',fontsize=25)
+plt.subplot(1,4,4)
+plt.title('run 4',fontsize=30)
+plt.xticks(fontsize=20)
+plt.yticks(fontsize=20)
+plt.ylim([0,1])
+plt.xlabel('station',fontsize=25)
+plt.savefig('savedPlots_checked/nf_score_reward.pdf')
+
+all_nf_C = np.nanmean(np.nanstd(all_nf_score_reward[C_i,:,:],axis=0)) # standard deviation across subjects for every station and run 
+all_nf_P = np.nanmean(np.nanstd(all_nf_score_reward[C_i,:,:],axis=0)) 
+all_avg_std_reward = np.mean([all_nf_C, all_nf_P])
+print('AVG WITHIN GROUP STD REWARD')
+print(all_avg_std_reward)
+
+#############################################################
+
+
 
 # calculate variance for p(cheating)
 cheating_prob_mean = np.nanmean(all_cheating_prob,axis=2)
