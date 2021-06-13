@@ -533,7 +533,7 @@ sns.swarmplot(data=df,x='group',y='comprehension',split=True,color='k',size=8)
 maxH = 5.1
 #plt.ylim([-1.1,1.5])
 plt.ylabel('correct empathy difference',fontsize=25)
-plt.title('Arthus minus Lee', fontsize=30)
+plt.title('Arthur minus Lee', fontsize=30)
 plt.xlabel('classifier accuracy group',fontsize=25)
 plt.plot([-2,2],[0,0], '--', color='k')
 x,y=nonNan(artur_minus_lee_cor[top_subj],artur_minus_lee_cor[bottom_subj])
