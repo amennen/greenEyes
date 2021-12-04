@@ -497,7 +497,7 @@ sns.barplot(data=df,x='group',y='comprehension',ci=68,linewidth=2.5,color='k', a
 sns.swarmplot(data=df,x='group',y='comprehension',split=True,color='k',size=8)
 maxH = 1.05
 plt.ylim([-1.1,1.5])
-plt.ylabel('skewness to one interpretation',fontsize=25)
+plt.ylabel('bias towards one interpretation',fontsize=25)
 plt.title('Interpretation scores', fontsize=30)
 plt.yticks(np.array([-1,0,1]), ['incorrect','neutral','correct'],fontsize=20,rotation=45) 
 plt.xlabel('decoding accuracy group',fontsize=25)

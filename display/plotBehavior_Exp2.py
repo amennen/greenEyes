@@ -82,7 +82,7 @@ printStatsResults('comprehension group diff',t, p)
 # (2) plot interpretation scores by group
 fig,ax = plotPosterStyle_DF(scores[:,1],subjects)
 plt.xticks(np.array([-.2,.2]), ['paranoid','cheating'],fontsize=20) 
-plt.ylabel('skewness to one interpretation',fontsize=25)
+plt.ylabel('bias towards one interpretation',fontsize=25)
 plt.xlabel('assigned group',fontsize=25)
 plt.title('Interpretation scores',fontsize=30)
 plt.plot([-2,2],[0,0], '--', color='k')
