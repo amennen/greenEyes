@@ -50,7 +50,8 @@ cfg = loadConfigFile(defaultConfig)
 params = StructDict({'config':defaultConfig, 'runs': '1', 'scans': '9', 'webpipe': 'None', 'webfilesremote': False})
 cfg = greenEyes.initializeGreenEyes(defaultConfig,params)
 # date doesn't have to be right, but just make sure subject number, session number, computers are correct
-
+paranoid_c = '#99d8c9'
+cheating_c = '#fc9272'
 def getPatternsData(subject_num,run_num):
     bids_id = 'sub-{0:03d}'.format(subject_num)
     ses_id = 'ses-{0:02d}'.format(2)
@@ -352,6 +353,54 @@ for st in np.arange(nStations):
 plt.yticks([])
 plt.savefig('savedPlots_checked/choices_stations.pdf')
 #plt.show()
+
+
+# get average statistics by run
+all_choices_run = np.nanmean(all_choices,axis=1)
+print('ALL CHOICES')
+print('DID SUBJECTS DIFF SIGNIFICANTLY FOR ANY RUN')
+for i in np.arange(4):
+    x,y=nonNan(all_choices_run[C_ind,i],all_choices_run[P_ind,i])
+    t,p = scipy.stats.ttest_ind(x,y)
+    print('t, p')
+    print(t,p)
+
+##### ADD PLOT BY RUN
+fig,ax = plt.subplots(figsize=(20,9))
+sns.despine()
+plt.errorbar(
+    x=np.arange(4),
+    y=np.nanmean(all_choices_run[P_ind,:],axis=0),
+    yerr=scipy.stats.sem(all_choices_run[P_ind,:],
+    axis=0,nan_policy='omit'
+    ),
+    color=paranoid_c,
+    alpha=0.7,
+    lw=3,
+    label='top',
+    fmt='-o',
+    ms=10)
+plt.errorbar(
+    x=np.arange(4),
+    y=np.nanmean(all_choices_run[C_ind,:],axis=0),
+    yerr=scipy.stats.sem(all_choices_run[C_ind,:],
+    axis=0,nan_policy='omit'
+    ),
+    color=cheating_c,
+    alpha=0.7,
+    lw=3,
+    label='top',
+    fmt='--X',
+    ms=10)
+plt.ylim([0,1])
+plt.yticks(np.array([0,0.5,1]), [ 'all paranoid','neutral','all cheating'],fontsize=20,rotation=0) 
+plt.plot([0,3],[0.5,0.5], '--', color='k')
+plt.ylabel('p(probe response)', fontsize=25)
+plt.xlabel('station',fontsize=25)
+plt.xlabel('run',fontsize=25)
+plt.xticks(np.arange(4),fontsize=20)
+plt.ylim([0,1])
+plt.savefig('savedPlots_checked/all_choices_run.pdf')
 
 
 # (2) plot probe responses, now divided by the top and bottom classifier performances (collapsing across interpretation groups)
