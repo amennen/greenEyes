@@ -253,7 +253,50 @@ plt.xlabel('station',fontsize=25)
 #plt.show()
 plt.savefig('savedPlots_checked/cprob_deflections.pdf')
 
+# calculate statistics - new comment 12/4/21
+# all_cheating_prob: n_subs x n_stations x nruns
+# want: for each run, each group diff
+all_cheating_prob_run = np.nanmean(all_cheating_prob, axis=1) # now just subjects x runs
+print('NEW STATISTICS OVER ALL RUNS FOR SUBJECTS')
+print('DID SUBJECTS DIFF SIGNIFICANTLY FOR ANY RUN')
+for i in np.arange(4):
+    x,y=nonNan(all_cheating_prob_run[C_ind,i],all_cheating_prob_run[P_ind,i])
+    t,p = scipy.stats.ttest_ind(x,y)
+    print('t, p')
+    print(t,p)
 
+##### ADD PLOT BY RUN
+fig,ax = plt.subplots(figsize=(20,9))
+sns.despine()
+plt.errorbar(
+    x=np.arange(4),
+    y=np.nanmean(all_cheating_prob_run[P_ind,:],axis=0),
+    yerr=scipy.stats.sem(all_cheating_prob_run[P_ind,:],
+    axis=0,nan_policy='omit'
+    ),
+    color=paranoid_c,
+    alpha=0.7,
+    lw=3,
+    label='top',
+    fmt='-o',
+    ms=10)
+plt.errorbar(
+    x=np.arange(4),
+    y=np.nanmean(all_cheating_prob_run[C_ind,:],axis=0),
+    yerr=scipy.stats.sem(all_cheating_prob_run[C_ind,:],
+    axis=0,nan_policy='omit'
+    ),
+    color=cheating_c,
+    alpha=0.7,
+    lw=3,
+    label='top',
+    fmt='--X',
+    ms=10)
+plt.xlabel('run',fontsize=25)
+plt.ylabel('p(cheating)')
+plt.ylim([0,1])
+plt.xticks(np.arange(4),fontsize=20)
+plt.savefig('savedPlots_checked/cprob_run.pdf')
 
 # now we want to plot top scoring subjects first by each group
 fig = plotPosterStyle_multiplePTS(all_cheating_prob[top_subj,:,:],subjects[top_subj])
@@ -324,6 +367,8 @@ plt.ylim([0,1])
 plt.xlabel('station',fontsize=25)
 #plt.show()
 plt.savefig('savedPlots_checked/cprob_deflections_bottom.pdf')
+
+
 ##########################################################################################
 # cprob divided by top and bottom
 ##########################################################################################
@@ -662,6 +707,79 @@ all_nf_score_reward = all_nf_score.copy()
 # set all values <= 0.5 to be 0
 all_nf_score_reward[all_nf_score<=0.5] = 0
 all_nf_score_reward[np.isnan(all_nf_score)] = np.nan
+all_nf_score_reward_run = np.nanmean(all_nf_score_reward,axis=1)
+
+# first do for all subjects
+# first show all subjects
+fig = plotPosterStyle_multiplePTS(all_nf_score_reward,subjects)
+plt.subplot(1,4,1)
+plt.ylabel('NF score ($)',fontsize=25)
+plt.ylim([0,1])
+plt.xticks(fontsize=20)
+plt.yticks(fontsize=20)
+plt.title('run 1',fontsize=30)
+plt.xlabel('station',fontsize=25)
+plt.subplot(1,4,2)
+plt.xticks(fontsize=20)
+plt.yticks(fontsize=20)
+plt.ylim([0,1])
+plt.title('run 2',fontsize=30)
+plt.xlabel('station',fontsize=25)
+plt.subplot(1,4,3)
+plt.xticks(fontsize=20)
+plt.yticks(fontsize=20)
+plt.ylim([0,1])
+plt.title('run 3',fontsize=30)
+plt.xlabel('station',fontsize=25)
+plt.subplot(1,4,4)
+plt.title('run 4',fontsize=30)
+plt.xticks(fontsize=20)
+plt.yticks(fontsize=20)
+plt.ylim([0,1])
+plt.xlabel('station',fontsize=25)
+#plt.show()
+plt.savefig('savedPlots_checked/nf_score_reward_checked.pdf')
+
+print('NEW STATS')
+print('AVG AMOUNT OF REWARD DIFFERENT')
+x,y=nonNan(all_nf_score_reward_run[:,0], all_nf_score_reward_run[:,3])
+t,p = scipy.stats.ttest_rel(x,y)
+print('t, p')
+print(t,p)
+
+# PLOT BY RUN
+fig,ax = plt.subplots(figsize=(20,9))
+sns.despine()
+plt.errorbar(
+    x=np.arange(4),
+    y=np.nanmean(all_nf_score_reward_run[P_ind,:],axis=0),
+    yerr=scipy.stats.sem(all_nf_score_reward_run[P_ind,:],
+    axis=0,nan_policy='omit'
+    ),
+    color=paranoid_c,
+    alpha=0.7,
+    lw=3,
+    label='top',
+    fmt='-o',
+    ms=10)
+plt.errorbar(
+    x=np.arange(4),
+    y=np.nanmean(all_nf_score_reward_run[C_ind,:],axis=0),
+    yerr=scipy.stats.sem(all_nf_score_reward_run[C_ind,:],
+    axis=0,nan_policy='omit'
+    ),
+    color=cheating_c,
+    alpha=0.7,
+    lw=3,
+    label='top',
+    fmt='--X',
+    ms=10)
+plt.xlabel('run',fontsize=25)
+plt.ylabel('NF score ($)')
+plt.ylim([0,1])
+plt.xticks(np.arange(4),fontsize=20)
+plt.savefig('savedPlots_checked/nf_score_reward_run.pdf')
+
 fig,ax = plt.subplots(figsize=(20,9))
 for d in np.arange(nRuns):
   plt.subplot(1,nRuns,d+1)
@@ -754,7 +872,6 @@ plt.savefig('savedPlots_checked/nf_score_correct_incor_actual_reward.pdf')
 #plt.show()
 
 # NOW AVERAGE OVER ALL STATIONS IN A RUN FOR EACH SUBJECT!
-all_nf_score_reward_run = np.nanmean(all_nf_score_reward,axis=1)
 fig,ax = plt.subplots(figsize=(20,9))
 sns.despine()
 plt.errorbar(x=np.arange(4),y=np.nanmean(all_nf_score_reward_run[top_subj,:],axis=0),yerr=scipy.stats.sem(all_nf_score_reward_run[top_subj,:],axis=0,nan_policy='omit'),color='k',alpha=0.7,lw=3,label='top',fmt='-o',ms=10)
