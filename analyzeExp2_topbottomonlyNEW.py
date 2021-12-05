@@ -357,13 +357,16 @@ plt.savefig('savedPlots_checked/choices_stations.pdf')
 
 # get average statistics by run
 all_choices_run = np.nanmean(all_choices,axis=1)
-print('ALL CHOICES')
-print('DID SUBJECTS DIFF SIGNIFICANTLY FOR ANY RUN')
 for i in np.arange(4):
     x,y=nonNan(all_choices_run[C_ind,i],all_choices_run[P_ind,i])
     t,p = scipy.stats.ttest_ind(x,y)
-    print('t, p')
-    print(t,p)
+    text = f'ALL CHOICES - did they differ significantly for run {i}'
+    printStatsResults(text,
+                      t,
+                      p,
+                      x,
+                      y)
+
 
 ##### ADD PLOT BY RUN
 fig,ax = plt.subplots(figsize=(20,9))
@@ -560,6 +563,12 @@ plt.savefig('savedPlots_checked/context_score_cor_incor.pdf')
 #plt.show()
 
 
+# New - run t-test -- was correct context significantly above zero?
+x,y=nonNan(all_correct_context[top_subj],[])
+t,p = scipy.stats.ttest_1samp(x,0)
+printStatsResults('is best subject correct context score > 0', t, p/2, x)
+
+
 # (5) plot empathy differences for Arthur - Lee for the top and bottom groups, collapsing across interpretation groups
 data = {}
 data_vector = artur_minus_lee_cor
@@ -592,3 +601,9 @@ printStatsResults('Arthur - Lee empathy diff ', t, p/2)
 plt.yticks(np.array([-5, 0, 5]))
 plt.savefig('savedPlots_checked/empathy_diff_cor_incor.pdf')
 #plt.show()
+
+
+# New - run t-test -- was correct empathy significantly above zero?
+x,y=nonNan(artur_minus_lee_cor[top_subj],[])
+t,p = scipy.stats.ttest_1samp(x,0)
+printStatsResults('is best subject empathy > 0', t, p/2, x)

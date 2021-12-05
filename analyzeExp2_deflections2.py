@@ -252,18 +252,18 @@ plt.ylim([0,1])
 plt.xlabel('station',fontsize=25)
 #plt.show()
 plt.savefig('savedPlots_checked/cprob_deflections.pdf')
-
+plt.close(fig)
 # calculate statistics - new comment 12/4/21
 # all_cheating_prob: n_subs x n_stations x nruns
 # want: for each run, each group diff
 all_cheating_prob_run = np.nanmean(all_cheating_prob, axis=1) # now just subjects x runs
 print('NEW STATISTICS OVER ALL RUNS FOR SUBJECTS')
-print('DID SUBJECTS DIFF SIGNIFICANTLY FOR ANY RUN')
 for i in np.arange(4):
     x,y=nonNan(all_cheating_prob_run[C_ind,i],all_cheating_prob_run[P_ind,i])
     t,p = scipy.stats.ttest_ind(x,y)
-    print('t, p')
-    print(t,p)
+    text = f'DID CHEATING PROB DIFF SIGNIFICANTLY FOR ANY RUN\n2-sided - RUN {i}'
+    printStatsResults(text, t, p, x, y)
+
 
 ##### ADD PLOT BY RUN
 fig,ax = plt.subplots(figsize=(20,9))
@@ -297,6 +297,7 @@ plt.ylabel('p(cheating)')
 plt.ylim([0,1])
 plt.xticks(np.arange(4),fontsize=20)
 plt.savefig('savedPlots_checked/cprob_run.pdf')
+plt.close(fig)
 
 # now we want to plot top scoring subjects first by each group
 fig = plotPosterStyle_multiplePTS(all_cheating_prob[top_subj,:,:],subjects[top_subj])
@@ -331,6 +332,7 @@ plt.ylim([0,1])
 plt.xlabel('station',fontsize=25)
 #plt.show()
 #plt.savefig('savedPlots_checked/cprob_deflections_top.pdf')
+plt.close(fig)
 
 # plot distance from mean in "correct" direction instead 
 
@@ -367,6 +369,7 @@ plt.ylim([0,1])
 plt.xlabel('station',fontsize=25)
 #plt.show()
 plt.savefig('savedPlots_checked/cprob_deflections_bottom.pdf')
+plt.close(fig)
 
 
 ##########################################################################################
@@ -463,6 +466,7 @@ plt.xlim([-0.25,6.25])
 plt.yticks([])
 plt.savefig('savedPlots_checked/cprob_correct_incor.pdf')
 #plt.show()
+plt.close(fig)
 
 # ken comments -- plot by station instead
 cor = nStations*nRuns # correction - wait for error correction
@@ -502,7 +506,8 @@ for d in np.arange(nStations):
   title = 'Station {0}'.format(d)
   plt.title(title, fontsize=15)
   plt.ylim([0,1])
-  plt.savefig('savedPlots_checked/cprob_correct_incor_byStation.pdf')
+plt.savefig('savedPlots_checked/cprob_correct_incor_byStation.pdf')
+plt.close(fig)
 
   #plt.plot(np.arange(nStations),all_means,'--',color='k')
 
@@ -593,14 +598,16 @@ plt.ylabel('p(assigned group)')
 plt.ylim([0,1.15])
 plt.xticks(np.arange(4),fontsize=20)
 print('NEW STATISTICS OVER ALL RUNS FOR SUBJECTS')
+print('Cheating prob - correct incorrect')
 for i in np.arange(4):
     x,y=nonNan(all_correct_run[top_subj,i],all_correct_run[bottom_subj,i])
     t,p = scipy.stats.ttest_ind(x,y)
-    print('t, p')
-    print(t,p/2)
+    text = f'DID CHEATING PROB DIFF SIGNIFICANTLY FOR ANY RUN - RUN {i}'
+    printStatsResults(text, t, p/2, x, y)
     addComparisonStat_SYM(p/2,3,3,maxH,.05,0,text_above='')
 #plt.plot(np.arange(4),np.ones(4,)*np.mean(all_means),'--',color='k')
 plt.savefig('savedPlots_checked/cprob_correct_incor_run.pdf')
+plt.close(fig)
 
 ## ken comment--plot each station on it's own over all runs instead
 
@@ -699,6 +706,7 @@ plt.plot([-1,7],[0.5,0.5], '--', color='k')
 plt.yticks([])
 plt.savefig('savedPlots_checked/nf_score_correct_incor.pdf')
 #plt.show()
+plt.close(fig)
 
 ##########################################################################################
 # same plot but now go to zero if score < 0.5 like for actual reward amount
@@ -739,13 +747,15 @@ plt.ylim([0,1])
 plt.xlabel('station',fontsize=25)
 #plt.show()
 plt.savefig('savedPlots_checked/nf_score_reward_checked.pdf')
+plt.close(fig)
 
 print('NEW STATS')
 print('AVG AMOUNT OF REWARD DIFFERENT')
 x,y=nonNan(all_nf_score_reward_run[:,0], all_nf_score_reward_run[:,3])
 t,p = scipy.stats.ttest_rel(x,y)
-print('t, p')
-print(t,p)
+text = 'Did amount of reward differ significantly (2-sided) for all subjects between first and last run?'
+printStatsResults(text, t, p, x, y)
+
 
 # PLOT BY RUN
 fig,ax = plt.subplots(figsize=(20,9))
@@ -779,6 +789,7 @@ plt.ylabel('NF score ($)')
 plt.ylim([0,1])
 plt.xticks(np.arange(4),fontsize=20)
 plt.savefig('savedPlots_checked/nf_score_reward_run.pdf')
+plt.close(fig)
 
 fig,ax = plt.subplots(figsize=(20,9))
 for d in np.arange(nRuns):
@@ -870,6 +881,7 @@ plt.xlim([-0.25,6.25])
 plt.yticks([])
 plt.savefig('savedPlots_checked/nf_score_correct_incor_actual_reward.pdf')
 #plt.show()
+plt.close(fig)
 
 # NOW AVERAGE OVER ALL STATIONS IN A RUN FOR EACH SUBJECT!
 fig,ax = plt.subplots(figsize=(20,9))
@@ -884,10 +896,11 @@ print("NEW RUN STATISTICS FOR NEUROFEEDBACK")
 for i in np.arange(4):
     x,y=nonNan(all_nf_score_reward_run[top_subj,i],all_nf_score_reward_run[bottom_subj,i])
     t,p = scipy.stats.ttest_ind(x,y)
-    print('t,p')
-    print(t,p/2)
+    text = f'DID ACTUAL REWARD DIFF SIGNIFICANTLY (1-sided) FOR ANY RUN - RUN {i}'
+    printStatsResults(text, t, p/2, x, y)
     addComparisonStat_SYM(p/2,3,3,maxH,.05,0,text_above='')
 plt.savefig('savedPlots_checked/nf_score_correct_incor_actual_reward_run.pdf')
+plt.close(fig)
 
 #############################################
 # new - plot for each subject
@@ -925,7 +938,7 @@ for s in np.arange(nSubs):
     plt.xlabel('station',fontsize=25)
     figName = 'savedPlots_checked/cprob/cprob_accuracy_{0:06.03f}.pdf'.format(accuracy)
     plt.savefig(figName)
-    plt.close()
+    plt.close(fig)
 #plt.show()
 
 ############################################ SAME THING BUT ACTUAL REWARD
