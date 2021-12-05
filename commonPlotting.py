@@ -16,9 +16,13 @@ import seaborn as sns
 matplotlib.rc('font',**font)
 
 
-def printStatsResults(text, t, p):
+def printStatsResults(text, t, p, x=None, y=None):
   print('****************************')
   print(text)
+  if x is not None:
+    print('len(x) is %i' % len(x))
+  if y is not None:
+    print('len(y) is %i' % len(y))
   print('t value is : %0.3f' % t)
   print('p value is : %0.3f' % p)
   return
