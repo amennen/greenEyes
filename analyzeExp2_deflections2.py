@@ -23,7 +23,8 @@ import matplotlib.cm as cmx
 import seaborn as sns
 import scipy
 from numpy.polynomial.polynomial import polyfit
-
+import warnings
+warnings.filterwarnings("ignore", category=DeprecationWarning)
 sys.path.append('/jukebox/norman/amennen/github/brainiak/rt-cloud')
 # when running not in file: sys.path.append(os.getcwd())
 #WHEN TESTING
@@ -602,7 +603,7 @@ print('Cheating prob - correct incorrect')
 for i in np.arange(4):
     x,y=nonNan(all_correct_run[top_subj,i],all_correct_run[bottom_subj,i])
     t,p = scipy.stats.ttest_ind(x,y)
-    text = f'DID CHEATING PROB DIFF SIGNIFICANTLY FOR ANY RUN - RUN {i}'
+    text = f'DID CHEATING PROB COR/INCOR DIFF SIGNIFICANTLY FOR ANY RUN (1-sided) - RUN {i}'
     printStatsResults(text, t, p/2, x, y)
     addComparisonStat_SYM(p/2,3,3,maxH,.05,0,text_above='')
 #plt.plot(np.arange(4),np.ones(4,)*np.mean(all_means),'--',color='k')

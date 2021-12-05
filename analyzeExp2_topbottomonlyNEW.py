@@ -24,6 +24,8 @@ import seaborn as sns
 import scipy
 from numpy.polynomial.polynomial import polyfit
 from commonPlotting import *
+import warnings
+warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 sys.path.append('/jukebox/norman/amennen/github/brainiak/rt-cloud')
 # when running not in file: sys.path.append(os.getcwd())
@@ -360,7 +362,7 @@ all_choices_run = np.nanmean(all_choices,axis=1)
 for i in np.arange(4):
     x,y=nonNan(all_choices_run[C_ind,i],all_choices_run[P_ind,i])
     t,p = scipy.stats.ttest_ind(x,y)
-    text = f'ALL CHOICES - did they differ significantly for run {i}'
+    text = f'ALL CHOICES - (2-sided) did they differ significantly for run {i}'
     printStatsResults(text,
                       t,
                       p,
