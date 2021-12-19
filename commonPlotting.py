@@ -8,13 +8,16 @@ import matplotlib
 import matplotlib.pyplot as plt
 font = {'size': 22,
         'weight': 'normal'}
-plt.rc('axes', linewidth=3)
-plt.rc('xtick.major', size=0, width = 3)
-plt.rc('ytick.major', size=0, width = 3)
+plt.rc('axes', linewidth=5)
+plt.rc('xtick.major', size=10, width = 4)
+plt.rc('ytick.major', size=10, width = 4)
 import pandas as pd
 import seaborn as sns
 matplotlib.rc('font',**font)
 
+# define plot vars 
+lw = 8
+ms = 10
 
 def printStatsResults(text, t, p, x=None, y=None):
   print('****************************')
@@ -160,7 +163,7 @@ def plotPosterStyle_multiplePTS_1sub(sub_data,subjects,this_sub):
     #plt.show()
     return fig
 
-def plotPosterStyle_multiplePTS(all_data,subjects):
+def plotPosterStyle_multiplePTS(all_data,subjects,alpha=1):
     """Assume data is in subject x PTS x day """
     colors_dark = ['#2ca25f','#de2d26']
     colors_light = ['#99d8c9','#fc9272']
@@ -177,7 +180,6 @@ def plotPosterStyle_multiplePTS(all_data,subjects):
     P_mean = np.nanmean(P_data,axis=0)
     C_err = scipy.stats.sem(C_data,axis=0,nan_policy='omit')
     P_err = scipy.stats.sem(P_data,axis=0,nan_policy='omit')
-    alpha=0.2
     nDays = np.shape(all_data)[2]
     nPoints = np.shape(all_data)[1]
     fig,ax = plt.subplots(figsize=(20,9))
@@ -190,8 +192,12 @@ def plotPosterStyle_multiplePTS(all_data,subjects):
           elif s in C_ind:
               color = 1
           #plt.plot(all_data[s,:,d],'-',ms=10,color=colors_light[color],alpha=alpha,lw=2)
-      plt.errorbar(x=np.arange(nPoints),y=C_mean[:,d],yerr=C_err[:,d],color=colors_light[1],lw=5,label='C',fmt='-o',ms=10)
-      plt.errorbar(x=np.arange(nPoints),y=P_mean[:,d],yerr=P_err[:,d],color=colors_light[0],lw=5,label='P',fmt='-o',ms=10)
+      plt.errorbar(x=np.arange(nPoints),y=C_mean[:,d],yerr=C_err[:,d],color=colors_light[1],
+                  lw=lw,label='C',fmt='-o',ms=ms,
+                  alpha=alpha)
+      plt.errorbar(x=np.arange(nPoints),y=P_mean[:,d],yerr=P_err[:,d],color=colors_light[0],
+                  lw=lw,label='P',fmt='-o',ms=ms,
+                  alpha=alpha)
       plt.xlabel('point')
       #plt.ylabel('area under -0.1')
       plt.xticks(np.arange(nPoints))

@@ -37,6 +37,16 @@ import rtCommon.dicomNiftiHandler as dnh
 import greenEyes
 from matplotlib.lines import Line2D
 from commonPlotting import *
+font = {'size': 22,
+        'weight': 'normal'}
+plt.rc('axes', linewidth=5)
+plt.rc('xtick.major', size=10, width = 4)
+plt.rc('ytick.major', size=10, width = 4)
+
+# define plot vars 
+lw = 8
+ms = 10
+alpha = 0.8
 
 defaultConfig = os.path.join(os.getcwd(), 'conf/greenEyes_cluster.toml')
 cfg = loadConfigFile(defaultConfig)
@@ -221,36 +231,61 @@ cheating_c = '#fc9272'
 
 #######################################################################################
 # first show all subjects
-fig = plotPosterStyle_multiplePTS(all_cheating_prob,subjects)
+fig = plotPosterStyle_multiplePTS(all_cheating_prob,subjects,alpha=alpha)
 plt.subplot(1,4,1)
-plt.ylabel('p(cheating)',fontsize=25)
-plt.plot(np.arange(nStations),all_means,'--',color='k',alpha=0.5, linewidth=3)
+plt.ylabel('',fontsize=25)
+plt.plot(np.arange(nStations),all_means,'--',color='k',alpha=0.5, linewidth=lw-1)
 plt.ylim([0,1])
-plt.xticks(fontsize=20)
-plt.yticks(fontsize=20)
-plt.title('run 1',fontsize=30)
-plt.xlabel('station',fontsize=25)
+plt.xticks(np.arange(nStations), fontsize=20)
+plt.yticks(np.arange(0,1.25,.25))
+#remove tick labels
+ax = plt.gca()
+ax.axes.xaxis.set_ticklabels([])
+ax.axes.yaxis.set_ticklabels([])
+plt.title('',fontsize=30) # run1
+plt.xlabel('',fontsize=25) #station
+#remove tick labels
+ax = plt.gca()
+ax.axes.xaxis.set_ticklabels([])
+ax.axes.yaxis.set_ticklabels([])
+
 plt.subplot(1,4,2)
-plt.xticks(fontsize=20)
-plt.yticks(fontsize=20)
-plt.plot(np.arange(nStations),all_means,'--',color='k',alpha=0.5, linewidth=3)
+plt.xticks(np.arange(nStations), fontsize=20)
+plt.yticks(np.arange(0,1.25,.25))
+plt.plot(np.arange(nStations),all_means,'--',color='k',alpha=0.5, linewidth=lw-1)
 plt.ylim([0,1])
-plt.title('run 2',fontsize=30)
-plt.xlabel('station',fontsize=25)
+plt.title('',fontsize=30)
+plt.xlabel('',fontsize=25)
+#remove tick labels
+ax = plt.gca()
+ax.axes.xaxis.set_ticklabels([])
+ax.axes.yaxis.set_ticklabels([])
+
 plt.subplot(1,4,3)
-plt.xticks(fontsize=20)
-plt.yticks(fontsize=20)
+plt.xticks(np.arange(nStations), fontsize=20)
+plt.yticks(np.arange(0,1.25,.25))
 plt.ylim([0,1])
-plt.title('run 3',fontsize=30)
-plt.plot(np.arange(nStations),all_means,'--',color='k',alpha=0.5, linewidth=3)
-plt.xlabel('station',fontsize=25)
+plt.title('',fontsize=30)
+plt.plot(np.arange(nStations),all_means,'--',color='k',alpha=0.5, linewidth=lw-1)
+plt.xlabel('',fontsize=25)
+#remove tick labels
+ax = plt.gca()
+ax.axes.xaxis.set_ticklabels([])
+ax.axes.yaxis.set_ticklabels([])
+
 plt.subplot(1,4,4)
-plt.title('run 4',fontsize=30)
-plt.plot(np.arange(nStations),all_means,'--',color='k',alpha=0.5, linewidth=3)
-plt.xticks(fontsize=20)
-plt.yticks(fontsize=20)
+plt.title('',fontsize=30)
+plt.plot(np.arange(nStations),all_means,'--',color='k',alpha=0.5, linewidth=lw-1)
+plt.xticks(np.arange(nStations), fontsize=20)
+plt.yticks(np.arange(0,1.25,.25))
 plt.ylim([0,1])
-plt.xlabel('station',fontsize=25)
+plt.xlabel('',fontsize=25)
+#remove tick labels
+ax = plt.gca()
+ax.axes.xaxis.set_ticklabels([])
+ax.axes.yaxis.set_ticklabels([])
+
+
 #plt.show()
 plt.savefig('savedPlots_checked/cprob_deflections.pdf')
 plt.close(fig)
@@ -276,11 +311,10 @@ plt.errorbar(
     axis=0,nan_policy='omit'
     ),
     color=paranoid_c,
-    alpha=0.7,
-    lw=3,
+    lw=lw,
     label='top',
     fmt='-o',
-    ms=10)
+    ms=ms)
 plt.errorbar(
     x=np.arange(4),
     y=np.nanmean(all_cheating_prob_run[C_ind,:],axis=0),
@@ -288,15 +322,21 @@ plt.errorbar(
     axis=0,nan_policy='omit'
     ),
     color=cheating_c,
-    alpha=0.7,
-    lw=3,
+    lw=lw,
     label='top',
-    fmt='--X',
-    ms=10)
-plt.xlabel('run',fontsize=25)
-plt.ylabel('p(cheating)')
-plt.ylim([0,1])
+    fmt='-o',
+    ms=ms)
+plt.xlabel('',fontsize=25)
 plt.xticks(np.arange(4),fontsize=20)
+
+plt.ylabel('')
+plt.yticks(np.arange(0,1.25,.25))
+plt.ylim([0,1])
+#remove tick labels
+ax = plt.gca()
+ax.axes.xaxis.set_ticklabels([])
+ax.axes.yaxis.set_ticklabels([])
+
 plt.savefig('savedPlots_checked/cprob_run.pdf')
 plt.close(fig)
 
@@ -720,32 +760,53 @@ all_nf_score_reward_run = np.nanmean(all_nf_score_reward,axis=1)
 
 # first do for all subjects
 # first show all subjects
-fig = plotPosterStyle_multiplePTS(all_nf_score_reward,subjects)
+fig = plotPosterStyle_multiplePTS(all_nf_score_reward,subjects,alpha=alpha)
 plt.subplot(1,4,1)
-plt.ylabel('NF score ($)',fontsize=25)
+plt.ylabel('',fontsize=25)
 plt.ylim([0,1])
-plt.xticks(fontsize=20)
-plt.yticks(fontsize=20)
-plt.title('run 1',fontsize=30)
-plt.xlabel('station',fontsize=25)
+plt.title('',fontsize=30)
+plt.xlabel('',fontsize=25)
+
+plt.xticks(np.arange(nStations),fontsize=20)
+plt.yticks(np.arange(0,1.25,.25))
+#remove tick labels
+ax = plt.gca()
+ax.axes.xaxis.set_ticklabels([])
+ax.axes.yaxis.set_ticklabels([])
+
+
 plt.subplot(1,4,2)
-plt.xticks(fontsize=20)
-plt.yticks(fontsize=20)
+plt.xticks(np.arange(nStations),fontsize=20)
+plt.yticks(np.arange(0,1.25,.25))
+#remove tick labels
+ax = plt.gca()
+ax.axes.xaxis.set_ticklabels([])
+ax.axes.yaxis.set_ticklabels([])
 plt.ylim([0,1])
-plt.title('run 2',fontsize=30)
-plt.xlabel('station',fontsize=25)
+plt.title('',fontsize=30)
+plt.xlabel('',fontsize=25)
+
 plt.subplot(1,4,3)
-plt.xticks(fontsize=20)
-plt.yticks(fontsize=20)
+plt.xticks(np.arange(nStations),fontsize=20)
+plt.yticks(np.arange(0,1.25,.25))
+#remove tick labels
+ax = plt.gca()
+ax.axes.xaxis.set_ticklabels([])
+ax.axes.yaxis.set_ticklabels([])
 plt.ylim([0,1])
-plt.title('run 3',fontsize=30)
-plt.xlabel('station',fontsize=25)
+plt.title('',fontsize=30)
+plt.xlabel('',fontsize=25)
+
 plt.subplot(1,4,4)
-plt.title('run 4',fontsize=30)
-plt.xticks(fontsize=20)
-plt.yticks(fontsize=20)
+plt.title('',fontsize=30)
+plt.xticks(np.arange(nStations),fontsize=20)
+plt.yticks(np.arange(0,1.25,.25))
+#remove tick labels
+ax = plt.gca()
+ax.axes.xaxis.set_ticklabels([])
+ax.axes.yaxis.set_ticklabels([])
 plt.ylim([0,1])
-plt.xlabel('station',fontsize=25)
+plt.xlabel('',fontsize=25)
 #plt.show()
 plt.savefig('savedPlots_checked/nf_score_reward_checked.pdf')
 plt.close(fig)
@@ -768,11 +829,10 @@ plt.errorbar(
     axis=0,nan_policy='omit'
     ),
     color=paranoid_c,
-    alpha=0.7,
-    lw=3,
+    lw=lw,
     label='top',
     fmt='-o',
-    ms=10)
+    ms=ms)
 plt.errorbar(
     x=np.arange(4),
     y=np.nanmean(all_nf_score_reward_run[C_ind,:],axis=0),
@@ -780,15 +840,19 @@ plt.errorbar(
     axis=0,nan_policy='omit'
     ),
     color=cheating_c,
-    alpha=0.7,
-    lw=3,
+    lw=lw,
     label='top',
-    fmt='--X',
-    ms=10)
-plt.xlabel('run',fontsize=25)
-plt.ylabel('NF score ($)')
+    fmt='-o',
+    ms=ms)
+plt.xlabel('',fontsize=25)
+plt.ylabel('')
 plt.ylim([0,1])
 plt.xticks(np.arange(4),fontsize=20)
+plt.yticks(np.arange(0,1.25,.25))
+#remove tick labels
+ax = plt.gca()
+ax.axes.xaxis.set_ticklabels([])
+ax.axes.yaxis.set_ticklabels([])
 plt.savefig('savedPlots_checked/nf_score_reward_run.pdf')
 plt.close(fig)
 
