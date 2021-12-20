@@ -340,78 +340,6 @@ ax.axes.yaxis.set_ticklabels([])
 plt.savefig('savedPlots_checked/cprob_run.pdf')
 plt.close(fig)
 
-# now we want to plot top scoring subjects first by each group
-fig = plotPosterStyle_multiplePTS(all_cheating_prob[top_subj,:,:],subjects[top_subj])
-plt.subplot(1,4,1)
-plt.ylabel('p(cheating)',fontsize=25)
-plt.plot(np.arange(nStations),all_means,'--',color='k',alpha=0.5, linewidth=3)
-plt.ylim([0,1])
-plt.xticks(fontsize=20)
-plt.yticks(fontsize=20)
-plt.title('run 1',fontsize=30)
-plt.xlabel('station',fontsize=25)
-plt.subplot(1,4,2)
-plt.xticks(fontsize=20)
-plt.yticks(fontsize=20)
-plt.plot(np.arange(nStations),all_means,'--',color='k',alpha=0.5, linewidth=3)
-plt.ylim([0,1])
-plt.title('run 2',fontsize=30)
-plt.xlabel('station',fontsize=25)
-plt.subplot(1,4,3)
-plt.xticks(fontsize=20)
-plt.yticks(fontsize=20)
-plt.ylim([0,1])
-plt.title('run 3',fontsize=30)
-plt.plot(np.arange(nStations),all_means,'--',color='k',alpha=0.5, linewidth=3)
-plt.xlabel('station',fontsize=25)
-plt.subplot(1,4,4)
-plt.title('run 4',fontsize=30)
-plt.plot(np.arange(nStations),all_means,'--',color='k',alpha=0.5, linewidth=3)
-plt.xticks(fontsize=20)
-plt.yticks(fontsize=20)
-plt.ylim([0,1])
-plt.xlabel('station',fontsize=25)
-#plt.show()
-#plt.savefig('savedPlots_checked/cprob_deflections_top.pdf')
-plt.close(fig)
-
-# plot distance from mean in "correct" direction instead 
-
-
-fig = plotPosterStyle_multiplePTS(all_cheating_prob[bottom_subj,:,:],subjects[bottom_subj])
-plt.subplot(1,4,1)
-plt.ylabel('p(cheating)',fontsize=25)
-plt.plot(np.arange(nStations),all_means,'--',color='k',alpha=0.5, linewidth=3)
-plt.ylim([0,1])
-plt.xticks(fontsize=20)
-plt.yticks(fontsize=20)
-plt.title('run 1',fontsize=30)
-plt.xlabel('station',fontsize=25)
-plt.subplot(1,4,2)
-plt.xticks(fontsize=20)
-plt.yticks(fontsize=20)
-plt.plot(np.arange(nStations),all_means,'--',color='k',alpha=0.5, linewidth=3)
-plt.ylim([0,1])
-plt.title('run 2',fontsize=30)
-plt.xlabel('station',fontsize=25)
-plt.subplot(1,4,3)
-plt.xticks(fontsize=20)
-plt.yticks(fontsize=20)
-plt.ylim([0,1])
-plt.title('run 3',fontsize=30)
-plt.plot(np.arange(nStations),all_means,'--',color='k',alpha=0.5, linewidth=3)
-plt.xlabel('station',fontsize=25)
-plt.subplot(1,4,4)
-plt.title('run 4',fontsize=30)
-plt.plot(np.arange(nStations),all_means,'--',color='k',alpha=0.5, linewidth=3)
-plt.xticks(fontsize=20)
-plt.yticks(fontsize=20)
-plt.ylim([0,1])
-plt.xlabel('station',fontsize=25)
-#plt.show()
-plt.savefig('savedPlots_checked/cprob_deflections_bottom.pdf')
-plt.close(fig)
-
 
 ##########################################################################################
 # cprob divided by top and bottom
@@ -424,12 +352,21 @@ for d in np.arange(nRuns):
   plt.subplot(1,nRuns,d+1)
   sns.despine()
   nPoints = nStations
-  plt.errorbar(x=np.arange(nPoints),y=np.nanmean(all_correct_prob[top_subj,:,d],axis=0),yerr=scipy.stats.sem(all_correct_prob[top_subj,:,d],axis=0,nan_policy='omit'),color='k',alpha=0.7,lw=3,label='top',fmt='-o',ms=10)
-  plt.errorbar(x=np.arange(nPoints),y=np.nanmean(all_correct_prob[bottom_subj,:,d],axis=0),yerr=scipy.stats.sem(all_correct_prob[bottom_subj,:,d],axis=0,nan_policy='omit'),color='k',alpha=0.5,lw=3,label='bottom',fmt='--X',ms=10)
-  plt.xlabel('station',fontsize=25)
+  plt.errorbar(x=np.arange(nPoints),y=np.nanmean(all_correct_prob[top_subj,:,d],axis=0),
+             yerr=scipy.stats.sem(all_correct_prob[top_subj,:,d],axis=0,nan_policy='omit'),
+             color='k',alpha=1,lw=lw-1,label='top',fmt='-o',ms=ms)
+  plt.errorbar(x=np.arange(nPoints),y=np.nanmean(all_correct_prob[bottom_subj,:,d],axis=0),
+             yerr=scipy.stats.sem(all_correct_prob[bottom_subj,:,d],axis=0,nan_policy='omit'),
+             color='k',alpha=alpha-.1,lw=lw-1,label='bottom',fmt=':o',ms=ms)
+  
+  plt.xlabel('',fontsize=25)
   #plt.ylabel('area under -0.1')
-  plt.xticks(np.arange(nPoints),fontsize=20)
-  #plt.plot(np.arange(nStations),all_means,'--',color='k')
+  plt.xticks(np.arange(nStations), fontsize=20)
+  plt.yticks(np.arange(0,1.25,.25))
+  plt.ylim([0,1])
+  ax = plt.gca()
+  ax.axes.xaxis.set_ticklabels([])
+  ax.axes.yaxis.set_ticklabels([])
 
 plt.subplot(1,4,1)
 # test significance across all points and do Bonferroni correction
@@ -446,11 +383,8 @@ for st in np.arange(nStations):
     if p/2 < 0.1:
         text = '1-sided r %i station %i' % (0, st)
         printStatsResults(text, t, p/2)
-plt.ylim([0,1.15])
-plt.title('run 1',fontsize=30)
-plt.xlim([-0.25,6.25])
-plt.ylabel('p(assigned group)',fontsize=25)
-plt.yticks(np.array([0,0.5,1]),fontsize=20)
+plt.title('',fontsize=30)
+plt.ylabel('',fontsize=25)
 
 plt.subplot(1,4,2)
 for st in np.arange(nStations):
@@ -465,10 +399,8 @@ for st in np.arange(nStations):
     if p/2 < 0.1:
         text = '1-sided r %i station %i' % (1, st)
         printStatsResults(text, t, p/2)
-plt.ylim([0,1.15])
-plt.xlim([-0.25,6.25])
-plt.yticks([])
-plt.title('run 2',fontsize=30)
+plt.title('',fontsize=30)
+plt.ylabel('',fontsize=25)
 
 plt.subplot(1,4,3)
 for st in np.arange(nStations):
@@ -483,10 +415,8 @@ for st in np.arange(nStations):
     if p/2 < 0.1:
         text = '1-sided r %i station %i' % (2, st)
         printStatsResults(text, t, p/2)
-plt.yticks([])
-plt.xlim([-0.25,6.25])
-plt.ylim([0,1.15])
-plt.title('run 3',fontsize=30)
+plt.ylabel('',fontsize=25)
+plt.title('',fontsize=30)
 
 plt.subplot(1,4,4)
 for st in np.arange(nStations):
@@ -501,148 +431,40 @@ for st in np.arange(nStations):
     if p/2 < 0.1:
         text = '1-sided r %i station %i' % (3, st)
         printStatsResults(text, t, p/2)
-plt.ylim([0,1.15])
-plt.title('run 4',fontsize=30)
-plt.xlim([-0.25,6.25])
-plt.yticks([])
+plt.title('',fontsize=30)
+plt.ylabel('',fontsize=25)
+
 plt.savefig('savedPlots_checked/cprob_correct_incor.pdf')
 #plt.show()
 plt.close(fig)
 
-# ken comments -- plot by station instead
-cor = nStations*nRuns # correction - wait for error correction
-fig,ax = plt.subplots(figsize=(20,9))
-for d in np.arange(nStations):
-  plt.subplot(2,4,d+1)
-  sns.despine()
-  nPoints = nRuns
-  plt.errorbar(
-    x=np.arange(nPoints),
-    y=np.nanmean(all_correct_prob[top_subj,d,:],axis=0),
-    yerr=scipy.stats.sem(all_correct_prob[top_subj,d,:],axis=0,nan_policy='omit'),
-    color='k',
-    alpha=0.7,
-    lw=3,
-    label='top',
-    fmt='-o',
-    ms=10
-    )
-  plt.errorbar(
-    x=np.arange(nPoints),
-    y=np.nanmean(all_correct_prob[bottom_subj,d,:],axis=0),
-    yerr=scipy.stats.sem(all_correct_prob[bottom_subj,d,:],axis=0,nan_policy='omit'),
-    color='k',
-    alpha=0.5,
-    lw=3,
-    label='bottom',
-    fmt='--X',
-    ms=10
-    )
-  if d  > 3:
-    plt.xlabel('run',fontsize=15)
-  if d == 0 or d == 4:
-    plt.ylabel('p(assigned group)', fontsize=15)
-  plt.xticks(np.arange(nPoints),fontsize=10)
-  plt.yticks(fontsize=10)
-  title = 'Station {0}'.format(d)
-  plt.title(title, fontsize=15)
-  plt.ylim([0,1])
-plt.savefig('savedPlots_checked/cprob_correct_incor_byStation.pdf')
-plt.close(fig)
 
-  #plt.plot(np.arange(nStations),all_means,'--',color='k')
-
-# plt.subplot(1,4,1)
-# # test significance across all points and do Bonferroni correction
-# cor = nStations*nRuns
-# for st in np.arange(nStations):
-#     x,y=nonNan(all_correct_prob[top_subj,st,0],all_correct_prob[bottom_subj,st,0],)
-#     t,p = scipy.stats.ttest_ind(x,y)
-#     p =p * cor
-#     if np.mod(st,2):
-#         maxH = 1
-#     else:
-#         maxH = 1.05
-#     addComparisonStat_SYM(p/2,st,st,maxH,.05,0,text_above='')
-#     if p/2 < 0.1:
-#         text = '1-sided r %i station %i' % (0, st)
-#         printStatsResults(text, t, p/2)
-# plt.ylim([0,1.15])
-# plt.title('run 1',fontsize=30)
-# plt.xlim([-0.25,6.25])
-# plt.ylabel('p(assigned group)',fontsize=25)
-# plt.yticks(np.array([0,0.5,1]),fontsize=20)
-
-# plt.subplot(1,4,2)
-# for st in np.arange(nStations):
-#     x,y=nonNan(all_correct_prob[top_subj,st,1],all_correct_prob[bottom_subj,st,1],)
-#     t,p = scipy.stats.ttest_ind(x,y)
-#     p =p * cor
-#     if np.mod(st,2):
-#         maxH = 1
-#     else:
-#         maxH = 1.05
-#     addComparisonStat_SYM(p/2,st,st,maxH,.05,0,text_above='')
-#     if p/2 < 0.1:
-#         text = '1-sided r %i station %i' % (1, st)
-#         printStatsResults(text, t, p/2)
-# plt.ylim([0,1.15])
-# plt.xlim([-0.25,6.25])
-# plt.yticks([])
-# plt.title('run 2',fontsize=30)
-
-# plt.subplot(1,4,3)
-# for st in np.arange(nStations):
-#     x,y=nonNan(all_correct_prob[top_subj,st,2],all_correct_prob[bottom_subj,st,2],)
-#     t,p = scipy.stats.ttest_ind(x,y)
-#     p =p * cor
-#     if np.mod(st,2):
-#         maxH = 1
-#     else:
-#         maxH = 1.05
-#     addComparisonStat_SYM(p/2,st,st,maxH,.05,0,text_above='')
-#     if p/2 < 0.1:
-#         text = '1-sided r %i station %i' % (2, st)
-#         printStatsResults(text, t, p/2)
-# plt.yticks([])
-# plt.xlim([-0.25,6.25])
-# plt.ylim([0,1.15])
-# plt.title('run 3',fontsize=30)
-
-# plt.subplot(1,4,4)
-# for st in np.arange(nStations):
-#     x,y=nonNan(all_correct_prob[top_subj,st,3],all_correct_prob[bottom_subj,st,3],)
-#     t,p = scipy.stats.ttest_ind(x,y)
-#     p =p * cor
-#     if np.mod(st,2):
-#         maxH = 1
-#     else:
-#         maxH = 1.05
-#     addComparisonStat_SYM(p/2,st,st,maxH,.05,0,text_above='')
-#     if p/2 < 0.1:
-#         text = '1-sided r %i station %i' % (3, st)
-#         printStatsResults(text, t, p/2)
-# plt.ylim([0,1.15])
-# plt.title('run 4',fontsize=30)
-# plt.xlim([-0.25,6.25])
-# plt.yticks([])
-#plt.savefig('savedPlots_checked/cprob_correct_incor_byStation.pdf')
 
 # NOW AVERAGE OVER ALL STATIONS IN A RUN FOR EACH SUBJECT!
 all_correct_run = np.nanmean(all_correct_prob,axis=1)
+cor = nRuns
 fig,ax = plt.subplots(figsize=(20,9))
 sns.despine()
-plt.errorbar(x=np.arange(4),y=np.nanmean(all_correct_run[top_subj,:],axis=0),yerr=scipy.stats.sem(all_correct_run[top_subj,:],axis=0,nan_policy='omit'),color='k',alpha=0.7,lw=3,label='top',fmt='-o',ms=10)
-plt.errorbar(x=np.arange(4),y=np.nanmean(all_correct_run[bottom_subj,:],axis=0),yerr=scipy.stats.sem(all_correct_run[bottom_subj,:],axis=0,nan_policy='omit'),color='k',alpha=0.5,lw=3,label='bottom',fmt='--X',ms=10)
-plt.xlabel('run',fontsize=25)
-plt.ylabel('p(assigned group)')
-plt.ylim([0,1.15])
-plt.xticks(np.arange(4),fontsize=20)
+plt.errorbar(x=np.arange(4),y=np.nanmean(all_correct_run[top_subj,:],axis=0),yerr=scipy.stats.sem(all_correct_run[top_subj,:],
+            axis=0,nan_policy='omit'),color='k',alpha=1,lw=lw-1,label='top',fmt='-o',ms=ms)
+plt.errorbar(x=np.arange(4),y=np.nanmean(all_correct_run[bottom_subj,:],axis=0),yerr=scipy.stats.sem(all_correct_run[bottom_subj,:],
+            axis=0,nan_policy='omit'),color='k',alpha=alpha-.1,lw=lw-1,label='bottom',fmt=':o',ms=ms)
+plt.xlabel('',fontsize=25)
+plt.ylabel('')
+plt.xticks(np.arange(4), fontsize=20)
+plt.yticks(np.arange(0,1.25,.25))
+plt.ylim([0,1])
+ax = plt.gca()
+ax.axes.xaxis.set_ticklabels([])
+ax.axes.yaxis.set_ticklabels([])
+
+
 print('NEW STATISTICS OVER ALL RUNS FOR SUBJECTS')
 print('Cheating prob - correct incorrect')
 for i in np.arange(4):
     x,y=nonNan(all_correct_run[top_subj,i],all_correct_run[bottom_subj,i])
     t,p = scipy.stats.ttest_ind(x,y)
+    p = p * cor
     text = f'DID CHEATING PROB COR/INCOR DIFF SIGNIFICANTLY FOR ANY RUN (1-sided) - RUN {i}'
     printStatsResults(text, t, p/2, x, y)
     addComparisonStat_SYM(p/2,3,3,maxH,.05,0,text_above='')
@@ -861,11 +683,21 @@ for d in np.arange(nRuns):
   plt.subplot(1,nRuns,d+1)
   sns.despine()
   nPoints = nStations
-  plt.errorbar(x=np.arange(nPoints),y=np.nanmean(all_nf_score_reward[top_subj,:,d],axis=0),yerr=scipy.stats.sem(all_nf_score_reward[top_subj,:,d],axis=0,nan_policy='omit'),color='k',alpha=0.7,lw=3,label='top',fmt='-o',ms=10)
-  plt.errorbar(x=np.arange(nPoints),y=np.nanmean(all_nf_score_reward[bottom_subj,:,d],axis=0),yerr=scipy.stats.sem(all_nf_score_reward[bottom_subj,:,d],axis=0,nan_policy='omit'),color='k',alpha=0.5,lw=3,label='bottom',fmt='--X',ms=10)
-  plt.xlabel('station',fontsize=25)
+  plt.errorbar(x=np.arange(nPoints),y=np.nanmean(all_nf_score_reward[top_subj,:,d],axis=0),
+                yerr=scipy.stats.sem(all_nf_score_reward[top_subj,:,d],axis=0,nan_policy='omit'),
+                color='k',alpha=1,lw=lw-1,label='top',fmt='-o',ms=ms)
+  plt.errorbar(x=np.arange(nPoints),y=np.nanmean(all_nf_score_reward[bottom_subj,:,d],axis=0),
+                yerr=scipy.stats.sem(all_nf_score_reward[bottom_subj,:,d],axis=0,nan_policy='omit'),
+                color='k',alpha=alpha-.1,lw=lw-1,label='bottom',fmt=':o',ms=ms)
+  plt.xlabel('',fontsize=25)
   #plt.ylabel('area under -0.1')
   plt.xticks(np.arange(nPoints),fontsize=20)
+  plt.yticks(np.arange(0,1.25,.25))
+  plt.ylim([0,1])
+  ax = plt.gca()
+  ax.axes.xaxis.set_ticklabels([])
+  ax.axes.yaxis.set_ticklabels([])
+
 plt.subplot(1,4,1)
 # test significance across all points and do Bonferroni correction
 cor = nStations*nRuns
@@ -881,12 +713,8 @@ for st in np.arange(nStations):
     if p/2 < 0.1:
         text = '1-sided r %i station %i' % (0, st)
         printStatsResults(text, t, p/2)
-plt.ylim([0,1.15])
-plt.title('run 1',fontsize=30)
-plt.xlim([-0.25,6.25])
-#plt.plot([-1,7],[0.5,0.5], '--', color='k')
-plt.ylabel('NF score ($)',fontsize=25)
-plt.yticks(np.array([0,0.5,1]),fontsize=20)
+plt.title('',fontsize=30)
+plt.ylabel('',fontsize=25)
 
 plt.subplot(1,4,2)
 for st in np.arange(nStations):
@@ -901,11 +729,8 @@ for st in np.arange(nStations):
     if p/2 < 0.1:
         text = '1-sided r %i station %i' % (1, st)
         printStatsResults(text, t, p/2)
-plt.ylim([0,1.15])
-plt.xlim([-0.25,6.25])
-#plt.plot([-1,7],[0.5,0.5], '--', color='k')
-plt.yticks([])
-plt.title('run 2',fontsize=30)
+plt.title('',fontsize=30)
+plt.ylabel('',fontsize=25)
 
 plt.subplot(1,4,3)
 for st in np.arange(nStations):
@@ -920,11 +745,8 @@ for st in np.arange(nStations):
     if p/2 < 0.1:
         text = '1-sided r %i station %i' % (2, st)
         printStatsResults(text, t, p/2)
-plt.yticks([])
-plt.xlim([-0.25,6.25])
-#plt.plot([-1,7],[0.5,0.5], '--', color='k')
-plt.ylim([0,1.15])
-plt.title('run 3',fontsize=30)
+plt.title('',fontsize=30)
+plt.ylabel('',fontsize=25)
 
 plt.subplot(1,4,4)
 for st in np.arange(nStations):
@@ -939,110 +761,42 @@ for st in np.arange(nStations):
     if p/2 < 0.1:
         text = '1-sided r %i station %i' % (3, st)
         printStatsResults(text, t, p/2)
-plt.ylim([0,1.15])
-plt.title('run 4',fontsize=30)
-plt.xlim([-0.25,6.25])
-#plt.plot([-1,7],[0.5,0.5], '--', color='k')
-plt.yticks([])
+plt.title('',fontsize=30)
+plt.ylabel('',fontsize=25)
+
 plt.savefig('savedPlots_checked/nf_score_correct_incor_actual_reward.pdf')
 #plt.show()
 plt.close(fig)
 
 # NOW AVERAGE OVER ALL STATIONS IN A RUN FOR EACH SUBJECT!
+cor = nRuns
 fig,ax = plt.subplots(figsize=(20,9))
 sns.despine()
-plt.errorbar(x=np.arange(4),y=np.nanmean(all_nf_score_reward_run[top_subj,:],axis=0),yerr=scipy.stats.sem(all_nf_score_reward_run[top_subj,:],axis=0,nan_policy='omit'),color='k',alpha=0.7,lw=3,label='top',fmt='-o',ms=10)
-plt.errorbar(x=np.arange(4),y=np.nanmean(all_nf_score_reward_run[bottom_subj,:],axis=0),yerr=scipy.stats.sem(all_nf_score_reward_run[bottom_subj,:],axis=0,nan_policy='omit'),color='k',alpha=0.5,lw=3,label='bottom',fmt='--X',ms=10)
-plt.xlabel('run',fontsize=25)
-plt.ylabel('NF score ($)')
-plt.ylim([0,1.15])
+plt.errorbar(x=np.arange(4),y=np.nanmean(all_nf_score_reward_run[top_subj,:],axis=0),
+            yerr=scipy.stats.sem(all_nf_score_reward_run[top_subj,:],axis=0,nan_policy='omit'),
+            color='k',alpha=1,lw=lw-1,label='top',fmt='-o',ms=ms)
+plt.errorbar(x=np.arange(4),y=np.nanmean(all_nf_score_reward_run[bottom_subj,:],axis=0),
+            yerr=scipy.stats.sem(all_nf_score_reward_run[bottom_subj,:],axis=0,nan_policy='omit'),
+            color='k',alpha=alpha-.1,lw=lw-1,label='bottom',fmt=':o',ms=ms)
+plt.xlabel('',fontsize=25)
+plt.ylabel('')
 plt.xticks(np.arange(4),fontsize=20)
+plt.yticks(np.arange(0,1.25,.25))
+#remove tick labels
+ax = plt.gca()
+ax.axes.xaxis.set_ticklabels([])
+ax.axes.yaxis.set_ticklabels([])
 print("NEW RUN STATISTICS FOR NEUROFEEDBACK")
 for i in np.arange(4):
     x,y=nonNan(all_nf_score_reward_run[top_subj,i],all_nf_score_reward_run[bottom_subj,i])
     t,p = scipy.stats.ttest_ind(x,y)
+    p = p * cor
     text = f'DID ACTUAL REWARD DIFF SIGNIFICANTLY (1-sided) FOR ANY RUN - RUN {i}'
     printStatsResults(text, t, p/2, x, y)
     addComparisonStat_SYM(p/2,3,3,maxH,.05,0,text_above='')
 plt.savefig('savedPlots_checked/nf_score_correct_incor_actual_reward_run.pdf')
 plt.close(fig)
 
-#############################################
-# new - plot for each subject
-for s in np.arange(nSubs):
-    accuracy = classifier_separation[s]
-    fig = plotPosterStyle_multiplePTS_1sub(all_cheating_prob[s,:,:],subjects,s)
-    plt.subplot(1,4,1)
-    plt.ylabel('p(cheating)',fontsize=25)
-    plt.plot(np.arange(nStations),all_means,'--',color='k',alpha=0.5, linewidth=3)
-    plt.ylim([0,1])
-    plt.xticks(fontsize=20)
-    plt.yticks(fontsize=20)
-    plt.title('run 1',fontsize=30)
-    plt.xlabel('station',fontsize=25)
-    plt.subplot(1,4,2)
-    plt.xticks(fontsize=20)
-    plt.yticks(fontsize=20)
-    plt.plot(np.arange(nStations),all_means,'--',color='k',alpha=0.5, linewidth=3)
-    plt.ylim([0,1])
-    plt.title('run 2',fontsize=30)
-    plt.xlabel('station',fontsize=25)
-    plt.subplot(1,4,3)
-    plt.xticks(fontsize=20)
-    plt.yticks(fontsize=20)
-    plt.ylim([0,1])
-    plt.title('run 3',fontsize=30)
-    plt.plot(np.arange(nStations),all_means,'--',color='k',alpha=0.5, linewidth=3)
-    plt.xlabel('station',fontsize=25)
-    plt.subplot(1,4,4)
-    plt.title('run 4',fontsize=30)
-    plt.plot(np.arange(nStations),all_means,'--',color='k',alpha=0.5, linewidth=3)
-    plt.xticks(fontsize=20)
-    plt.yticks(fontsize=20)
-    plt.ylim([0,1])
-    plt.xlabel('station',fontsize=25)
-    figName = 'savedPlots_checked/cprob/cprob_accuracy_{0:06.03f}.pdf'.format(accuracy)
-    plt.savefig(figName)
-    plt.close(fig)
-#plt.show()
-
-############################################ SAME THING BUT ACTUAL REWARD
-#############################################
-# new - plot for each subject
-for s in np.arange(nSubs):
-    accuracy = classifier_separation[s]
-    fig = plotPosterStyle_multiplePTS_1sub(all_nf_score_reward[s,:,:],subjects,s)
-    plt.subplot(1,4,1)
-    plt.ylabel('NF score ($)',fontsize=25)
-    #plt.plot(np.arange(nStations),all_means,'--',color='k',alpha=0.5, linewidth=3)
-    plt.ylim([-0.05,1.05])
-    plt.xticks(fontsize=20)
-    plt.yticks(fontsize=20)
-    plt.title('run 1',fontsize=30)
-    plt.xlabel('station',fontsize=25)
-    plt.subplot(1,4,2)
-    plt.xticks(fontsize=20)
-    plt.yticks(fontsize=20)
-    #plt.plot(np.arange(nStations),all_means,'--',color='k',alpha=0.5, linewidth=3)
-    plt.ylim([-0.05,1.05])
-    plt.title('run 2',fontsize=30)
-    plt.xlabel('station',fontsize=25)
-    plt.subplot(1,4,3)
-    plt.xticks(fontsize=20)
-    plt.yticks(fontsize=20)
-    plt.ylim([-0.05,1.05])
-    plt.title('run 3',fontsize=30)
-    #plt.plot(np.arange(nStations),all_means,'--',color='k',alpha=0.5, linewidth=3)
-    plt.xlabel('station',fontsize=25)
-    plt.subplot(1,4,4)
-    plt.title('run 4',fontsize=30)
-    #plt.plot(np.arange(nStations),all_means,'--',color='k',alpha=0.5, linewidth=3)
-    plt.xticks(fontsize=20)
-    plt.yticks(fontsize=20)
-    plt.ylim([-0.05,1.05])
-    plt.xlabel('station',fontsize=25)
-    figName = 'savedPlots_checked/nf_score_reward/nf_reward_{0:06.03f}.pdf'.format(accuracy)
-    plt.savefig(figName)
 
 #plt.show()
 #### plot everything for each subject averaged over runs
