@@ -3,6 +3,8 @@
 import os
 import glob
 import numpy as np
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import pandas as pd
 import json 
@@ -36,7 +38,16 @@ import rtCommon.dicomNiftiHandler as dnh
 import greenEyes
 from matplotlib.lines import Line2D
 from commonPlotting import *
+font = {'size': 22,
+        'weight': 'normal'}
+plt.rc('axes', linewidth=5)
+plt.rc('xtick.major', size=10, width = 4)
+plt.rc('ytick.major', size=10, width = 4)
 
+# define plot vars 
+lw = 8
+ms = 10
+alpha = 0.8
 # params = {'legend.fontsize': 'large',
 #           'figure.figsize': (5, 3),
 #           'axes.labelsize': 'x-large',
@@ -275,39 +286,46 @@ df = pd.DataFrame.from_dict(DATA)
 # (1) plot average classifier separation by subject
 fig,ax = plt.subplots(figsize=(12,9))
 sns.despine()
-sns.barplot(data=df,x='resp',y='p(cheating)',ci=68,order=['CHEATING', 'PARANOID'],color='k',alpha=0.5)
-g = sns.swarmplot(data=df[df['group']=='C'],x='resp',y='p(cheating)',order=['CHEATING', 'PARANOID'],color=cheating_c,alpha=0.5,size=10)
-g = sns.swarmplot(data=df[df['group']=='P'],x='resp',y='p(cheating)',order=['CHEATING', 'PARANOID'],color=paranoid_c,alpha=0.5,size=10)
+sns.barplot(data=df,x='resp',y='p(cheating)',ci=68,order=['CHEATING', 'PARANOID'],color='k',alpha=0.5, errcolor='k')
+g = sns.swarmplot(data=df[df['group']=='C'],x='resp',y='p(cheating)',order=['CHEATING', 'PARANOID'],color=cheating_c,alpha=0.7,size=ms)
+g = sns.swarmplot(data=df[df['group']=='P'],x='resp',y='p(cheating)',order=['CHEATING', 'PARANOID'],color=paranoid_c,alpha=0.7,size=ms)
 for s in np.arange(nSubs):
-    plt.plot([0,1],subj_means[s,:], '--', color='k', lw=1, alpha=0.3)
-plt.title('Classification divided by probe response',fontsize=30)
+    plt.plot([0,1],subj_means[s,:], '--', color='k', lw=3, alpha=0.3)
+plt.yticks(np.arange(0,1.25,.25))
+plt.title('',fontsize=30)
 plt.ylim([0,1])
-plt.xlabel('probe response',fontsize=25)
-plt.ylabel('p(cheating)',fontsize=25)
-plt.xticks(fontsize=20)
-plt.xticks(fontsize=20)
+plt.xlabel('',fontsize=25)
+plt.ylabel('',fontsize=25)
+ax = plt.gca()
+ax.axes.xaxis.set_ticklabels([])
+ax.axes.yaxis.set_ticklabels([])
+
 x,y=nonNan(subj_means[:,0],subj_means[:,1])
 r,p=scipy.stats.ttest_rel(x,y)
 addComparisonStat_SYM(p/2,0,1,0.92,.05,0,text_above='C>P')
 printStatsResults('avg classification based on probe responses 1-sided', r, p/2)
-plt.ylim([0,1.1])
 plt.savefig('savedPlots_checked/classification_averaged.pdf')
 #plt.show()
 
 # (2) plot the linear relationship between correct context responses and classifier accuracy
 fig,ax = plt.subplots(figsize=(12,9))
 sns.despine()
+b, m = polyfit(classifier_separation, all_correct_context, 1)
+plt.plot(classifier_separation, b + m * classifier_separation, '-',alpha=0.8,lw=lw, color='k')
 for s in np.arange(nSubs):
     if interpretations[s] == 'C':
         color=cheating_c
     elif interpretations[s] == 'P':
         color=paranoid_c
     plt.plot(classifier_separation[s],all_correct_context[s],'.',ms=20,color=color,alpha=1)
-b, m = polyfit(classifier_separation, all_correct_context, 1)
-plt.plot(classifier_separation, b + m * classifier_separation, '-',alpha=0.6,lw=3, color='k')
-plt.xlabel('decoding accuracy',fontsize=25)
-plt.ylabel('correct interpretation score', fontsize=25)
-plt.title('Interpretation and decoding relationship',fontsize=30)
+plt.xlabel('',fontsize=25)
+plt.ylabel('', fontsize=25)
+plt.title('',fontsize=30)
+plt.yticks([-1,0,1])
+plt.xticks([-.25,0,.25, 0.5])
+ax = plt.gca()
+ax.axes.xaxis.set_ticklabels([])
+ax.axes.yaxis.set_ticklabels([])
 r,p=scipy.stats.pearsonr(classifier_separation,all_correct_context)
 printStatsResults('interpretation and classifier linear relationship',r, p)
 text_f = 'r = %2.2f\np = %2.2f' % (r,p)

@@ -3,27 +3,27 @@
 import os
 import glob
 import numpy as np
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import pandas as pd
-import json 
-import datetime
-from dateutil import parser
-from subprocess import call
-import time
-import nilearn
-from nilearn.masking import apply_mask
 from scipy import stats
-import scipy.io as sio
-import pickle
-import nibabel as nib
-import argparse
 import sys
-import logging
 import matplotlib.cm as cmx
 import seaborn as sns
-import scipy
 from numpy.polynomial.polynomial import polyfit
 from commonPlotting import *
+font = {'size': 22,
+        'weight': 'normal'}
+plt.rc('axes', linewidth=5)
+plt.rc('xtick.major', size=10, width = 4)
+plt.rc('ytick.major', size=10, width = 4)
+
+# define plot vars 
+lw = 8
+ms = 10
+alpha = 0.8
+
 import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
@@ -270,10 +270,12 @@ for s in np.arange(nSubs):
 
 
 # (1) Plot probe responses by group first
+print('CHOICES STATIONS')
 fig = plotPosterStyle_multiplePTS(all_choices,subjects)
 plt.subplot(1,4,1)
-plt.ylim([0,1.15])
-plt.xlim([-0.25,6.25])
+plt.ylim([0,1])
+plt.xticks(np.arange(nStations), fontsize=20)
+
 cor = nStations*nRuns
 for st in np.arange(nStations):
     x,y=nonNan(all_choices[C_ind,st,0],all_choices[P_ind,st,0],)
@@ -288,16 +290,20 @@ for st in np.arange(nStations):
         text = '1-sided r %i station %i' % (0, st)
         printStatsResults(text, t, p/2)
 plt.yticks(np.array([0,0.5,1]), [ 'all paranoid','neutral','all cheating'],fontsize=20,rotation=0) 
-plt.plot([-1,7],[0.5,0.5], '--', color='k')
-plt.ylabel('p(probe response)', fontsize=25)
-plt.title('run 1',fontsize=30)
-plt.xlabel('station',fontsize=25)
-plt.xticks(fontsize=20)
+plt.plot([0,nStations-1],[0.5,0.5], '--', color='k', linewidth=lw-1, alpha=0.5)
+plt.ylabel('', fontsize=25)
+plt.title('')
+plt.xlabel('')
+ax = plt.gca()
+ax.axes.xaxis.set_ticklabels([])
+ax.axes.yaxis.set_ticklabels([])
+
 plt.subplot(1,4,2)
-plt.xlim([-0.25,6.25])
-plt.ylim([0,1.15])
-plt.yticks([])
-plt.plot([-1,7],[0.5,0.5], '--', color='k')
+plt.ylim([0,1])
+plt.xticks(np.arange(nStations), fontsize=20)
+plt.yticks(np.array([0,0.5,1]), [ 'all paranoid','neutral','all cheating'],fontsize=20,rotation=0) 
+
+plt.plot([0,nStations-1],[0.5,0.5], '--', color='k', linewidth=lw-1, alpha=0.5)
 for st in np.arange(nStations):
     x,y=nonNan(all_choices[C_ind,st,1],all_choices[P_ind,st,1],)
     t,p = scipy.stats.ttest_ind(x,y)
@@ -310,13 +316,19 @@ for st in np.arange(nStations):
     if p/2 < 0.1:
         text = '1-sided r %i station %i' % (1, st)
         printStatsResults(text, t, p/2)
-plt.title('run 2',fontsize=30)
-plt.xlabel('station',fontsize=25)
-plt.xticks(fontsize=20)
+plt.ylabel('', fontsize=25)
+plt.title('')
+plt.xlabel('')
+ax = plt.gca()
+ax.axes.xaxis.set_ticklabels([])
+ax.axes.yaxis.set_ticklabels([])
+
 plt.subplot(1,4,3)
-plt.xlim([-0.25,6.25])
-plt.ylim([0,1.15])
-plt.plot([-1,7],[0.5,0.5], '--', color='k')
+plt.ylim([0,1])
+plt.xticks(np.arange(nStations), fontsize=20)
+plt.yticks(np.array([0,0.5,1]), [ 'all paranoid','neutral','all cheating'],fontsize=20,rotation=0) 
+
+plt.plot([0,nStations-1],[0.5,0.5], '--', color='k', linewidth=lw-1, alpha=0.5)
 for st in np.arange(nStations):
     x,y=nonNan(all_choices[C_ind,st,2],all_choices[P_ind,st,2],)
     t,p = scipy.stats.ttest_ind(x,y)
@@ -329,17 +341,19 @@ for st in np.arange(nStations):
     if p/2 < 0.1:
         text = '1-sided r %i station %i' % (2, st)
         printStatsResults(text, t, p/2)
-plt.yticks([])
-plt.title('run 3',fontsize=30)
-plt.xlabel('station',fontsize=25)
-plt.xticks(fontsize=20)
+plt.ylabel('', fontsize=25)
+plt.title('')
+plt.xlabel('')
+ax = plt.gca()
+ax.axes.xaxis.set_ticklabels([])
+ax.axes.yaxis.set_ticklabels([])
+
 plt.subplot(1,4,4)
-plt.xlim([-0.25,6.25])
-plt.plot([-1,7],[0.5,0.5], '--', color='k')
-plt.ylim([0,1.15])
-plt.title('run 4',fontsize=30)
-plt.xlabel('station',fontsize=25)
-plt.xticks(fontsize=20)
+plt.ylim([0,1])
+plt.xticks(np.arange(nStations), fontsize=20)
+plt.yticks(np.array([0,0.5,1]), [ 'all paranoid','neutral','all cheating'],fontsize=20,rotation=0) 
+plt.plot([0,nStations-1],[0.5,0.5], '--', color='k', linewidth=lw-1, alpha=0.5)
+
 for st in np.arange(nStations):
     x,y=nonNan(all_choices[C_ind,st,3],all_choices[P_ind,st,3],)
     t,p = scipy.stats.ttest_ind(x,y)
@@ -352,20 +366,28 @@ for st in np.arange(nStations):
     if p/2 < 0.1:
         text = '1-sided r %i station %i' % (3, st)
         printStatsResults(text, t, p/2)
-plt.yticks([])
+plt.ylabel('', fontsize=25)
+plt.title('')
+plt.xlabel('')
+ax = plt.gca()
+ax.axes.xaxis.set_ticklabels([])
+ax.axes.yaxis.set_ticklabels([])
 plt.savefig('savedPlots_checked/choices_stations.pdf')
 #plt.show()
 
-
 # get average statistics by run
+print('all_choices by run')
+print('changing stats to be consistent')
+cor=nRuns
 all_choices_run = np.nanmean(all_choices,axis=1)
 for i in np.arange(4):
     x,y=nonNan(all_choices_run[C_ind,i],all_choices_run[P_ind,i])
     t,p = scipy.stats.ttest_ind(x,y)
-    text = f'ALL CHOICES - (2-sided) did they differ significantly for run {i}'
+    p = p * cor
+    text = f'ALL CHOICES - (1-sided) did they differ significantly for run {i}'
     printStatsResults(text,
                       t,
-                      p,
+                      p/2,
                       x,
                       y)
 
@@ -380,11 +402,10 @@ plt.errorbar(
     axis=0,nan_policy='omit'
     ),
     color=paranoid_c,
-    alpha=0.7,
-    lw=3,
+    lw=lw,
     label='top',
     fmt='-o',
-    ms=10)
+    ms=ms)
 plt.errorbar(
     x=np.arange(4),
     y=np.nanmean(all_choices_run[C_ind,:],axis=0),
@@ -392,19 +413,21 @@ plt.errorbar(
     axis=0,nan_policy='omit'
     ),
     color=cheating_c,
-    alpha=0.7,
-    lw=3,
+    lw=lw,
     label='top',
-    fmt='--X',
-    ms=10)
+    fmt='-o',
+    ms=ms)
 plt.ylim([0,1])
 plt.yticks(np.array([0,0.5,1]), [ 'all paranoid','neutral','all cheating'],fontsize=20,rotation=0) 
-plt.plot([0,3],[0.5,0.5], '--', color='k')
-plt.ylabel('p(probe response)', fontsize=25)
-plt.xlabel('station',fontsize=25)
-plt.xlabel('run',fontsize=25)
+plt.plot([0,nRuns-1],[0.5,0.5], '--', color='k', lw=lw-1, alpha=0.5)
+plt.ylabel('', fontsize=25)
+plt.xlabel('',fontsize=25)
+plt.xlabel('',fontsize=25)
 plt.xticks(np.arange(4),fontsize=20)
 plt.ylim([0,1])
+ax = plt.gca()
+ax.axes.xaxis.set_ticklabels([])
+ax.axes.yaxis.set_ticklabels([])
 plt.savefig('savedPlots_checked/all_choices_run.pdf')
 
 
@@ -414,17 +437,30 @@ for d in np.arange(nRuns):
   plt.subplot(1,nRuns,d+1)
   sns.despine()
   nPoints = nStations
-  plt.errorbar(x=np.arange(nPoints),y=np.nanmean(all_choices_correct[top_subj,:,d],axis=0),yerr=scipy.stats.sem(all_choices_correct[top_subj,:,d],axis=0),color='k',alpha=0.7,lw=3,label='top',fmt='-o',ms=10)
-  plt.errorbar(x=np.arange(nPoints),y=np.nanmean(all_choices_correct[bottom_subj,:,d],axis=0),yerr=scipy.stats.sem(all_choices_correct[bottom_subj,:,d],axis=0),color='k',alpha=0.5,lw=3,label='bottom',fmt='--X',ms=10)
-  plt.xlabel('station',fontsize=25)
+  plt.errorbar(x=np.arange(nPoints),y=np.nanmean(all_choices_correct[top_subj,:,d],axis=0),
+    yerr=scipy.stats.sem(all_choices_correct[top_subj,:,d],axis=0),
+    color='k',
+    alpha=1,
+    lw=lw-1,
+    label='top',
+    fmt='-o',
+    ms=ms)
+  plt.errorbar(x=np.arange(nPoints),y=np.nanmean(all_choices_correct[bottom_subj,:,d],axis=0),
+    yerr=scipy.stats.sem(all_choices_correct[bottom_subj,:,d],axis=0),
+    color='k',alpha=alpha-0.1,lw=lw-1,label='bottom',fmt=':o',ms=ms)
+  plt.xlabel('',fontsize=25)
   #plt.ylabel('area under -0.1')
   plt.xticks(np.arange(nPoints),fontsize=20)
+  plt.yticks(np.arange(0,1.5,.5))
+  plt.ylim([0,1])
+  plt.plot([0,nStations-1],[0.5,0.5], '--', color='k', alpha=0.5, lw=lw-1)
+  plt.title('')
+  ax = plt.gca()
+  ax.axes.xaxis.set_ticklabels([])
+  ax.axes.yaxis.set_ticklabels([])
+
 plt.subplot(1,4,1)
-plt.xlim([-0.25,6.25])
-plt.plot([-1,7],[0.5,0.5], '--', color='k')
-plt.ylim([0,1.15])
-plt.ylabel('p(correct choice)',fontsize=25)
-plt.yticks(np.array([0,0.5,1]),fontsize=20)
+plt.ylabel('',fontsize=25)
 # test significance across all points and do Bonferroni correction
 cor = nStations*nRuns
 for st in np.arange(nStations):
@@ -439,12 +475,9 @@ for st in np.arange(nStations):
     if p/2 < 0.1:
         text = '1-sided r %i station %i' % (0, st)
         printStatsResults(text, t, p/2)
-plt.title('run 1',fontsize=30)
+plt.title('',fontsize=30)
+
 plt.subplot(1,4,2)
-plt.ylim([0,1.15])
-plt.xlim([-0.25,6.25])
-plt.plot([-1,7],[0.5,0.5], '--', color='k')
-plt.yticks([])
 for st in np.arange(nStations):
     x,y=nonNan(all_choices_correct[top_subj,st,1],all_choices_correct[bottom_subj,st,1],)
     t,p = scipy.stats.ttest_ind(x,y)
@@ -457,12 +490,9 @@ for st in np.arange(nStations):
     if p/2 < 0.1:
         text = '1-sided r %i station %i' % (1, st)
         printStatsResults(text, t, p/2)
-plt.title('run 2',fontsize=30)
+
 plt.subplot(1,4,3)
-plt.yticks([])
-plt.ylim([0,1.15])
-plt.xlim([-0.25,6.25])
-plt.plot([-1,7],[0.5,0.5], '--', color='k')
+
 for st in np.arange(nStations):
     x,y=nonNan(all_choices_correct[top_subj,st,2],all_choices_correct[bottom_subj,st,2],)
     t,p = scipy.stats.ttest_ind(x,y)
@@ -475,12 +505,9 @@ for st in np.arange(nStations):
     if p/2 < 0.1:
         text = '1-sided r %i station %i' % (2, st)
         printStatsResults(text, t, p/2)
-plt.title('run 3',fontsize=30)
+
 plt.subplot(1,4,4)
-plt.title('run 4',fontsize=30)
-plt.ylim([0,1.15])
-plt.xlim([-0.25,6.25])
-plt.plot([-1,7],[0.5,0.5], '--', color='k')
+
 for st in np.arange(nStations):
     x,y=nonNan(all_choices_correct[top_subj,st,3],all_choices_correct[bottom_subj,st,3],)
     t,p = scipy.stats.ttest_ind(x,y)
@@ -493,7 +520,6 @@ for st in np.arange(nStations):
     if p/2 < 0.1:
         text = '1-sided r %i station %i' % (3, st)
         printStatsResults(text, t, p/2)
-plt.yticks([])
 plt.savefig('savedPlots_checked/choices_stations_correct_incor.pdf')
 #plt.show()
 
@@ -516,13 +542,16 @@ df = pd.DataFrame.from_dict(data)
 
 fig,ax = plt.subplots(figsize=(12,9))
 sns.despine()
-sns.barplot(data=df,x='group',y='comprehension',ci=68,linewidth=2.5,color='k', alpha=0.5)#errcolor=".2", edgecolor=".2")
-sns.swarmplot(data=df,x='group',y='comprehension',split=True,color='k',size=8)
+sns.barplot(data=df,x='group',y='comprehension',ci=68,linewidth=lw,color='k', alpha=0.5, errcolor='k')#errcolor=".2", edgecolor=".2")
+sns.swarmplot(data=df,x='group',y='comprehension',split=True,color='k',size=ms, alpha=0.7)
 maxH = 1.05
 plt.ylim([0.5,1.05])
-plt.ylabel('accuracy',fontsize=25)
-plt.title('Comprehension scores',fontsize=30)
-plt.xlabel('decoding accuracy group',fontsize=25)
+plt.ylabel('',fontsize=25)
+plt.title('',fontsize=30)
+plt.xlabel('',fontsize=25)
+ax = plt.gca()
+ax.axes.xaxis.set_ticklabels([])
+ax.axes.yaxis.set_ticklabels([])
 x,y=nonNan(all_story_scores[top_subj],all_story_scores[bottom_subj])
 t,p = scipy.stats.ttest_ind(x,y)
 addComparisonStat_SYM(p,0,1,maxH,.05,0,text_above=r'B\neqW')
@@ -547,20 +576,23 @@ data['group'] = group_str
 df = pd.DataFrame.from_dict(data)
 fig,ax = plt.subplots(figsize=(12,9))
 sns.despine()
-sns.barplot(data=df,x='group',y='comprehension',ci=68,linewidth=2.5,color='k', alpha=0.5)#errcolor=".2", edgecolor=".2")
-sns.swarmplot(data=df,x='group',y='comprehension',split=True,color='k',size=8)
+sns.barplot(data=df,x='group',y='comprehension',ci=68,linewidth=lw,color='k', alpha=0.5, errcolor='k')#errcolor=".2", edgecolor=".2")
+sns.swarmplot(data=df,x='group',y='comprehension',split=True,color='k',size=ms, alpha=0.7)
 maxH = 1.05
-plt.ylim([-1.1,1.5])
-plt.ylabel('bias towards one interpretation',fontsize=25)
-plt.title('Interpretation scores', fontsize=30)
-plt.yticks(np.array([-1,0,1]), ['incorrect','neutral','correct'],fontsize=20,rotation=45) 
-plt.xlabel('decoding accuracy group',fontsize=25)
+plt.ylim([-1.2,1.5])
+plt.ylabel('',fontsize=25)
+plt.title('', fontsize=30)
+plt.yticks(np.array([-1,0,1]), fontsize=20,rotation=45) 
+plt.xlabel('',fontsize=25)
 x,y=nonNan(all_correct_context[top_subj],all_correct_context[bottom_subj])
 t,p = scipy.stats.ttest_ind(x,y)
 addComparisonStat_SYM(p/2,0,1,maxH,.05,0,text_above='B>W')
 printStatsResults('interpretation diff', t, p/2)
-plt.plot([-2,2],[0,0], '--', color='k')
+plt.plot([-2,2],[0,0], '--', color='k', alpha=0.5, linewidth=lw-1)
 plt.yticks(np.array([-1, 0, 1]))
+ax = plt.gca()
+ax.axes.xaxis.set_ticklabels([])
+ax.axes.yaxis.set_ticklabels([])
 plt.savefig('savedPlots_checked/context_score_cor_incor.pdf')
 #plt.show()
 
@@ -588,14 +620,18 @@ df = pd.DataFrame.from_dict(data)
 
 fig,ax = plt.subplots(figsize=(12,9))
 sns.despine()
-sns.barplot(data=df,x='group',y='comprehension',ci=68,linewidth=2.5,color='k', alpha=0.5)#errcolor=".2", edgecolor=".2")
-sns.swarmplot(data=df,x='group',y='comprehension',split=True,color='k',size=8)
+sns.barplot(data=df,x='group',y='comprehension',ci=68,linewidth=lw,color='k', alpha=0.5, errcolor='k')#errcolor=".2", edgecolor=".2")
+sns.swarmplot(data=df,x='group',y='comprehension',split=True,color='k',size=ms, alpha=0.7)
 maxH = 5.1
 #plt.ylim([-1.1,1.5])
-plt.ylabel('correct empathy difference',fontsize=25)
-plt.title('Arthur minus Lee', fontsize=30)
-plt.xlabel('decoding accuracy group',fontsize=25)
-plt.plot([-2,2],[0,0], '--', color='k')
+plt.ylabel('',fontsize=25)
+plt.title('', fontsize=30)
+plt.xlabel('',fontsize=25)
+plt.plot([-2,2],[0,0], '--', color='k', linewidth=lw-1, alpha=0.5)
+ax = plt.gca()
+ax.axes.xaxis.set_ticklabels([])
+ax.axes.yaxis.set_ticklabels([])
+
 x,y=nonNan(artur_minus_lee_cor[top_subj],artur_minus_lee_cor[bottom_subj])
 t,p = scipy.stats.ttest_ind(x,y)
 addComparisonStat_SYM(p/2,0,1,maxH,.05,0,text_above='B>W')

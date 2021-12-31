@@ -5,6 +5,7 @@ import os
 import scipy
 sys.path.append(os.getcwd())
 import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 font = {'size': 22,
         'weight': 'normal'}
@@ -110,9 +111,9 @@ def plotPosterStyle_DF(all_data,subjects):
   P2 = makeColorPalette(['#99d8c9','#fc9272'])
   P3 = makeColorPalette(['#e5f5f9','#fee0d2'])
   #sns.set_palette(sns.color_palette(colors))
-  sns.barplot(data=df,x='q',y='data',hue='group',ci=68,linewidth=2.5,palette=P2)#errcolor=".2", edgecolor=".2")
+  sns.barplot(data=df,x='q',y='data',hue='group',ci=68,linewidth=lw,palette=P2, errcolor='k')#errcolor=".2", edgecolor=".2")
   #sns.barplot(data=df,x='day',y='data',hue='group',ci=68,linewidth=2.5,palette=P1,errcolor=".2", edgecolor=".2")
-  sns.swarmplot(data=df,x='q',y='data',hue='group',split=True,color='k',size=8,alpha=0.5)
+  sns.swarmplot(data=df,x='q',y='data',hue='group',split=True,color='k',size=ms,alpha=0.8)
   ax.get_legend().remove()
   #plt.show()
   return fig,ax
@@ -165,6 +166,7 @@ def plotPosterStyle_multiplePTS_1sub(sub_data,subjects,this_sub):
 
 def plotPosterStyle_multiplePTS(all_data,subjects,alpha=1):
     """Assume data is in subject x PTS x day """
+    print('inisde function')
     colors_dark = ['#2ca25f','#de2d26']
     colors_light = ['#99d8c9','#fc9272']
     n_subs = len(subjects)
@@ -182,7 +184,9 @@ def plotPosterStyle_multiplePTS(all_data,subjects,alpha=1):
     P_err = scipy.stats.sem(P_data,axis=0,nan_policy='omit')
     nDays = np.shape(all_data)[2]
     nPoints = np.shape(all_data)[1]
+    print('before plot call')
     fig,ax = plt.subplots(figsize=(20,9))
+    print('after plot call')
     for d in np.arange(nDays):
       plt.subplot(1,nDays,d+1)
       sns.despine()
@@ -201,6 +205,7 @@ def plotPosterStyle_multiplePTS(all_data,subjects,alpha=1):
       plt.xlabel('point')
       #plt.ylabel('area under -0.1')
       plt.xticks(np.arange(nPoints))
+      print('after last plot call')
     #  plt.legend()
     #ax.get_legend().remove()
     #plt.show()

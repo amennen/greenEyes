@@ -5,7 +5,21 @@
 import os
 import glob
 import numpy as np
+import pickle
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+font = {'size': 22,
+        'weight': 'normal'}
+plt.rc('axes', linewidth=5)
+plt.rc('xtick.major', size=10, width = 4)
+plt.rc('ytick.major', size=10, width = 4)
+
+# define plot vars 
+lw = 8
+ms = 10
+alpha = 0.8
+
 import pandas as pd
 import json 
 import datetime
@@ -13,10 +27,7 @@ from dateutil import parser
 from subprocess import call
 import time
 import nilearn
-from nilearn.masking import apply_mask
 from scipy import stats
-import scipy.io as sio
-import pickle
 import nibabel as nib
 import argparse
 import sys
@@ -35,6 +46,8 @@ from rtCommon.fileClient import FileInterface
 from rtCommon.structDict import StructDict
 import rtCommon.dicomNiftiHandler as dnh
 import greenEyes
+from commonPlotting import *
+
 # params = {'legend.fontsize': 'large',
 #           'figure.figsize': (5, 3),
 #           'axes.labelsize': 'x-large',
@@ -49,7 +62,6 @@ cfg = loadConfigFile(defaultConfig)
 params = StructDict({'config':defaultConfig, 'runs': '1', 'scans': '9', 'webpipe': 'None', 'webfilesremote': False})
 cfg = greenEyes.initializeGreenEyes(defaultConfig,params)
 # date doesn't have to be right, but just make sure subject number, session number, computers are correct
-from commonPlotting import *
 
 
 
@@ -369,30 +381,46 @@ plt.savefig('savedPlots_checked/p_cheating_EXP1.pdf')
 # NOW PLOT P(CHEATING) FOR LOGISTIC CLF
 fig = plotPosterStyle_multiplePTS(all_cheating_prob,Exp1Subjects)
 plt.subplot(1,4,1)
-plt.ylabel('p(cheating)',fontsize=25)
+plt.ylabel('',fontsize=25)
 plt.ylim([0,1])
 plt.xticks(fontsize=20)
-plt.yticks(fontsize=20)
-plt.title('run 1',fontsize=30)
-plt.xlabel('station',fontsize=25)
+plt.yticks(np.arange(0,1.25,.25))
+plt.title('',fontsize=30)
+plt.xlabel('',fontsize=25)
+ax = plt.gca()
+ax.axes.xaxis.set_ticklabels([])
+ax.axes.yaxis.set_ticklabels([])
+
 plt.subplot(1,4,2)
 plt.xticks(fontsize=20)
-plt.yticks(fontsize=20)
+plt.yticks(np.arange(0,1.25,.25))
 plt.ylim([0,1])
-plt.title('run 2',fontsize=30)
-plt.xlabel('station',fontsize=25)
+plt.title('',fontsize=30)
+plt.xlabel('',fontsize=25)
+ax = plt.gca()
+ax.axes.xaxis.set_ticklabels([])
+ax.axes.yaxis.set_ticklabels([])
+
 plt.subplot(1,4,3)
 plt.ylim([0,1])
 plt.xticks(fontsize=20)
-plt.yticks(fontsize=20)
-plt.title('run 3',fontsize=30)
-plt.xlabel('station',fontsize=25)
+plt.yticks(np.arange(0,1.25,.25))
+plt.title('',fontsize=30)
+plt.xlabel('',fontsize=25)
+ax = plt.gca()
+ax.axes.xaxis.set_ticklabels([])
+ax.axes.yaxis.set_ticklabels([])
+
 plt.subplot(1,4,4)
-plt.title('run 4',fontsize=30)
+plt.title('',fontsize=30)
 plt.ylim([0,1])
 plt.xticks(fontsize=20)
-plt.yticks(fontsize=20)
-plt.xlabel('station',fontsize=25)
+plt.yticks(np.arange(0,1.25,.25))
+plt.xlabel('',fontsize=25)
+ax = plt.gca()
+ax.axes.xaxis.set_ticklabels([])
+ax.axes.yaxis.set_ticklabels([])
+
 plt.savefig('savedPlots_checked/p_cheating_EXP1_logistic.pdf')
 #plt.show()
 
