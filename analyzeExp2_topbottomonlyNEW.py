@@ -432,6 +432,7 @@ plt.savefig('savedPlots_checked/all_choices_run.pdf')
 
 
 # (2) plot probe responses, now divided by the top and bottom classifier performances (collapsing across interpretation groups)
+print('CHOICES STATIONS CORRECT INCOR')
 fig,ax = plt.subplots(figsize=(20,9))
 for d in np.arange(nRuns):
   plt.subplot(1,nRuns,d+1)
@@ -522,7 +523,7 @@ for st in np.arange(nStations):
         printStatsResults(text, t, p/2)
 plt.savefig('savedPlots_checked/choices_stations_correct_incor.pdf')
 #plt.show()
-
+print('END OF CHOICES STATINS CORRECT INCOR')
 # (3) plot comprehension differences across top and bottom performing classified subjects, collapsing across groups
 maxH = 1.1
 # first make data frame

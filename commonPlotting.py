@@ -27,8 +27,8 @@ def printStatsResults(text, t, p, x=None, y=None):
     print('len(x) is %i' % len(x))
   if y is not None:
     print('len(y) is %i' % len(y))
-  print('t value is : %0.3f' % t)
-  print('p value is : %0.3f' % p)
+  print('t value is : %0.5f' % t)
+  print('p value is : %0.5f' % p)
   return
 
 def getSubjectInterpretation(subject_num):
