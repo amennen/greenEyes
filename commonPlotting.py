@@ -258,8 +258,8 @@ def addSingleStat_ax(score,x,maxHeight,heightAbove,ax):
   ax.text(x, y+h, text_stat, ha='center', va='bottom', color=col,fontsize=15)
   return
 
-def nonNan(x,y):
-  if len(x) == len(y): # then treat as paired case
+def nonNan(x,y, paired=False):
+  if paired: # then treat as paired case
     if any(np.isnan(x)) and not any(np.isnan(y)):
         xnew = x[~np.isnan(x)]
         ynew = y[~np.isnan(x)]

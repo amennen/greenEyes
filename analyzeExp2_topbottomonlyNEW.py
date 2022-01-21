@@ -278,7 +278,7 @@ plt.xticks(np.arange(nStations), fontsize=20)
 
 cor = nStations*nRuns
 for st in np.arange(nStations):
-    x,y=nonNan(all_choices[C_ind,st,0],all_choices[P_ind,st,0],)
+    x,y=nonNan(all_choices[C_ind,st,0],all_choices[P_ind,st,0])
     t,p = scipy.stats.ttest_ind(x,y)
     p =p * cor
     if np.mod(st,2):
@@ -305,7 +305,7 @@ plt.yticks(np.array([0,0.5,1]), [ 'all paranoid','neutral','all cheating'],fonts
 
 plt.plot([0,nStations-1],[0.5,0.5], '--', color='k', linewidth=lw-1, alpha=0.5)
 for st in np.arange(nStations):
-    x,y=nonNan(all_choices[C_ind,st,1],all_choices[P_ind,st,1],)
+    x,y=nonNan(all_choices[C_ind,st,1],all_choices[P_ind,st,1])
     t,p = scipy.stats.ttest_ind(x,y)
     p =p * cor
     if np.mod(st,2):
@@ -330,7 +330,7 @@ plt.yticks(np.array([0,0.5,1]), [ 'all paranoid','neutral','all cheating'],fonts
 
 plt.plot([0,nStations-1],[0.5,0.5], '--', color='k', linewidth=lw-1, alpha=0.5)
 for st in np.arange(nStations):
-    x,y=nonNan(all_choices[C_ind,st,2],all_choices[P_ind,st,2],)
+    x,y=nonNan(all_choices[C_ind,st,2],all_choices[P_ind,st,2])
     t,p = scipy.stats.ttest_ind(x,y)
     p =p * cor
     if np.mod(st,2):
@@ -355,7 +355,7 @@ plt.yticks(np.array([0,0.5,1]), [ 'all paranoid','neutral','all cheating'],fonts
 plt.plot([0,nStations-1],[0.5,0.5], '--', color='k', linewidth=lw-1, alpha=0.5)
 
 for st in np.arange(nStations):
-    x,y=nonNan(all_choices[C_ind,st,3],all_choices[P_ind,st,3],)
+    x,y=nonNan(all_choices[C_ind,st,3],all_choices[P_ind,st,3])
     t,p = scipy.stats.ttest_ind(x,y)
     p =p * cor
     if np.mod(st,2):
@@ -465,7 +465,7 @@ plt.ylabel('',fontsize=25)
 # test significance across all points and do Bonferroni correction
 cor = nStations*nRuns
 for st in np.arange(nStations):
-    x,y=nonNan(all_choices_correct[top_subj,st,0],all_choices_correct[bottom_subj,st,0],)
+    x,y=nonNan(all_choices_correct[top_subj,st,0],all_choices_correct[bottom_subj,st,0])
     t,p = scipy.stats.ttest_ind(x,y)
     p =p * cor
     if np.mod(st,2):
@@ -480,7 +480,7 @@ plt.title('',fontsize=30)
 
 plt.subplot(1,4,2)
 for st in np.arange(nStations):
-    x,y=nonNan(all_choices_correct[top_subj,st,1],all_choices_correct[bottom_subj,st,1],)
+    x,y=nonNan(all_choices_correct[top_subj,st,1],all_choices_correct[bottom_subj,st,1])
     t,p = scipy.stats.ttest_ind(x,y)
     p =p * cor
     if np.mod(st,2):
@@ -495,7 +495,7 @@ for st in np.arange(nStations):
 plt.subplot(1,4,3)
 
 for st in np.arange(nStations):
-    x,y=nonNan(all_choices_correct[top_subj,st,2],all_choices_correct[bottom_subj,st,2],)
+    x,y=nonNan(all_choices_correct[top_subj,st,2],all_choices_correct[bottom_subj,st,2])
     t,p = scipy.stats.ttest_ind(x,y)
     p =p * cor
     if np.mod(st,2):
@@ -510,7 +510,7 @@ for st in np.arange(nStations):
 plt.subplot(1,4,4)
 
 for st in np.arange(nStations):
-    x,y=nonNan(all_choices_correct[top_subj,st,3],all_choices_correct[bottom_subj,st,3],)
+    x,y=nonNan(all_choices_correct[top_subj,st,3],all_choices_correct[bottom_subj,st,3])
     t,p = scipy.stats.ttest_ind(x,y)
     p =p * cor
     if np.mod(st,2):

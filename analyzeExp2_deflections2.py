@@ -374,7 +374,7 @@ plt.subplot(1,4,1)
 # test significance across all points and do Bonferroni correction
 cor = nStations*nRuns
 for st in np.arange(nStations):
-    x,y=nonNan(all_correct_prob[top_subj,st,0],all_correct_prob[bottom_subj,st,0],)
+    x,y=nonNan(all_correct_prob[top_subj,st,0],all_correct_prob[bottom_subj,st,0])
     t,p = scipy.stats.ttest_ind(x,y)
     p =p * cor
     if np.mod(st,2):
@@ -390,7 +390,7 @@ plt.ylabel('',fontsize=25)
 
 plt.subplot(1,4,2)
 for st in np.arange(nStations):
-    x,y=nonNan(all_correct_prob[top_subj,st,1],all_correct_prob[bottom_subj,st,1],)
+    x,y=nonNan(all_correct_prob[top_subj,st,1],all_correct_prob[bottom_subj,st,1])
     t,p = scipy.stats.ttest_ind(x,y)
     p =p * cor
     if np.mod(st,2):
@@ -406,7 +406,7 @@ plt.ylabel('',fontsize=25)
 
 plt.subplot(1,4,3)
 for st in np.arange(nStations):
-    x,y=nonNan(all_correct_prob[top_subj,st,2],all_correct_prob[bottom_subj,st,2],)
+    x,y=nonNan(all_correct_prob[top_subj,st,2],all_correct_prob[bottom_subj,st,2])
     t,p = scipy.stats.ttest_ind(x,y)
     p =p * cor
     if np.mod(st,2):
@@ -422,7 +422,7 @@ plt.title('',fontsize=30)
 
 plt.subplot(1,4,4)
 for st in np.arange(nStations):
-    x,y=nonNan(all_correct_prob[top_subj,st,3],all_correct_prob[bottom_subj,st,3],)
+    x,y=nonNan(all_correct_prob[top_subj,st,3],all_correct_prob[bottom_subj,st,3])
     t,p = scipy.stats.ttest_ind(x,y)
     p =p * cor
     if np.mod(st,2):
@@ -495,7 +495,7 @@ plt.subplot(1,4,1)
 # test significance across all points and do Bonferroni correction
 cor = nStations*nRuns
 for st in np.arange(nStations):
-    x,y=nonNan(all_nf_score[top_subj,st,0],all_nf_score[bottom_subj,st,0],)
+    x,y=nonNan(all_nf_score[top_subj,st,0],all_nf_score[bottom_subj,st,0])
     t,p = scipy.stats.ttest_ind(x,y)
     p =p * cor
     if np.mod(st,2):
@@ -515,7 +515,7 @@ plt.yticks(np.array([0,0.5,1]),fontsize=20)
 
 plt.subplot(1,4,2)
 for st in np.arange(nStations):
-    x,y=nonNan(all_nf_score[top_subj,st,1],all_nf_score[bottom_subj,st,1],)
+    x,y=nonNan(all_nf_score[top_subj,st,1],all_nf_score[bottom_subj,st,1])
     t,p = scipy.stats.ttest_ind(x,y)
     p =p * cor
     if np.mod(st,2):
@@ -534,7 +534,7 @@ plt.title('run 2',fontsize=30)
 
 plt.subplot(1,4,3)
 for st in np.arange(nStations):
-    x,y=nonNan(all_nf_score[top_subj,st,2],all_nf_score[bottom_subj,st,2],)
+    x,y=nonNan(all_nf_score[top_subj,st,2],all_nf_score[bottom_subj,st,2])
     t,p = scipy.stats.ttest_ind(x,y)
     p =p * cor
     if np.mod(st,2):
@@ -553,7 +553,7 @@ plt.title('run 3',fontsize=30)
 
 plt.subplot(1,4,4)
 for st in np.arange(nStations):
-    x,y=nonNan(all_nf_score[top_subj,st,3],all_nf_score[bottom_subj,st,3],)
+    x,y=nonNan(all_nf_score[top_subj,st,3],all_nf_score[bottom_subj,st,3])
     t,p = scipy.stats.ttest_ind(x,y)
     p =p * cor
     if np.mod(st,2):
@@ -637,7 +637,7 @@ plt.close(fig)
 
 print('NEW STATS')
 print('AVG AMOUNT OF REWARD DIFFERENT')
-x,y=nonNan(all_nf_score_reward_run[:,0], all_nf_score_reward_run[:,3])
+x,y=nonNan(all_nf_score_reward_run[:,0], all_nf_score_reward_run[:,3],paired=True)
 t,p = scipy.stats.ttest_rel(x,y)
 text = 'Did amount of reward differ significantly (2-sided) for all subjects between first and last run?'
 printStatsResults(text, t, p, x, y)
