@@ -190,12 +190,6 @@ def plotPosterStyle_multiplePTS(all_data,subjects,alpha=1):
     for d in np.arange(nDays):
       plt.subplot(1,nDays,d+1)
       sns.despine()
-      for s in np.arange(n_subs):
-          if s in P_ind:
-              color = 0
-          elif s in C_ind:
-              color = 1
-          #plt.plot(all_data[s,:,d],'-',ms=10,color=colors_light[color],alpha=alpha,lw=2)
       plt.errorbar(x=np.arange(nPoints),y=C_mean[:,d],yerr=C_err[:,d],color=colors_light[1],
                   lw=lw,label='C',fmt='-o',ms=ms,
                   alpha=alpha)

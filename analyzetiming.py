@@ -12,68 +12,15 @@ sys.path.append('/jukebox/norman/amennen/github/brainiak/rt-cloud')
 from rtCommon.utils import loadConfigFile, dateStr30, DebugLevels, writeFile, loadMatFile
 from rtCommon.structDict import StructDict
 import greenEyes
-
+from analyzeExp2_deflections2 import getStationInformation, getBehavData
 defaultConfig = os.path.join(os.getcwd(), 'conf/greenEyes_cluster.toml')
 cfg = loadConfigFile(defaultConfig)
 params = StructDict({'config':defaultConfig, 'runs': '1', 'scans': '9', 'webpipe': 'None', 'webfilesremote': False})
 cfg = greenEyes.initializeGreenEyes(defaultConfig,params)
 # date doesn't have to be right, but just make sure subject number, session number, computers are correct
 
-def getPatternsData(subject_num,run_num):
-    bids_id = 'sub-{0:03d}'.format(subject_num)
-    ses_id = 'ses-{0:02d}'.format(2)
-    filename = '/jukebox/norman/amennen/RT_prettymouth/data/intelData/{0}/{1}/patternsData_r{2}_*.mat'.format(bids_id,ses_id,run_num)
-    fn = glob.glob(filename)[-1]
-    data = loadMatFile(fn)
-    cheating_prob = data['cheating_probability']
-    cheating_prob_z = data['zTransferred']
-    correct_score = data['correct_prob']
-    return data, cheating_prob, cheating_prob_z, correct_score
-
-def getBehavData(subject_num,run_num):
-    bids_id = 'sub-{0:03d}'.format(subject_num)
-    ses_id = 'ses-{0:02d}'.format(2)
-    run_id = 'run-{0:03d}'.format(run_num)
-    filename = '/jukebox/norman/amennen/RT_prettymouth/data/intelData/{0}/{1}/{2}/behavior_run{3}_*.mat'.format(bids_id,ses_id,run_id,run_num)
-    fn = glob.glob(filename)[-1]
-    data = loadMatFile(fn)
-    return data
-
-
-def getStationInformation(config='conf/greenEyes_cluster.toml'):
-    allinfo = {}
-    cfg = loadConfigFile(config)
-    station_FN = cfg.cluster.classifierDir + '/' + cfg.stationDict
-    stationDict = np.load(station_FN,allow_pickle=True).item()
-    n_stations = len(stationDict)
-    last_tr_in_station = np.zeros((n_stations,))
-    allTR = list(stationDict.values())
-    all_station_TRs = [item for sublist in allTR for item in sublist]
-    for st in np.arange(n_stations):
-        last_tr_in_station[st] = stationDict[st][-1]
-    return n_stations, stationDict, last_tr_in_station, all_station_TRs
-
-def getBehavData(subject_num,run_num):
-    bids_id = 'sub-{0:03d}'.format(subject_num)
-    ses_id = 'ses-{0:02d}'.format(2)
-    run_id = 'run-{0:03d}'.format(run_num)
-    filename = '/jukebox/norman/amennen/RT_prettymouth/data/intelData/{0}/{1}/{2}/behavior_run{3}_*.mat'.format(bids_id,ses_id,run_id,run_num)
-    fn = glob.glob(filename)[-1]
-    data = loadMatFile(fn)
-    return data    
-
-def createStationVector(stationDict):
-    n_stations = len(stationDict)
-    allTRs = np.arange(25,475+1)
-    nTRs_story = len(allTRs)
-    recorded_TRs = np.zeros((nTRs_story,))
-    for st in np.arange(n_stations):
-        this_station_TRs = np.array(stationDict[st]) # remove + 1 # going from python --> matlab indexing
-        recorded_TRs[this_station_TRs - 3] = st +1
-    return recorded_TRs
 
 nStations, stationDict, last_tr_in_station, all_station_TRs = getStationInformation()
-recorded_TRs = createStationVector(stationDict)
 nRuns = 4
 subjects = np.array([25,26,28,29,30,31,32,33,35,36,37,38,39,41,40,42,43,44,45,46])
 nSubs = len(subjects)
