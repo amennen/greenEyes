@@ -616,6 +616,7 @@ if __name__ == '__main__':
     plt.subplot(1,4,1)
     # test significance across all points and do Bonferroni correction
     cor = nStations*nRuns
+    print(f'cor is {cor}')
     for st in np.arange(nStations):
         x,y=nonNan(all_nf_score_reward[top_subj,st,0],all_nf_score_reward[bottom_subj,st,0])
         t,p = scipy.stats.ttest_ind(x,y)
