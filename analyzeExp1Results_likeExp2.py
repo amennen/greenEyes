@@ -47,7 +47,7 @@ from rtCommon.structDict import StructDict
 import rtCommon.dicomNiftiHandler as dnh
 import greenEyes
 from commonPlotting import *
-
+from analyzeExp2_deflections2 import analyzeBehavData
 # params = {'legend.fontsize': 'large',
 #           'figure.figsize': (5, 3),
 #           'axes.labelsize': 'x-large',
@@ -63,8 +63,6 @@ params = StructDict({'config':defaultConfig, 'runs': '1', 'scans': '9', 'webpipe
 cfg = greenEyes.initializeGreenEyes(defaultConfig,params)
 # date doesn't have to be right, but just make sure subject number, session number, computers are correct
 
-
-
 def getPatternsData(subject_num,run_num):
     bids_id = 'sub-{0:03d}'.format(subject_num)
     ses_id = 'ses-{0:02d}'.format(2)
@@ -74,6 +72,7 @@ def getPatternsData(subject_num,run_num):
     data = loadMatFile(fn)
     return data
 
+
 def getClassificationData(data,station_ind):
     stationStr = 'station' + str(station_ind)
     data_for_classification = data['dataForClassification']
@@ -81,9 +80,9 @@ def getClassificationData(data,station_ind):
     return station_data
 
 def reclassifyAll(subject_num,cfg,clf,nRuns=4,n_stations=7):
-    all_cheating_prob = np.zeros((n_stations,nRuns))
-    all_pred = np.zeros((n_stations,nRuns))
-    all_agree = np.zeros((n_stations,nRuns))
+    all_cheating_prob = np.zeros((n_stations,nRuns))*np.nan
+    all_pred = np.zeros((n_stations,nRuns))*np.nan
+    all_agree = np.zeros((n_stations,nRuns))*np.nan
     for r in np.arange(nRuns):
         for st in np.arange(n_stations):
             all_cheating_prob[st,r],all_pred[st,r],all_agree[st,r] = reclassifyStation(subject_num,r,st,cfg,clf)
@@ -141,14 +140,6 @@ def getStationInformation(config='conf/greenEyes_cluster.toml'):
         last_tr_in_station[st] = stationDict[st][-1]
     return n_stations, stationDict, last_tr_in_station, all_station_TRs
 
-def getBehavData(subject_num,run_num):
-    bids_id = 'sub-{0:03d}'.format(subject_num)
-    ses_id = 'ses-{0:02d}'.format(2)
-    run_id = 'run-{0:03d}'.format(run_num)
-    filename = '/jukebox/norman/amennen/RT_prettymouth/data/intelData/{0}/{1}/{2}/behavior_run{3}_*.mat'.format(bids_id,ses_id,run_id,run_num)
-    fn = glob.glob(filename)[-1]
-    data = loadMatFile(fn)
-    return data
 
 def loadClassifier(cfg,station):
     thisClassifierFileName = cfg.classifierDir + cfg.classifierNamePattern.format(station)
