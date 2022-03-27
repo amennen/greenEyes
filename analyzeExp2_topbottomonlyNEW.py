@@ -354,6 +354,24 @@ for st in np.arange(nStations):
         printStatsResults(text, t, p/2,x,y)
 plt.savefig('savedPlots_checked/choices_stations_correct_incor.pdf')
 #plt.show()
+
+# get average statistics by run
+print('all_choices by run - CORRECT INCOR')
+print('changing stats to be consistent')
+cor=nRuns
+print(f'cor is {cor}')
+all_choices_correct_run = np.nanmean(all_choices_correct,axis=1)
+for i in np.arange(4):
+    x,y=nonNan(all_choices_correct_run[top_subj,i],all_choices_correct_run[bottom_subj,i])
+    t,p = scipy.stats.ttest_ind(x,y)
+    p = p * cor
+    text = f'ALL CHOICES CORRECT INCOR - (1-sided) did they differ significantly for run {i}'
+    printStatsResults(text,
+                      t,
+                      p/2,
+                      x,
+                      y)
+
 print('END OF CHOICES STATIONS CORRECT INCOR')
 # (3) plot comprehension differences across top and bottom performing classified subjects, collapsing across groups
 maxH = 1.1
