@@ -709,7 +709,7 @@ if __name__ == '__main__':
         p = p * cor
         text = f'DID ACTUAL REWARD DIFF SIGNIFICANTLY (1-sided) FOR ANY RUN - RUN {i}'
         printStatsResults(text, t, p/2, x, y)
-        addComparisonStat_SYM(p/2,3,3,maxH,.05,0,text_above='')
+        addComparisonStat_SYM(p/2,i,i,maxH,.05,0,text_above='')
     plt.savefig('savedPlots_checked/nf_score_correct_incor_actual_reward_run.pdf')
     plt.close(fig)
 
