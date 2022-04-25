@@ -107,6 +107,7 @@ plt.ylim([0,1])
 plt.xticks(np.arange(nStations), fontsize=20)
 
 cor = nStations*nRuns
+print(cor)
 for st in np.arange(nStations):
     x,y=nonNan(all_choices[C_ind,st,0],all_choices[P_ind,st,0])
     t,p = scipy.stats.ttest_ind(x,y)
@@ -264,6 +265,7 @@ plt.savefig('savedPlots_checked/all_choices_run.pdf')
 
 # (2) plot probe responses, now divided by the top and bottom classifier performances (collapsing across interpretation groups)
 print('CHOICES STATIONS CORRECT INCOR')
+
 fig,ax = plt.subplots(figsize=(20,9))
 for d in np.arange(nRuns):
   plt.subplot(1,nRuns,d+1)
@@ -295,6 +297,8 @@ plt.subplot(1,4,1)
 plt.ylabel('',fontsize=25)
 # test significance across all points and do Bonferroni correction
 cor = nStations*nRuns
+print('cor is')
+print(cor)
 for st in np.arange(nStations):
     x,y=nonNan(all_choices_correct[top_subj,st,0],all_choices_correct[bottom_subj,st,0])
     t,p = scipy.stats.ttest_ind(x,y)
@@ -356,11 +360,54 @@ plt.savefig('savedPlots_checked/choices_stations_correct_incor.pdf')
 #plt.show()
 
 # get average statistics by run
+all_choices_correct_run = np.nanmean(all_choices_correct,axis=1)
+
 print('all_choices by run - CORRECT INCOR')
+
+
+
+##### ADD PLOT BY RUN
+fig,ax = plt.subplots(figsize=(20,9))
+sns.despine()
+plt.errorbar(
+    x=np.arange(4),
+    y=np.nanmean(all_choices_correct_run[top_subj,:],axis=0),
+    yerr=scipy.stats.sem(all_choices_correct_run[top_subj,:],
+    axis=0,nan_policy='omit'
+    ),
+    color='k',
+    alpha=1,
+    lw=lw-1,
+    label='top',
+    fmt='-o',
+    ms=ms)
+plt.errorbar(
+    x=np.arange(4),
+    y=np.nanmean(all_choices_correct_run[bottom_subj,:],axis=0),
+    yerr=scipy.stats.sem(all_choices_correct_run[bottom_subj,:],
+    axis=0,nan_policy='omit'
+    ),
+    color='k',
+    alpha=alpha-.1,
+    lw=lw-1,
+    label='bottom',
+    fmt=':o',
+    ms=ms)
+plt.ylim([0,1])
+plt.yticks(np.array([0,0.5,1]), [ 'incorrect','neutral','correct'],fontsize=20,rotation=0) 
+plt.plot([0,nRuns-1],[0.5,0.5], '--', color='k', lw=lw-1, alpha=0.5)
+plt.ylabel('', fontsize=25)
+plt.xlabel('',fontsize=25)
+plt.xlabel('',fontsize=25)
+plt.xticks(np.arange(4),fontsize=20)
+plt.ylim([0,1])
+ax = plt.gca()
+ax.axes.xaxis.set_ticklabels([])
+ax.axes.yaxis.set_ticklabels([])
+
 print('changing stats to be consistent')
 cor=nRuns
 print(f'cor is {cor}')
-all_choices_correct_run = np.nanmean(all_choices_correct,axis=1)
 for i in np.arange(4):
     x,y=nonNan(all_choices_correct_run[top_subj,i],all_choices_correct_run[bottom_subj,i])
     t,p = scipy.stats.ttest_ind(x,y)
@@ -371,6 +418,10 @@ for i in np.arange(4):
                       p/2,
                       x,
                       y)
+
+    addComparisonStat_SYM(p/2,i,i,maxH,.05,0,text_above='')
+
+plt.savefig('savedPlots_checked/choices_stations_correct_incor_run.pdf')
 
 print('END OF CHOICES STATIONS CORRECT INCOR')
 # (3) plot comprehension differences across top and bottom performing classified subjects, collapsing across groups

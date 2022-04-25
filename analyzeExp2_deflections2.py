@@ -471,7 +471,7 @@ if __name__ == '__main__':
         p = p * cor
         text = f'DID CHEATING PROB COR/INCOR DIFF SIGNIFICANTLY FOR ANY RUN (1-sided) - RUN {i}'
         printStatsResults(text, t, p/2, x, y)
-        addComparisonStat_SYM(p/2,3,3,maxH,.05,0,text_above='')
+        addComparisonStat_SYM(p/2,i,i,maxH,.05,0,text_above='')
     #plt.plot(np.arange(4),np.ones(4,)*np.mean(all_means),'--',color='k')
     plt.savefig('savedPlots_checked/cprob_correct_incor_run.pdf')
     plt.close(fig)
