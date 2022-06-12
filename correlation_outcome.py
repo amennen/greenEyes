@@ -114,7 +114,7 @@ for s in np.arange(nSubs):
     elif s in bottom_subj:
         alpha=0.5
     plt.plot(x[s],y[s],'.',ms=20,color='k',alpha=alpha)
-plt.xlabel('correct probe response',fontsize=25)
+plt.xlabel('p(correct choice)',fontsize=25)
 plt.ylabel('correct interpretation', fontsize=25)
 plt.title(f'averaged over runs',fontsize=30)
 plt.yticks([-1,0,1])
@@ -130,38 +130,39 @@ plt.savefig('savedPlots_checked/probe_context.pdf')
 
 # 2. GET CORRELATION FOR EACH run
 n_runs = 4
-for r in np.arange(n_runs):
-    print('THIS RUN')
-    print(r)
-    x,y = nonNan(all_choices_correct_run[:,r],
-                all_correct_context,
-                paired=True)
-    x,subs = nonNan(all_choices_correct_run[:,r],
-                np.arange(nSubs),
-                paired=True)
-    this_r, this_p = scipy.stats.pearsonr(x,
-                                        y)
-    printStatsResults('interpretation and classifier linear relationship',
-                    this_r, this_p)
-    fig,ax = plt.subplots(figsize=(12,9))
-    sns.despine()
-    b, m = polyfit(x, y, 1)
-    plt.plot(x, b + m * x, '-',alpha=0.8,lw=lw, color='k')
-    for i in np.arange(len(subs)):
-        s = subs[i]
-        if s in top_subj:
-            alpha=1
-        elif s in bottom_subj:
-            alpha=0.5
-        plt.plot(x[i],y[i],'.',ms=20,color='k',alpha=alpha)
-    plt.xlabel('correct probe response',fontsize=25)
-    plt.ylabel('correct interpretation', fontsize=25)
-    plt.title(f'run {r}',fontsize=30)
-    plt.yticks([-1,0,1])
-    plt.xticks([0,.5,1])
-    ax = plt.gca()
-    # ax.axes.xaxis.set_ticklabels([])
-    # ax.axes.yaxis.set_ticklabels([])
-    text_f = 'r = %2.4f\np = %2.4f' % (this_r,this_p)
-    plt.text(0.1,0.8,text_f,fontsize=15)
-    plt.savefig(f'savedPlots_checked/probe_context_run_{r}.pdf')
+# for r in np.arange(n_runs):
+r=3
+print('THIS RUN')
+print(r)
+x,y = nonNan(all_choices_correct_run[:,r],
+            all_correct_context,
+            paired=True)
+x,subs = nonNan(all_choices_correct_run[:,r],
+            np.arange(nSubs),
+            paired=True)
+this_r, this_p = scipy.stats.pearsonr(x,
+                                    y)
+printStatsResults('interpretation and classifier linear relationship',
+                this_r, this_p)
+fig,ax = plt.subplots(figsize=(12,9))
+sns.despine()
+b, m = polyfit(x, y, 1)
+plt.plot(x, b + m * x, '-',alpha=0.8,lw=lw, color='k')
+for i in np.arange(len(subs)):
+    s = subs[i]
+    if s in top_subj:
+        alpha=1
+    elif s in bottom_subj:
+        alpha=0.5
+    plt.plot(x[i],y[i],'.',ms=20,color='k',alpha=alpha)
+plt.xlabel('p(correct choice)',fontsize=25)
+plt.ylabel('correct interpretation', fontsize=25)
+plt.title(f'run {r+1}',fontsize=30)
+plt.yticks([-1,0,1])
+plt.xticks([0,.5,1])
+ax = plt.gca()
+# ax.axes.xaxis.set_ticklabels([])
+# ax.axes.yaxis.set_ticklabels([])
+text_f = 'r = %2.4f\np = %2.4f' % (this_r,this_p)
+plt.text(0.1,0.8,text_f,fontsize=15)
+plt.savefig(f'savedPlots_checked/probe_context_run_{r}.pdf')
